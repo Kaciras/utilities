@@ -1,10 +1,12 @@
 {
-	"name": "utilities",
-	"version": "1.0.0",
-	"license": "ISC",
-	"description": "",
-	"author": "",
-	"keywords": [],
+	"name": "@kaciras/utilities",
+	"version": "0.1.0",
+	"license": "MIT",
+	"description": "A set of common JS functions for node and browser.",
+	"author": "Kaciras <Kaciras@outlook.com>",
+	"keywords": [
+		"utils"
+	],
 	"type": "module",
 	"main": "index.js",
 	"scripts": {
