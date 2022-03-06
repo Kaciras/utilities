@@ -3,12 +3,14 @@ lockfileVersion: 5.3
 specifiers:
   '@kaciras/eslint-config-core': ^2.3.0
   '@kaciras/eslint-config-typescript': ^2.3.0
+  '@types/node': ^17.0.21
   eslint: ^8.10.0
   typescript: ^4.6.2
 
 devDependencies:
   '@kaciras/eslint-config-core': 2.3.0_eslint@8.10.0
   '@kaciras/eslint-config-typescript': 2.3.0_eslint@8.10.0+typescript@4.6.2
+  '@types/node': 17.0.21
   eslint: 8.10.0
   typescript: 4.6.2
 
@@ -93,6 +95,10 @@ packages:
 
   /@types/json-schema/7.0.9:
     resolution: {integrity: sha512-qcUXuemtEu+E5wZSJHNxUXeCZhAfXKQ41D+duX+VYPde7xyEVZci+/oXKJL13tnRs9lR2pr4fod59GT6/X1/yQ==}
+    dev: true
+
+  /@types/node/17.0.21:
+    resolution: {integrity: sha512-DBZCJbhII3r90XbQxI8Y9IjjiiOGlZ0Hr32omXIZvwwZ7p4DMMXGrKXVyPfuoBOri9XNtL0UK69jYIBIsRX3QQ==}
     dev: true
 
   /@typescript-eslint/eslint-plugin/5.13.0_33fffc354ccfa91fbe7d1677b9395a0a:

@@ -38,3 +38,17 @@ export function blobToBase64URL(blob: Blob) {
 		reader.readAsDataURL(blob);
 	});
 }
+
+/**
+ * creates an Url-Safe Base64 encoded ASCII string from a binary data.
+ */
+export function base64url(buffer: Uint8Array | ArrayBuffer | Buffer) {
+	if (typeof window === "undefined") {
+		if (!Buffer.isBuffer(buffer)) {
+			buffer = Buffer.from(buffer);
+		}
+		return buffer.toString("base64url");
+	}
+	const str = String.fromCharCode(...new Uint8Array(buffer));
+	return btoa(str).replaceAll("/", "_").replaceAll("+", "-");
+}

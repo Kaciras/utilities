@@ -17,3 +17,13 @@ export function formatSize(value: number, fraction: 1024 | 1000 = 1024) {
 	const v = value / (fraction ** i);
 	return `${v.toFixed(2)} ${SIZE_UNITS[i]}B`;
 }
+
+/**
+ *
+ *
+ * @param value
+ * @param fraction 1000 for SI or 1024 for IEC.
+ */
+export function parseSize(value: string, fraction: 1024 | 1000 = 1024) {
+
+}
