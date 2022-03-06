@@ -1,16 +1,19 @@
 /**
- * 触发下载文件，该函数立即返回，无法得知用户是否真的下载了。
+ * Trigger a download for the blob, the function returns immediately,
+ * no way to know if the user accept or not.
  *
- * @param blob 文件数据 Blob 对象。
- * @param name 文件名，如果没有则尝试使用 blob 的名字。
+ * @param blob The blob object to download.
+ * @param name Filename，if not specified, use blob.name.
  */
 export function saveFile(blob: Blob, name?: string) {
 	const a = document.createElement("a");
 	a.href = URL.createObjectURL(blob);
 	a.download = name ?? (blob as File).name;
 
-	// click() 立即返回但下载仍然成功，
-	// 推测在数据在 revoke 前就已经使用了。
+	/*
+	 * `click()` runs asynchronously, the object url was
+	 * revoked before the download started, but it still works.
+	 */
 	try {
 		a.click();
 	} finally {
@@ -19,14 +22,14 @@ export function saveFile(blob: Blob, name?: string) {
 }
 
 /**
- * 弹出文件选择框并等待完成，当用户点击确定后返回选中的文件。
+ * Open up a file picker dialog that allows the user to choose files.
  *
- * <h1>注意事项</h1>
- * 由于没有办法检测是否取消选择，如果取消，则 Promise 不会 resolve。
+ * <h1>Limitation</h1>
+ * There is no way to detect the user clicked the cancel button,
+ * if the user does，the returned Promise will never resolve.
  *
- * @param accept 应该选择的文件类型
- * @param multiple 是否多选
- * @return 一个 Promise，将在用户点击确定时完成
+ * @param accept Defines the file types the file input should accept.
+ * @param multiple Allows the user to select more than one file.
  */
 export function selectFile(accept: string, multiple = false) {
 	const input = document.createElement("input");
@@ -35,8 +38,8 @@ export function selectFile(accept: string, multiple = false) {
 	input.multiple = multiple;
 	input.click();
 
-	return new Promise((resolve, reject) => {
+	return new Promise<FileList>((resolve, reject) => {
 		input.onerror = reject;
-		input.onchange = () => resolve(input.files);
+		input.onchange = () => resolve(input.files!);
 	});
 }

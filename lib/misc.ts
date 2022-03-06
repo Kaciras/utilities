@@ -1,9 +1,8 @@
 /**
- * 返回一个Promise，在指定的时间后完成，可用于模拟耗时的操作。
+ * get a Promise that will be resolved after specified time.
  *
- * @param time 时间，毫秒
- * @return 在指定的时间后完成的 Promise
+ * @param ms Time to sleep in millisecond.
  */
-export function sleep(time: number) {
-	return new Promise(resolve => setTimeout(resolve, time));
+export function sleep(ms: number) {
+	return new Promise(resolve => setTimeout(resolve, ms));
 }

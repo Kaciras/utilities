@@ -9,11 +9,15 @@ const escapes: Record<string, string> = {
 };
 
 /**
- * SVG 可以使用比 Base64 更高效的 DataURL 编码。
+ * 将 SVG 的部分字符转义，让其可以用于 URL，使用了比 Base64 更高效的编码。
+ * 双引号将被替换为单引号，将结果用于 DOM 属性或 CSS 里的 url() 时需要注意外层引号。
+ *
+ * @example
+ * const dataUrl = "data:image/svg+xml," + svgToUrl(svg);
  *
  * @see https://www.zhangxinxu.com/wordpress/2018/08/css-svg-background-image-base64-encode/
  */
-export function encodeSVG(code: string) {
+export function svgToUrl(code: string) {
 	return code.replaceAll(/["%#{}<>]/g, v => escapes[v]);
 }
 
