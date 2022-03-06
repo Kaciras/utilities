@@ -1,0 +1,16 @@
+{
+	"name": "utilities",
+	"version": "1.0.0",
+	"license": "ISC",
+	"description": "",
+	"author": "",
+	"keywords": [],
+	"type": "module",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"devDependencies": {
+		"typescript": "^4.6.2"
+	}
+}
