@@ -8,4 +8,10 @@ module.exports = {
 		browser: true,
 		node: true,
 	},
+	overrides: [{
+		files: [
+			"test/**/*.ts",
+		],
+		extends: ["@kaciras/jest"],
+	}],
 };
