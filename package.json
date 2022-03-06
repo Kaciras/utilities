@@ -11,6 +11,9 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"devDependencies": {
+		"@kaciras/eslint-config-core": "^2.3.0",
+		"@kaciras/eslint-config-typescript": "^2.3.0",
+		"eslint": "^8.10.0",
 		"typescript": "^4.6.2"
 	}
 }
