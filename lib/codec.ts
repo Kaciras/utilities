@@ -7,10 +7,11 @@ const htmlEscapes: Record<string, string> = {
 };
 
 /**
- * 转义HTML文本中的特殊字符
+ * Escape special characters in the given string of text,
+ * such that it can be interpolated in HTML content.
  *
- * @param html 原始文本
- * @return 转义后的文本
+ * <h2>Alternatives</h2>
+ * To insert text into a DOM node, just assign `textContent`.
  */
 export function escapeHTML(html: string) {
 	return html.replaceAll(/[&<>"']/g, v => htmlEscapes[v]);
@@ -27,12 +28,13 @@ const svgEscapes: Record<string, string> = {
 };
 
 /**
- * 将 SVG 的部分字符转义，让其可以用于 URL，使用了比 Base64 更高效的编码。
- * 双引号将被替换为单引号，将结果用于 DOM 属性或 CSS 里的 url() 时需要注意外层引号。
+ * Escape an SVG string，make it available for data url, the result is more efficient than base64.
+ * Double quotes will be replaced with single quotes.
  *
  * @example
  * const dataUrl = "data:image/svg+xml," + svgToUrl(svg);
  *
+ * @see https://codepen.io/tigt/post/optimizing-svgs-in-data-uris
  * @see https://www.zhangxinxu.com/wordpress/2018/08/css-svg-background-image-base64-encode/
  */
 export function svgToUrl(svg: string) {
@@ -40,19 +42,16 @@ export function svgToUrl(svg: string) {
 }
 
 /**
- * 将 Blob 对象转为 base64 编码的 Data-URL 字符串。
+ * Convert the Blob to base64-encoded data url string。
  *
- * 【其他方案】
- * 如果可能，使用 URL.createObjectURL + URL.revokeObjectURL 性能更好。
- *
- * @param blob Blob对象
- * @return Data-URL 字符串
+ * <h1>Alternatives</h1>
+ * If you don't need serialization, use `URL.createObjectURL` for better performance.
  */
 export function blobToBase64URL(blob: Blob) {
-	return new Promise((resolve, reject) => {
+	return new Promise<string>((resolve, reject) => {
 		const reader = new FileReader();
 		reader.onerror = reject;
-		reader.onloadend = () => resolve(reader.result);
+		reader.onloadend = () => resolve(reader.result as string);
 		reader.readAsDataURL(blob);
 	});
 }

@@ -1,43 +1,37 @@
-type Handler<T extends any[]> = (...args: T) => void;
+type Handler = (...args: any[]) => void;
 
-/**
- * 一个最简单的单事件 EventEmitter 实现，适用于少量并确定的事件。
- */
-export class SingleEventEmitter<T extends any[] = any[]> {
+export class SingleEventEmitter<T extends Handler = any> {
 
-	private handlers: Array<Handler<T>> = [];
+	private handlers: T[] = [];
 
-	addListener(handler: Handler<T>) {
+	addListener(handler: T) {
 		this.handlers.push(handler);
 	}
 
-	removeListener(handler: Handler<T>) {
+	removeListener(handler: T) {
 		const { handlers } = this;
 		this.handlers = handlers.filter(h => h !== handler);
-	}
-
-	once(handler: Handler<T>) {
-		const wrapper = (...args: T) => {
-			handler(...args);
-			this.removeListener(wrapper);
-		};
-		this.addListener(wrapper);
 	}
 
 	removeAllListeners() {
 		this.handlers.length = 0;
 	}
 
-	dispatchEvent(...args: T) {
+	once(handler: T) {
+		const wrapper = (...args: unknown[]) => {
+			handler(...args);
+			this.removeListener(wrapper as T);
+		};
+		this.addListener(wrapper as T);
+	}
+
+	dispatchEvent(...args: Parameters<T>) {
 		for (const handler of this.handlers) handler(...args);
 	}
 }
 
 type EventsMap = Record<string, any>;
 
-/**
- * 处理器存储，键是事件名值是处理器列表，因为太长所以拿出来了。
- */
 type HandlerMap<T extends EventsMap> = Partial<{
 	[K in keyof T]: Array<T[K]>;
 }>;
@@ -46,9 +40,6 @@ interface Default extends EventsMap {
 	[event: string]: (...args: any) => void;
 }
 
-/**
- * 一个最简单的多事件 EventEmitter 实现，适用于类型不确定的事件。
- */
 export class MultiEventEmitter<T extends EventsMap = Default> {
 
 	private events: HandlerMap<T> = Object.create(null);
@@ -71,20 +62,20 @@ export class MultiEventEmitter<T extends EventsMap = Default> {
 		}
 	}
 
-	once<K extends keyof T>(name: K, handler: T[K]) {
-		const wrapper = (...args: unknown[]) => {
-			handler(...args);
-			this.removeListener(name, wrapper as T[K]);
-		};
-		this.addListener(name, wrapper as T[K]);
-	}
-
 	removeAllListeners(name?: keyof T) {
 		if (typeof name === "string") {
 			delete this.events[name];
 		} else {
 			this.events = Object.create(null);
 		}
+	}
+
+	once<K extends keyof T>(name: K, handler: T[K]) {
+		const wrapper = (...args: unknown[]) => {
+			handler(...args);
+			this.removeListener(name, wrapper as T[K]);
+		};
+		this.addListener(name, wrapper as T[K]);
 	}
 
 	dispatchEvent<K extends keyof T>(name: K, ...args: Parameters<T[K]>) {

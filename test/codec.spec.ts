@@ -1,5 +1,5 @@
 import { describe, it, expect } from "@jest/globals";
-import { base64url, escapeHTML } from "../lib/codec";
+import { base64url, escapeHTML, svgToUrl } from "../lib/codec";
 
 describe("escapeHTML", () => {
 	const cases = [
@@ -11,6 +11,15 @@ describe("escapeHTML", () => {
 
 	it.each(cases)("should escape chars %#", (input, escaped) => {
 		expect(escapeHTML(input)).toBe(escaped);
+	});
+});
+
+describe("svgToUrl", () => {
+	const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M224 387.814V512L32 320l192-192v126.912C447.375 260.152 437.794 103.016 380.93 0 521.287 151.707 491.48 394.785 224 387.814z"/></svg>';
+	const encoded = "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M224 387.814V512L32 320l192-192v126.912C447.375 260.152 437.794 103.016 380.93 0 521.287 151.707 491.48 394.785 224 387.814z'/%3E%3C/svg%3E";
+
+	it("should escape chars", () => {
+		expect(svgToUrl(svg)).toBe(encoded);
 	});
 });
 

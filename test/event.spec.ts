@@ -111,4 +111,35 @@ describe("MultiEventEmitter", () => {
 		expect(handler2).toHaveBeenNthCalledWith(1, 11, 22);
 		expect(handler2).toHaveBeenNthCalledWith(2, 33);
 	});
+
+	it("should ok for clear empty listener list", () => {
+		const events = new MultiEventEmitter<EventTypes>();
+		events.removeAllListeners();
+		events.removeAllListeners("foo");
+	});
+
+	it("should ok for remove non exists listener", () => {
+		const events = new MultiEventEmitter<EventTypes>();
+		events.removeListener("foo", () => {});
+	});
+
+	it("should remove the listener", () => {
+		const events = new MultiEventEmitter<EventTypes>();
+		events.addListener("foo", handler1);
+		events.addListener("foo", handler2);
+		events.addListener("bar", handler1);
+
+		events.removeListener("foo", handler1);
+		events.removeListener("foo", handler1);
+		events.removeListener("bar", handler2);
+
+		events.dispatchEvent("foo", 11);
+		events.dispatchEvent("bar", 22);
+
+		expect(handler1).toHaveBeenCalledTimes(1);
+		expect(handler1).toHaveBeenCalledWith(22);
+
+		expect(handler2).toHaveBeenCalledTimes(1);
+		expect(handler2).toHaveBeenCalledWith(11);
+	});
 });

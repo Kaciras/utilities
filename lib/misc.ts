@@ -1,7 +1,9 @@
 let uniqueIdCounter = 1;
 
 /**
- * Generate a unique number, it can be used as the key prop in React element.
+ * Generate a unique number, each call returns a different value.
+ *
+ * This function more efficient than `Math.random()`.
  */
 export function uniqueId() {
 	return uniqueIdCounter += 1;
