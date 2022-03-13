@@ -4,6 +4,7 @@ node_modules
 /coverage
 /.swc
 *.log
+/debug.[jt]s
 
 # local env files
 .env.local

@@ -4,6 +4,10 @@
 	"license": "MIT",
 	"description": "A set of common JS functions for node and browser.",
 	"author": "Kaciras <Kaciras@outlook.com>",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Kaciras/utilities"
+	},
 	"keywords": [
 		"utils"
 	],
