@@ -5,8 +5,6 @@ describe("formatSize", () => {
 	const invalid = [
 		Infinity,
 		NaN,
-		undefined,
-		null,
 		Number.POSITIVE_INFINITY,
 		Number.NEGATIVE_INFINITY,
 	];
@@ -42,8 +40,6 @@ describe("formatSize", () => {
 
 describe("parseSize", () => {
 	const invalid = [
-		undefined,
-		null,
 		"",
 		"foobar",
 		" 1023 B",

@@ -9,8 +9,11 @@ const SIZE_UNITS = ["", "K", "M", "G", "T", "P", "E", "Z", "Y"];
  * @param fraction 1000 for SI or 1024 for IEC.
  */
 export function formatSize(value: number, fraction: 1024 | 1000 = 1024) {
-	const size = Math.abs(value);
+	if (!Number.isFinite(value)) {
+		throw new TypeError(`${value} is not a finite number`);
+	}
 
+	const size = Math.abs(value);
 	if (size === 0) {
 		return `${value} B`;
 	}
