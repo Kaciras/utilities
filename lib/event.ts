@@ -19,6 +19,14 @@ export class SingleEventEmitter<T extends any[] = any[]> {
 		}
 	}
 
+	once(handler: Handler<T>) {
+		const wrapper = (...args: T) => {
+			handler(...args);
+			this.removeListener(wrapper);
+		};
+		this.addListener(wrapper);
+	}
+
 	removeAllListeners() {
 		this.handlers.length = 0;
 	}
@@ -54,21 +62,24 @@ export class MultiEventEmitter<T extends EventsMap = Default> {
 	}
 
 	removeListener<K extends keyof T>(name: K, handler: T[K]) {
-		const { events } = this;
-		const handlers = events[name];
-
+		let handlers = this.events[name];
 		if (!handlers) {
 			return;
 		}
-
-		const i = handlers.indexOf(handler);
-		if (i >= 0) {
-			handlers.splice(i, 1);
-
-			if (handlers.length === 0) {
-				delete events[name];
-			}
+		handlers = handlers.filter(h => h !== handler);
+		if (handlers.length === 0) {
+			delete this.events[name];
+		} else {
+			this.events[name] = handlers;
 		}
+	}
+
+	once<K extends keyof T>(name: K, handler: T[K]) {
+		const wrapper = (...args: unknown[]) => {
+			handler(...args);
+			this.removeListener(name, wrapper as T[K]);
+		};
+		this.addListener(name, wrapper as T[K]);
 	}
 
 	removeAllListeners(name?: keyof T) {
@@ -84,5 +95,3 @@ export class MultiEventEmitter<T extends EventsMap = Default> {
 		for (const fn of handlers ?? []) fn(...args);
 	}
 }
-
-// TODO: once
