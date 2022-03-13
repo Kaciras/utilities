@@ -1,4 +1,22 @@
-const escapes: Record<string, string> = {
+const htmlEscapes: Record<string, string> = {
+	"&": "&amp;",
+	"<": "&lt;",
+	">": "&gt;",
+	'"': "&quot;",
+	"'": "&#039;",
+};
+
+/**
+ * 转义HTML文本中的特殊字符
+ *
+ * @param html 原始文本
+ * @return 转义后的文本
+ */
+export function escapeHTML(html: string) {
+	return html.replaceAll(/[&<>"']/g, v => htmlEscapes[v]);
+}
+
+const svgEscapes: Record<string, string> = {
 	'"': "'",
 	"%": "%25",
 	"#": "%23",
@@ -17,8 +35,8 @@ const escapes: Record<string, string> = {
  *
  * @see https://www.zhangxinxu.com/wordpress/2018/08/css-svg-background-image-base64-encode/
  */
-export function svgToUrl(code: string) {
-	return code.replaceAll(/["%#{}<>]/g, v => escapes[v]);
+export function svgToUrl(svg: string) {
+	return svg.replaceAll(/["%#{}<>]/g, v => svgEscapes[v]);
 }
 
 /**

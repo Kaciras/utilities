@@ -1,5 +1,18 @@
 import { describe, it, expect } from "@jest/globals";
-import { base64url } from "../lib/codec";
+import { base64url, escapeHTML } from "../lib/codec";
+
+describe("escapeHTML", () => {
+	const cases = [
+		["</p><a onclick=", "&lt;/p&gt;&lt;a onclick="],
+		["' onclick=alert(1)", "&#039; onclick=alert(1)"],
+		['" onclick=alert(1)', "&quot; onclick=alert(1)"],
+		["alert&lpar;1&rpar;", "alert&amp;lpar;1&amp;rpar;"],
+	];
+
+	it.each(cases)("should escape chars %#", (input, escaped) => {
+		expect(escapeHTML(input)).toBe(escaped);
+	});
+});
 
 describe("base64url", () => {
 	const data: Array<[Buffer, string]> = [
@@ -18,4 +31,3 @@ describe("base64url", () => {
 		expect(base64url(buffer.slice(byteOffset, end))).toBe(str);
 	});
 });
-
