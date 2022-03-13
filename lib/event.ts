@@ -5,7 +5,7 @@ type Handler<T extends any[]> = (...args: T) => void;
  */
 export class SingleEventEmitter<T extends any[] = any[]> {
 
-	private readonly handlers: Array<Handler<T>> = [];
+	private handlers: Array<Handler<T>> = [];
 
 	addListener(handler: Handler<T>) {
 		this.handlers.push(handler);
@@ -13,10 +13,7 @@ export class SingleEventEmitter<T extends any[] = any[]> {
 
 	removeListener(handler: Handler<T>) {
 		const { handlers } = this;
-		const i = handlers.indexOf(handler);
-		if (i >= 0) {
-			handlers.splice(i, 1);
-		}
+		this.handlers = handlers.filter(h => h !== handler);
 	}
 
 	once(handler: Handler<T>) {
@@ -32,7 +29,7 @@ export class SingleEventEmitter<T extends any[] = any[]> {
 	}
 
 	dispatchEvent(...args: T) {
-		for (const fn of this.handlers) fn(...args);
+		for (const handler of this.handlers) handler(...args);
 	}
 }
 
@@ -92,6 +89,6 @@ export class MultiEventEmitter<T extends EventsMap = Default> {
 
 	dispatchEvent<K extends keyof T>(name: K, ...args: Parameters<T[K]>) {
 		const handlers = this.events[name];
-		for (const fn of handlers ?? []) fn(...args);
+		for (const handler of handlers ?? []) handler(...args);
 	}
 }

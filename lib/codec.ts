@@ -57,6 +57,12 @@ export function blobToBase64URL(blob: Blob) {
 	});
 }
 
+const urlSafeMap: Record<string, string> = {
+	"=": "",
+	"/": "_",
+	"+": "-",
+};
+
 /**
  * creates an Url-Safe Base64 encoded ASCII string from a binary data.
  */
@@ -68,5 +74,5 @@ export function base64url(buffer: Uint8Array | ArrayBuffer | Buffer) {
 		return buffer.toString("base64url");
 	}
 	const str = String.fromCharCode(...new Uint8Array(buffer));
-	return btoa(str).replaceAll("/", "_").replaceAll("+", "-");
+	return btoa(str).replaceAll(/[+/=]/g, v => urlSafeMap[v]);
 }
