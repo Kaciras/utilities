@@ -1,11 +1,17 @@
+import { BinaryLike, createHash } from "crypto";
 import { base64url } from "./codec.js";
 
 /**
- * 方便的 Hash 函数，接受字节类数据，输出 base64url 字符串。
+ * A convenient hash function using sha256.
  *
- * @param data 数据
- * @return Hash 字符串
+ * @param data the data to be digested.
+ * @return Url-safe base64 encoded digest string.
  */
-export async function sha256(data: BufferSource) {
-	return base64url(await crypto.subtle.digest("SHA-256", data));
+export async function sha256(data: BufferSource | BinaryLike) {
+	if (typeof window === "undefined") {
+		return createHash("sha256")
+			.update(data as BinaryLike)
+			.digest("base64url");
+	}
+	return base64url(await crypto.subtle.digest("SHA-256", data as BufferSource));
 }
