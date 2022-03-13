@@ -15,7 +15,8 @@
 	"main": "index.js",
 	"scripts": {
 		"lint": "eslint --fix .",
-		"test": "jest"
+		"test": "jest",
+		"compile": "tsc"
 	},
 	"devDependencies": {
 		"@jest/globals": "^27.5.1",

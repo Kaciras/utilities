@@ -20,3 +20,4 @@ node_modules
 
 # Build files
 /lib/*.js*
+/test/*.js*
