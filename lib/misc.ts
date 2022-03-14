@@ -1,3 +1,17 @@
+import tp from "timers/promises";
+
+/**
+ * An AbortSignal object that never aborts.
+ */
+export const NeverAbort: AbortSignal = {
+	aborted: false,
+	get onabort() { return null; },
+	set onabort(_: any) {},
+	dispatchEvent() { throw new Error("Not supported"); },
+	addEventListener() {},
+	removeEventListener() {},
+};
+
 let uniqueIdCounter = 1;
 
 /**
@@ -9,11 +23,27 @@ export function uniqueId() {
 	return uniqueIdCounter += 1;
 }
 
+class AbortError extends Error {
+
+	constructor(...args: any[]) {
+		super(...args);
+		this.name = "AbortError";
+	}
+}
+
 /**
- * get a Promise that will be resolved after specified time.
+ * Get a Promise that will be fulfilled after specified time.
+ * When canceled, the returned Promise will be rejected with an 'AbortError'.
  *
  * @param ms Time to sleep in millisecond.
+ * @param signal An optional AbortSignal that can be used to cancel the scheduled sleep.
  */
-export function sleep(ms: number) {
-	return new Promise(resolve => setTimeout(resolve, ms));
+export function sleep(ms: number, signal = NeverAbort) {
+	if (typeof window === "undefined") {
+		return tp.setTimeout(ms, undefined, { signal });
+	}
+	return new Promise((resolve, reject) => {
+		setTimeout(resolve, ms);
+		signal.addEventListener("abort", () => reject(new AbortError()));
+	});
 }
