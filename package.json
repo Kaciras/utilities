@@ -12,7 +12,11 @@
 		"utils"
 	],
 	"type": "module",
-	"main": "index.js",
+	"types": "lib/index.ts",
+	"main": "lib/index.js",
+	"files": [
+		"lib"
+	],
 	"scripts": {
 		"lint": "eslint --fix .",
 		"test": "jest",
