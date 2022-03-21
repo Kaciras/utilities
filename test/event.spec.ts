@@ -56,13 +56,17 @@ describe("SingleEventEmitter", () => {
 	it("should remove all listeners", () => {
 		const events = new SingleEventEmitter();
 		events.addListener(handler1);
+		events.addListener(() => events.removeAllListeners());
 		events.addListener(handler2);
 
-		events.removeAllListeners();
-		events.dispatchEvent(11, 22);
+		events.dispatchEvent(11);
+		events.dispatchEvent(22);
 
-		expect(handler1).not.toHaveBeenCalled();
-		expect(handler2).not.toHaveBeenCalled();
+		expect(handler1).toHaveBeenCalledTimes(1);
+		expect(handler1).toHaveBeenNthCalledWith(1, 11);
+
+		expect(handler2).toHaveBeenCalledTimes(1);
+		expect(handler2).toHaveBeenNthCalledWith(1, 11);
 	});
 });
 

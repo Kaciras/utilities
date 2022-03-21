@@ -1,5 +1,9 @@
 type Handler<T extends any[]> = (...args: T) => any;
 
+/**
+ * The SingleEventEmitter calls all listeners synchronously in the
+ * order in which they were registered.
+ */
 export class SingleEventEmitter<T extends any[] = any[]> {
 
 	private handlers: Array<Handler<T>> = [];
@@ -8,13 +12,24 @@ export class SingleEventEmitter<T extends any[] = any[]> {
 		this.handlers.push(handler);
 	}
 
+	/**
+	 * Removes the specified listener from the listener array.
+	 *
+	 * Once an event is emitted, all listeners attached to it
+	 * at the time of emitting are called in order.
+	 * This implies that any removeListener() or removeAllListeners()
+	 * calls after emitting and before the last listener
+	 * finishes execution will not remove them from emit() in progress.
+	 *
+	 * @param handler The listener to remove
+	 */
 	removeListener(handler: Handler<T>) {
 		const { handlers } = this;
 		this.handlers = handlers.filter(h => h !== handler);
 	}
 
 	removeAllListeners() {
-		this.handlers.length = 0;
+		this.handlers = [];
 	}
 
 	once(handler: Handler<T>) {
@@ -40,6 +55,12 @@ interface Default extends EventsMap {
 	[event: string]: (...args: any) => any;
 }
 
+/**
+ * <h2>Alternatives</h2>
+ * In Node, you can import EventEmitter from "event" instead.
+ *
+ *
+ */
 export class MultiEventEmitter<T extends EventsMap = Default> {
 
 	private events: HandlerMap<T> = Object.create(null);
