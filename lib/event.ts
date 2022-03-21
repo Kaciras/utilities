@@ -1,14 +1,14 @@
-type Handler = (...args: any[]) => void;
+type Handler<T extends any[]> = (...args: T) => any;
 
-export class SingleEventEmitter<T extends Handler = any> {
+export class SingleEventEmitter<T extends any[] = any[]> {
 
-	private handlers: T[] = [];
+	private handlers: Array<Handler<T>> = [];
 
-	addListener(handler: T) {
+	addListener(handler: Handler<T>) {
 		this.handlers.push(handler);
 	}
 
-	removeListener(handler: T) {
+	removeListener(handler: Handler<T>) {
 		const { handlers } = this;
 		this.handlers = handlers.filter(h => h !== handler);
 	}
@@ -17,15 +17,15 @@ export class SingleEventEmitter<T extends Handler = any> {
 		this.handlers.length = 0;
 	}
 
-	once(handler: T) {
-		const wrapper = (...args: unknown[]) => {
+	once(handler: Handler<T>) {
+		const wrapper = (...args: T) => {
 			handler(...args);
-			this.removeListener(wrapper as T);
+			this.removeListener(wrapper as Handler<T>);
 		};
-		this.addListener(wrapper as T);
+		this.addListener(wrapper as Handler<T>);
 	}
 
-	dispatchEvent(...args: Parameters<T>) {
+	dispatchEvent(...args: T) {
 		for (const handler of this.handlers) handler(...args);
 	}
 }
@@ -37,7 +37,7 @@ type HandlerMap<T extends EventsMap> = Partial<{
 }>;
 
 interface Default extends EventsMap {
-	[event: string]: (...args: any) => void;
+	[event: string]: (...args: any) => any;
 }
 
 export class MultiEventEmitter<T extends EventsMap = Default> {
