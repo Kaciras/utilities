@@ -21,4 +21,4 @@ jobs:
         env:
           NODE_OPTIONS: --experimental-vm-modules
 
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
