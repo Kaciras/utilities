@@ -1,12 +1,16 @@
-export interface TTLCacheOptions<T> {
-	ttl: number;
+// noinspection LoopStatementThatDoesntLoopJS
 
-	dispose?(value: T): unknown;
+type Dispose<T> = (value: T) => unknown;
+
+export interface TTLCacheOptions<T> {
+	ttl?: number;
+	capacity?: number;
+	dispose?: Dispose<T>;
 }
 
 interface CacheEntry<T> {
 	value: T;
-	timer: NodeJS.Timeout;
+	timer?: NodeJS.Timeout;
 }
 
 export default class TTLCache<K, T> {
@@ -14,20 +18,13 @@ export default class TTLCache<K, T> {
 	private readonly map = new Map<K, CacheEntry<T>>();
 
 	private readonly ttl: number;
-	private readonly dispose: (value: T) => unknown;
+	private readonly dispose: Dispose<T>;
+	private readonly capacity: number;
 
-	constructor(options: TTLCacheOptions<T>) {
-		this.ttl = options.ttl;
+	constructor(options: TTLCacheOptions<T> = {}) {
+		this.ttl = options.ttl ?? Infinity;
+		this.capacity = options.capacity ?? Infinity;
 		this.dispose = options.dispose ?? (() => {});
-	}
-
-	private refreshTimeout(key: K, e: CacheEntry<T>) {
-		clearTimeout(e.timer);
-		const cb = () => {
-			this.map.delete(key);
-			this.dispose(e.value);
-		};
-		e.timer = setTimeout(cb, this.ttl).unref();
 	}
 
 	get size() {
@@ -39,6 +36,7 @@ export default class TTLCache<K, T> {
 		if (!e) {
 			return null;
 		}
+		this.updateOrder(key, e);
 		this.refreshTimeout(key, e);
 		return e.value;
 	}
@@ -48,9 +46,11 @@ export default class TTLCache<K, T> {
 		if (e) {
 			this.dispose(e.value);
 			e.value = value;
+			this.updateOrder(key, e);
 		} else {
-			e = { value } as CacheEntry<T>;
+			e = { value };
 			this.map.set(key, e);
+			this.pruneIfNeeded();
 		}
 		this.refreshTimeout(key, e);
 	}
@@ -65,12 +65,42 @@ export default class TTLCache<K, T> {
 		this.dispose(e.value);
 	}
 
-	clear(dispose?: (value: T) => unknown) {
+	clear(dispose?: Dispose<T>) {
+		dispose ??= this.dispose;
 		for (const e of this.map.values()) {
+			dispose(e.value);
 			clearTimeout(e.timer);
-			(dispose ?? this.dispose)(e.value);
 		}
 		this.map.clear();
+	}
+
+	private refreshTimeout(key: K, e: CacheEntry<T>) {
+		const { ttl, map, dispose } = this;
+		if (ttl === Infinity) {
+			return;
+		}
+		clearTimeout(e.timer);
+		const cb = () => {
+			map.delete(key);
+			dispose(e.value);
+		};
+		(e.timer = setTimeout(cb, ttl)).unref?.();
+	}
+
+	private updateOrder(key: K, e: CacheEntry<T>) {
+		this.map.delete(key);
+		this.map.set(key, e);
+	}
+
+	private pruneIfNeeded() {
+		if (this.size <= this.capacity) {
+			return;
+		}
+		for (const [key, e] of this.map) {
+			this.map.delete(key);
+			this.dispose(e.value);
+			return clearTimeout(e.timer);
+		}
 	}
 
 	* values() {
