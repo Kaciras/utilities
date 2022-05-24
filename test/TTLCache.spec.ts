@@ -178,10 +178,26 @@ it("should use custom dispose function on clear", () => {
 	expect(dispose2).toHaveBeenCalledWith(222);
 });
 
+it("should get key iterator", () => {
+	const cache = new TTLCache();
+	cache.set("foo", 111);
+	cache.set("bar", 222);
+
+	expect(Array.from(cache.keys())).toStrictEqual(["foo", "bar"]);
+});
+
 it("should get value iterator", () => {
-	const cache = new TTLCache({ ttl: 1000 });
+	const cache = new TTLCache();
 	cache.set("foo", 111);
 	cache.set("bar", 222);
 
 	expect(Array.from(cache.values())).toStrictEqual([111, 222]);
+});
+
+it("should get key-value pair iterator", () => {
+	const cache = new TTLCache();
+	cache.set("foo", 111);
+	cache.set("bar", 222);
+
+	expect(Array.from(cache)).toStrictEqual([["foo", 111], ["bar", 222]]);
 });

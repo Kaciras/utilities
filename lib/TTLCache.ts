@@ -103,6 +103,14 @@ export default class TTLCache<K, T> {
 		}
 	}
 
+	*[Symbol.iterator]() {
+		for (const [key, e] of this.map) yield [key, e.value];
+	}
+
+	keys() {
+		return this.map.keys();
+	}
+
 	* values() {
 		for (const e of this.map.values()) yield e.value;
 	}
