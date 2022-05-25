@@ -12,6 +12,7 @@
 		"utils"
 	],
 	"exports": {
+		".": "./lib/index.js",
 		"./*": "./lib/*.js"
 	},
 	"type": "module",
