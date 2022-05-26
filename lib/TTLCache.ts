@@ -3,8 +3,24 @@
 type Dispose<T> = (value: T) => unknown;
 
 export interface TTLCacheOptions<T> {
+
+	/**
+	 * The max time in millisecond to store items.
+	 *
+	 * @default Infinity
+	 */
 	ttl?: number;
+
+	/**
+	 * The max number of items to keep in the cache.
+	 *
+	 * @default Infinity
+	 */
 	capacity?: number;
+
+	/**
+	 * Method called when an item is removed from the cache
+	 */
 	dispose?: Dispose<T>;
 }
 
@@ -13,6 +29,9 @@ interface CacheEntry<T> {
 	timer?: NodeJS.Timeout;
 }
 
+/**
+ * A cache object support Least-Recently-Used and Time-To-Live elimination.
+ */
 export default class TTLCache<K, T> {
 
 	private readonly map = new Map<K, CacheEntry<T>>();
@@ -27,14 +46,21 @@ export default class TTLCache<K, T> {
 		this.dispose = options.dispose ?? (() => {});
 	}
 
+	/**
+	 * The number of items in the cache.
+	 */
 	get size() {
 		return this.map.size;
 	}
 
+	/**
+	 * Get an item stored in the cache.
+	 * Returns undefined if the item is not in the cache.
+	 */
 	get(key: K) {
 		const e = this.map.get(key);
 		if (!e) {
-			return null;
+			return;
 		}
 		this.updateOrder(key, e);
 		this.refreshTimeout(key, e);
@@ -65,6 +91,14 @@ export default class TTLCache<K, T> {
 		this.dispose(e.value);
 	}
 
+	/**
+	 * Delete all items from the cache.
+	 *
+	 * It's recommend to call this method when you no longer need the cache,
+	 * if the TTL is set.
+	 *
+	 * @param dispose override defaults on the constructor.
+	 */
 	clear(dispose?: Dispose<T>) {
 		dispose ??= this.dispose;
 		for (const e of this.map.values()) {

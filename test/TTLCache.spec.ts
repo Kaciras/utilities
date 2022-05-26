@@ -15,7 +15,7 @@ it("should have the size property", () => {
 
 it("should got null from empty cache", () => {
 	const cache = new TTLCache();
-	expect(cache.get("key")).toBeNull();
+	expect(cache.get("key")).toBeUndefined();
 });
 
 it("should get cached value", () => {
@@ -32,7 +32,7 @@ it("should expire entries by TTL", () => {
 	jest.advanceTimersByTime(800);
 
 	expect(cache.size).toBe(0);
-	expect(cache.get("key")).toBeNull();
+	expect(cache.get("key")).toBeUndefined();
 });
 
 it("should refresh expiration time on get", () => {
@@ -54,7 +54,7 @@ it("should update recent usage on get", () => {
 	cache.get("foo");
 	cache.set("baz", 333);
 
-	expect(cache.get("bar")).toBeNull();
+	expect(cache.get("bar")).toBeUndefined();
 	expect(cache.get("foo")).toBe(111);
 });
 
@@ -90,7 +90,7 @@ it("should update recent usage on set", () => {
 
 	cache.set("baz", 333);
 
-	expect(cache.get("bar")).toBeNull();
+	expect(cache.get("bar")).toBeUndefined();
 	expect(cache.get("foo")).toBe(111);
 });
 
@@ -103,7 +103,7 @@ it("should do LRU elimination", () => {
 	cache.set("baz", 333);
 
 	expect(cache.size).toBe(2);
-	expect(cache.get("foo")).toBeNull();
+	expect(cache.get("foo")).toBeUndefined();
 	expect(cache.get("baz")).toBe(333);
 
 	expect(jest.getTimerCount()).toBe(2);
@@ -122,7 +122,7 @@ it("should delete the entry", () => {
 	const cache = new TTLCache();
 	cache.set("key", 8964);
 	cache.delete("key");
-	expect(cache.get("key")).toBeNull();
+	expect(cache.get("key")).toBeUndefined();
 });
 
 it("should dispose the value on delete", () => {
@@ -145,8 +145,8 @@ it("should clear entries", () => {
 	cache.clear();
 
 	expect(cache.size).toBe(0);
-	expect(cache.get("foo")).toBeNull();
-	expect(cache.get("bar")).toBeNull();
+	expect(cache.get("foo")).toBeUndefined();
+	expect(cache.get("bar")).toBeUndefined();
 });
 
 it("should dispose values on clear", () => {
