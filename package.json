@@ -19,7 +19,8 @@
 	"types": "lib/index.ts",
 	"main": "lib/index.js",
 	"files": [
-		"lib"
+		"lib/**/*.js",
+		"lib/**/*.d.ts"
 	],
 	"scripts": {
 		"lint": "eslint --fix .",
