@@ -2,7 +2,7 @@
 
 type Dispose<T> = (value: T) => unknown;
 
-export interface TTLCacheOptions<T> {
+export interface LRUCacheOptions<T> {
 
 	/**
 	 * The max time in millisecond to store items.
@@ -32,7 +32,7 @@ interface CacheEntry<T> {
 /**
  * A cache object support Least-Recently-Used and Time-To-Live elimination.
  */
-export default class TTLCache<K, T> {
+export default class LRUCache<K, T> {
 
 	private readonly map = new Map<K, CacheEntry<T>>();
 
@@ -40,7 +40,7 @@ export default class TTLCache<K, T> {
 	private readonly dispose: Dispose<T>;
 	private readonly capacity: number;
 
-	constructor(options: TTLCacheOptions<T> = {}) {
+	constructor(options: LRUCacheOptions<T> = {}) {
 		this.ttl = options.ttl ?? Infinity;
 		this.capacity = options.capacity ?? Infinity;
 		this.dispose = options.dispose ?? (() => {});

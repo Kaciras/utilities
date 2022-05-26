@@ -1,12 +1,12 @@
 import { beforeEach, expect, it, jest } from "@jest/globals";
-import TTLCache from "../lib/TTLCache";
+import LRUCache from "../lib/LRUCache";
 
 jest.useFakeTimers();
 
 beforeEach(jest.clearAllTimers);
 
 it("should have the size property", () => {
-	const cache = new TTLCache();
+	const cache = new LRUCache();
 	expect(cache.size).toBe(0);
 
 	cache.set("key", 8964);
@@ -14,18 +14,18 @@ it("should have the size property", () => {
 });
 
 it("should got null from empty cache", () => {
-	const cache = new TTLCache();
+	const cache = new LRUCache();
 	expect(cache.get("key")).toBeUndefined();
 });
 
 it("should get cached value", () => {
-	const cache = new TTLCache();
+	const cache = new LRUCache();
 	cache.set("key", 8964);
 	expect(cache.get("key")).toBe(8964);
 });
 
 it("should expire entries by TTL", () => {
-	const cache = new TTLCache({ ttl: 1000 });
+	const cache = new LRUCache({ ttl: 1000 });
 	cache.set("key", 8964);
 
 	jest.advanceTimersByTime(800);
@@ -36,7 +36,7 @@ it("should expire entries by TTL", () => {
 });
 
 it("should refresh expiration time on get", () => {
-	const cache = new TTLCache({ ttl: 1000 });
+	const cache = new LRUCache({ ttl: 1000 });
 	cache.set("key", 8964);
 
 	jest.advanceTimersByTime(800);
@@ -47,7 +47,7 @@ it("should refresh expiration time on get", () => {
 });
 
 it("should update recent usage on get", () => {
-	const cache = new TTLCache({ capacity: 2 });
+	const cache = new LRUCache({ capacity: 2 });
 	cache.set("foo", 111);
 	cache.set("bar", 222);
 
@@ -59,7 +59,7 @@ it("should update recent usage on get", () => {
 });
 
 it("should support override value", () => {
-	const cache = new TTLCache({ ttl: 1000 });
+	const cache = new LRUCache({ ttl: 1000 });
 	cache.set("key", 8964);
 	jest.advanceTimersByTime(800);
 
@@ -72,7 +72,7 @@ it("should support override value", () => {
 
 it("should dispose old value on set", () => {
 	const dispose = jest.fn();
-	const cache = new TTLCache({ ttl: 1000, dispose });
+	const cache = new LRUCache({ ttl: 1000, dispose });
 
 	cache.set("key", 8964);
 	cache.set("key", 114514);
@@ -83,7 +83,7 @@ it("should dispose old value on set", () => {
 });
 
 it("should update recent usage on set", () => {
-	const cache = new TTLCache({ capacity: 2 });
+	const cache = new LRUCache({ capacity: 2 });
 	cache.set("foo", 111);
 	cache.set("bar", 222);
 	cache.set("foo", 111);
@@ -96,7 +96,7 @@ it("should update recent usage on set", () => {
 
 it("should do LRU elimination", () => {
 	const dispose = jest.fn();
-	const cache = new TTLCache({ ttl: 1000, dispose, capacity: 2 });
+	const cache = new LRUCache({ ttl: 1000, dispose, capacity: 2 });
 
 	cache.set("foo", 111);
 	cache.set("bar", 222);
@@ -112,14 +112,14 @@ it("should do LRU elimination", () => {
 });
 
 it("should pass on deleting non exist entry", () => {
-	const cache = new TTLCache();
+	const cache = new LRUCache();
 	cache.set("key", 8964);
 	cache.delete("another-key");
 	expect(cache.get("key")).toBe(8964);
 });
 
 it("should delete the entry", () => {
-	const cache = new TTLCache();
+	const cache = new LRUCache();
 	cache.set("key", 8964);
 	cache.delete("key");
 	expect(cache.get("key")).toBeUndefined();
@@ -127,7 +127,7 @@ it("should delete the entry", () => {
 
 it("should dispose the value on delete", () => {
 	const dispose = jest.fn();
-	const cache = new TTLCache({ dispose });
+	const cache = new LRUCache({ dispose });
 
 	cache.set("key", 8964);
 	cache.delete("key");
@@ -138,7 +138,7 @@ it("should dispose the value on delete", () => {
 });
 
 it("should clear entries", () => {
-	const cache = new TTLCache();
+	const cache = new LRUCache();
 	cache.set("foo", 111);
 	cache.set("bar", 222);
 
@@ -151,7 +151,7 @@ it("should clear entries", () => {
 
 it("should dispose values on clear", () => {
 	const dispose = jest.fn();
-	const cache = new TTLCache({ ttl: 1000, dispose });
+	const cache = new LRUCache({ ttl: 1000, dispose });
 	cache.set("foo", 111);
 	cache.set("bar", 222);
 
@@ -166,7 +166,7 @@ it("should dispose values on clear", () => {
 it("should use custom dispose function on clear", () => {
 	const dispose = jest.fn();
 	const dispose2 = jest.fn();
-	const cache = new TTLCache({ ttl: 1000, dispose });
+	const cache = new LRUCache({ ttl: 1000, dispose });
 	cache.set("foo", 111);
 	cache.set("bar", 222);
 
@@ -179,7 +179,7 @@ it("should use custom dispose function on clear", () => {
 });
 
 it("should get key iterator", () => {
-	const cache = new TTLCache();
+	const cache = new LRUCache();
 	cache.set("foo", 111);
 	cache.set("bar", 222);
 
@@ -187,7 +187,7 @@ it("should get key iterator", () => {
 });
 
 it("should get value iterator", () => {
-	const cache = new TTLCache();
+	const cache = new LRUCache();
 	cache.set("foo", 111);
 	cache.set("bar", 222);
 
@@ -195,7 +195,7 @@ it("should get value iterator", () => {
 });
 
 it("should get key-value pair iterator", () => {
-	const cache = new TTLCache();
+	const cache = new LRUCache();
 	cache.set("foo", 111);
 	cache.set("bar", 222);
 
