@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras/utilities",
-	"version": "0.3.1",
+	"version": "0.3.2",
 	"license": "MIT",
 	"description": "A set of common JS functions for node and browser.",
 	"author": "Kaciras <Kaciras@outlook.com>",
@@ -16,7 +16,7 @@
 		"./*": "./lib/*.js"
 	},
 	"type": "module",
-	"types": "lib/index.ts",
+	"types": "lib/index.d.ts",
 	"main": "lib/index.js",
 	"files": [
 		"lib/**/*.js",
