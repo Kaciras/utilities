@@ -5,8 +5,10 @@ import tp from "timers/promises";
  */
 export const NeverAbort: AbortSignal = {
 	aborted: false,
+	reason: undefined,
 	get onabort() { return null; },
 	set onabort(_: any) {},
+	throwIfAborted() {},
 	dispatchEvent() { throw new Error("Not supported"); },
 	addEventListener() {},
 	removeEventListener() {},
