@@ -32,11 +32,11 @@
 		"@kaciras/eslint-config-core": "^2.4.1",
 		"@kaciras/eslint-config-jest": "^2.4.1",
 		"@kaciras/eslint-config-typescript": "^2.4.1",
-		"@swc/core": "^1.2.203",
+		"@swc/core": "^1.2.204",
 		"@swc/jest": "^0.2.21",
 		"@types/node": "^18.0.0",
-		"eslint": "^8.17.0",
+		"eslint": "^8.18.0",
 		"jest": "^28.1.1",
-		"typescript": "^4.7.3"
+		"typescript": "^4.7.4"
 	}
 }
