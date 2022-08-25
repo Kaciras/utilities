@@ -1,5 +1,11 @@
-import { describe, it, expect } from "@jest/globals";
-import { formatSize, parseSize } from "../lib/format";
+import { describe, expect, it } from "@jest/globals";
+import { formatDuration, formatSize, parseSize, TimeUnit } from "../lib/format";
+
+describe("formatTime", () => {
+	it("should format the duration", () => {
+		expect(formatDuration(200, TimeUnit.Second)).toBe("3.33 m");
+	});
+});
 
 describe("formatSize", () => {
 	const invalid = [
@@ -13,7 +19,7 @@ describe("formatSize", () => {
 		expect(() => formatSize(input)).toThrow();
 	});
 
-	const cases = [
+	const cases: Array<[number, string]> = [
 		[0, "0 B"],
 		[0.7, "0.7 B"],
 		[10.1, "10.1 B"],
@@ -50,7 +56,7 @@ describe("parseSize", () => {
 		expect(() => parseSize(input)).toThrow();
 	});
 
-	const cases = [
+	const cases: Array<[number, string]> = [
 		[0, "0 B"],
 		[0.7, "0.7 B"],
 		[10.1, "10.1 B"],
