@@ -49,3 +49,13 @@ export function sleep(ms: number, signal = NeverAbort) {
 		signal.addEventListener("abort", () => reject(new AbortError()));
 	});
 }
+
+/**
+ * Silence a Promise-like object. This is useful for avoiding non-harmful,
+ * but potentially confusing "uncaught play promise" rejection error messages.
+ *
+ * @param value An object that may or may not be `Promise`-like.
+ */
+export function silencePromise(value: any) {
+	if (typeof value?.then === "function") value.catch(() => {});
+}

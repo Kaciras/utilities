@@ -1,6 +1,6 @@
 import { performance } from "perf_hooks";
 import { describe, expect, it } from "@jest/globals";
-import { NeverAbort, sleep, uniqueId } from "../lib/misc";
+import { NeverAbort, silencePromise, sleep, uniqueId } from "../lib/misc.js";
 
 describe("NeverAbort", () => {
 	it("should not abort", () => {
@@ -47,5 +47,20 @@ describe("sleep", () => {
 			// eslint-disable-next-line jest/no-conditional-expect
 			expect(e.name).toBe("AbortError");
 		}
+	});
+});
+
+describe("silencePromise", () => {
+	it.each([
+		new Promise(() => {}),
+		undefined,
+		null,
+		silencePromise,
+	])("should allow any arguments", arg => {
+		return silencePromise(arg);
+	});
+
+	it("should works", () => {
+		return silencePromise(Promise.reject(new Error("Shouldn't throw")));
 	});
 });
