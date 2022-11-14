@@ -22,3 +22,6 @@ node_modules
 *.d.ts
 /lib/*.js*
 /test/*.js*
+
+# stryker temp files
+/stryker-tmp
