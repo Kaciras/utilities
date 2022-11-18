@@ -8,6 +8,9 @@ module.exports = {
 		browser: true,
 		node: true,
 	},
+	rules: {
+		"@kaciras/import-group-sort": "warn",
+	},
 	overrides: [{
 		files: [
 			"test/**/*.ts",
