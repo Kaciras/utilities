@@ -1,5 +1,7 @@
 import tp from "timers/promises";
 
+export const NOOP = () => {};
+
 /**
  * An AbortSignal object that never aborts.
  */
@@ -57,5 +59,5 @@ export function sleep(ms: number, signal = NeverAbort) {
  * @param value An object that may or may not be `Promise`-like.
  */
 export function silencePromise(value: any) {
-	if (typeof value?.then === "function") value.catch(() => {});
+	if (typeof value?.then === "function") value.catch(NOOP);
 }
