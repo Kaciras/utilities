@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras/utilities",
-	"version": "0.3.2",
+	"version": "0.4.0",
 	"license": "MIT",
 	"description": "A set of common JS functions for node and browser.",
 	"author": "Kaciras <Kaciras@outlook.com>",
@@ -12,14 +12,11 @@
 		"utils"
 	],
 	"exports": {
-		".": "./lib/index.js",
-		"./*": "./lib/*.js"
+		"./*": "./dist/*.js"
 	},
 	"type": "module",
-	"types": "lib/index.d.ts",
-	"main": "lib/index.js",
 	"files": [
-		"lib/**/*.{js,d.ts}"
+		"dist"
 	],
 	"scripts": {
 		"lint": "eslint --fix .",
