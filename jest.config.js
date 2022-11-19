@@ -12,5 +12,5 @@ export default {
 	testMatch: [
 		"<rootDir>/test/**/*.spec.ts",
 	],
-	moduleFileExtensions: ["ts", "js", "json", "node"],
+	moduleFileExtensions: ["ts", "js", "json"],
 };

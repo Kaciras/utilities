@@ -1,4 +1,5 @@
-import { describe, it, expect, jest } from "@jest/globals";
+import { describe, expect, it, jest } from "@jest/globals";
+import { NOOP } from "../lib/misc";
 import { MultiEventEmitter, SingleEventEmitter } from "../lib/event";
 
 describe("SingleEventEmitter", () => {
@@ -124,7 +125,7 @@ describe("MultiEventEmitter", () => {
 
 	it("should ok for remove non exists listener", () => {
 		const events = new MultiEventEmitter<EventTypes>();
-		events.removeListener("foo", () => {});
+		events.removeListener("foo", NOOP);
 	});
 
 	it("should remove the listener", () => {
