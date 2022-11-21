@@ -12,5 +12,9 @@ export default {
 	testMatch: [
 		"<rootDir>/test/**/*.spec.ts",
 	],
+	// https://github.com/kulshekhar/ts-jest/issues/1057
+	moduleNameMapper: {
+		"^(\\.{1,2}/.*)\\.js$": "$1",
+	},
 	moduleFileExtensions: ["ts", "js", "json"],
 };
