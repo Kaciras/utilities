@@ -64,3 +64,80 @@ describe("silencePromise", () => {
 		return silencePromise(Promise.reject(new Error("Shouldn't throw")));
 	});
 });
+
+describe("MultiMap", () => {
+	it("should calc correct count", () => {
+		const map = new MultiMap();
+		expect(map.size).toBe(0);
+		expect(map.count).toBe(0);
+
+		map.add(11, 11);
+		map.add(11, 22);
+		map.add(222, 11);
+
+		expect(map.size).toBe(2);
+		expect(map.count).toBe(3);
+	});
+
+	it("should add items", () => {
+		const map = new MultiMap();
+
+		map.add(11, 11);
+		map.add(11, 22, 11);
+
+		expect(map.get(11)).toStrictEqual([11, 22, 11]);
+	});
+
+	it("should delete items", () => {
+		const map = new MultiMap();
+		expect(map.deleteItem(11, 11)).toBe(false);
+
+		map.add(11, 11);
+		map.add(11, 22);
+
+		expect(map.deleteItem(11, 11)).toBe(true);
+		expect(map.get(11)).toStrictEqual([22]);
+	});
+
+	it("should noop on remove item which is not exists", () => {
+		const map = new MultiMap();
+		map.add(11, 11);
+
+		expect(map.deleteItem(11, 22)).toBe(false);
+		expect(map.deleteItem(22, 11)).toBe(false);
+
+		expect(map.size).toBe(1);
+		expect(map.count).toBe(1);
+	});
+
+	it("should remove empty arrays", () => {
+		const map = new MultiMap();
+		map.add(11, 11);
+
+		expect(map.deleteItem(11, 11)).toBe(true);
+		expect(map.size).toBe(0);
+		expect(map.count).toBe(0);
+		expect(map.hasItem(11, 11)).toBe(false);
+	});
+
+	it("should work on hasItem", () => {
+		const map = new MultiMap();
+		expect(map.hasItem(11, 11)).toBe(false);
+
+		map.add(11, 11);
+		expect(map.hasItem(11, 11)).toBe(true);
+		expect(map.hasItem(11, 22)).toBe(false);
+	});
+
+	it("should support iterate all items", () => {
+		const map = new MultiMap();
+		map.add(11, 11, 22);
+		map.add(22, 33);
+
+		const iterator = map.items();
+		expect(iterator.next()).toStrictEqual({ done: false, value: 11 });
+		expect(iterator.next()).toStrictEqual({ done: false, value: 22 });
+		expect(iterator.next()).toStrictEqual({ done: false, value: 33 });
+		expect(iterator.next().done).toBe(true);
+	});
+});

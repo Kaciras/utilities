@@ -61,3 +61,52 @@ export function sleep(ms: number, signal = NeverAbort) {
 export function silencePromise(value: any) {
 	if (typeof value?.then === "function") value.catch(NOOP);
 }
+
+/**
+ * A Map which Allow Multiple Values for the same Key.
+ */
+export class MultiMap<K, V> extends Map<K, V[]> {
+
+	get count() {
+		let returnValue = 0;
+		for (const [, v] of this) {
+			returnValue += v.length;
+		}
+		return returnValue;
+	}
+
+	*items() {
+		for (const list of super.values()) yield* list;
+	}
+
+	add(key: K, ...values: V[]) {
+		let list = super.get(key);
+		if (!list) {
+			super.set(key, list = []);
+		}
+		list.push(...values);
+	}
+
+	deleteItem(key: K, value: V) {
+		const list = super.get(key);
+		if (!list)
+			return false;
+
+		const i = list.indexOf(value);
+		if (i === -1)
+			return false;
+
+		if (list.length === 1) {
+			super.delete(key);
+		} else {
+			list.splice(i, 1);
+		}
+
+		return true;
+	}
+
+	hasItem(key: K, value: V) {
+		const list = super.get(key);
+		return list ? list.indexOf(value) !== -1 : false;
+	}
+}
