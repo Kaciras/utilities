@@ -1,6 +1,5 @@
-import { performance } from "perf_hooks";
 import { describe, expect, it } from "@jest/globals";
-import { NeverAbort, silencePromise, sleep, uniqueId } from "../lib/misc.js";
+import { MultiMap, NeverAbort, silencePromise, sleep, uniqueId } from "../lib/misc";
 
 describe("NeverAbort", () => {
 	it("should not abort", () => {
@@ -14,6 +13,10 @@ describe("NeverAbort", () => {
 		NeverAbort.addEventListener("abort", () => 11);
 
 		expect(NeverAbort.onabort).toBeNull();
+	});
+
+	it("should throw error on unsupported operation", () => {
+		expect(() => NeverAbort.dispatchEvent(new Event("abort"))).toThrow("Not supported");
 	});
 });
 

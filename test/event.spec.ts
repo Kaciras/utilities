@@ -7,12 +7,12 @@ describe("SingleEventEmitter", () => {
 	const handler2 = jest.fn();
 
 	it("should call listeners", () => {
-		const events = new SingleEventEmitter();
-		events.addListener(handler1);
-		events.addListener(handler2);
+		const emitter = new SingleEventEmitter();
+		emitter.addListener(handler1);
+		emitter.addListener(handler2);
 
-		events.dispatchEvent(11, 22);
-		events.dispatchEvent(33);
+		emitter.dispatchEvent(11, 22);
+		emitter.dispatchEvent(33);
 
 		for (const h of [handler1, handler2]) {
 			expect(h).toHaveBeenCalledTimes(2);
@@ -22,13 +22,13 @@ describe("SingleEventEmitter", () => {
 	});
 
 	it("should unbinds listener", () => {
-		const events = new SingleEventEmitter();
-		events.addListener(handler1);
-		events.addListener(handler2);
+		const emitter = new SingleEventEmitter();
+		emitter.addListener(handler1);
+		emitter.addListener(handler2);
 
-		events.dispatchEvent(11, 22);
-		events.removeListener(handler1);
-		events.dispatchEvent(33);
+		emitter.dispatchEvent(11, 22);
+		emitter.removeListener(handler1);
+		emitter.dispatchEvent(33);
 
 		expect(handler1).toHaveBeenCalledTimes(1);
 		expect(handler1).toHaveBeenNthCalledWith(1, 11, 22);
@@ -39,12 +39,12 @@ describe("SingleEventEmitter", () => {
 	});
 
 	it("should auto remove on once", () => {
-		const events = new SingleEventEmitter();
-		events.once(handler1);
-		events.addListener(handler2);
+		const emitter = new SingleEventEmitter();
+		emitter.once(handler1);
+		emitter.addListener(handler2);
 
-		events.dispatchEvent(11);
-		events.dispatchEvent(22);
+		emitter.dispatchEvent(11);
+		emitter.dispatchEvent(22);
 
 		expect(handler1).toHaveBeenCalledTimes(1);
 		expect(handler1).toHaveBeenNthCalledWith(1, 11);
@@ -55,13 +55,13 @@ describe("SingleEventEmitter", () => {
 	});
 
 	it("should remove all listeners", () => {
-		const events = new SingleEventEmitter();
-		events.addListener(handler1);
-		events.addListener(() => events.removeAllListeners());
-		events.addListener(handler2);
+		const emitter = new SingleEventEmitter();
+		emitter.addListener(handler1);
+		emitter.addListener(() => emitter.removeAllListeners());
+		emitter.addListener(handler2);
 
-		events.dispatchEvent(11);
-		events.dispatchEvent(22);
+		emitter.dispatchEvent(11);
+		emitter.dispatchEvent(22);
 
 		expect(handler1).toHaveBeenCalledTimes(1);
 		expect(handler1).toHaveBeenNthCalledWith(1, 11);
@@ -81,14 +81,19 @@ describe("MultiEventEmitter", () => {
 	const handler1 = jest.fn();
 	const handler2 = jest.fn();
 
-	it("should call listeners", () => {
-		const events = new MultiEventEmitter();
-		events.addListener("foo", handler1);
-		events.addListener("bar", handler2);
+	it("should ok for dispatch event without listeners", () => {
+		const emitter = new MultiEventEmitter();
+		emitter.dispatchEvent("foo", 11);
+	});
 
-		events.dispatchEvent("foo", 11);
-		events.dispatchEvent("foo", 22);
-		events.dispatchEvent("bar", 33);
+	it("should call listeners", () => {
+		const emitter = new MultiEventEmitter();
+		emitter.addListener("foo", handler1);
+		emitter.addListener("bar", handler2);
+
+		emitter.dispatchEvent("foo", 11);
+		emitter.dispatchEvent("foo", 22);
+		emitter.dispatchEvent("bar", 33);
 
 		expect(handler1).toHaveBeenCalledTimes(2);
 		expect(handler1).toHaveBeenNthCalledWith(1, 11);
@@ -99,14 +104,14 @@ describe("MultiEventEmitter", () => {
 	});
 
 	it("should auto remove on once", () => {
-		const events = new MultiEventEmitter<EventTypes>();
-		events.once("foo", handler1);
-		events.addListener("foo", handler2);
-		events.once("bar", handler1);
+		const emitter = new MultiEventEmitter<EventTypes>();
+		emitter.once("foo", handler1);
+		emitter.addListener("foo", handler2);
+		emitter.once("bar", handler1);
 
-		events.dispatchEvent("foo", 11, 22);
-		events.dispatchEvent("foo", 33);
-		events.dispatchEvent("bar", 44);
+		emitter.dispatchEvent("foo", 11, 22);
+		emitter.dispatchEvent("foo", 33);
+		emitter.dispatchEvent("bar", 44);
 
 		expect(handler1).toHaveBeenCalledTimes(2);
 		expect(handler1).toHaveBeenNthCalledWith(1, 11, 22);
@@ -118,33 +123,66 @@ describe("MultiEventEmitter", () => {
 	});
 
 	it("should ok for clear empty listener list", () => {
-		const events = new MultiEventEmitter<EventTypes>();
-		events.removeAllListeners();
-		events.removeAllListeners("foo");
+		const emitter = new MultiEventEmitter<EventTypes>();
+		emitter.removeAllListeners();
+		emitter.removeAllListeners("foo");
 	});
 
 	it("should ok for remove non exists listener", () => {
-		const events = new MultiEventEmitter<EventTypes>();
-		events.removeListener("foo", NOOP);
+		const emitter = new MultiEventEmitter<EventTypes>();
+		emitter.removeListener("foo", NOOP);
 	});
 
 	it("should remove the listener", () => {
-		const events = new MultiEventEmitter<EventTypes>();
-		events.addListener("foo", handler1);
-		events.addListener("foo", handler2);
-		events.addListener("bar", handler1);
+		const emitter = new MultiEventEmitter<EventTypes>();
+		emitter.addListener("foo", handler1);
+		emitter.addListener("foo", handler2);
+		emitter.addListener("bar", handler1);
 
-		events.removeListener("foo", handler1);
-		events.removeListener("foo", handler1);
-		events.removeListener("bar", handler2);
+		emitter.removeListener("foo", handler1);
+		emitter.removeListener("foo", handler1);
+		emitter.removeListener("bar", handler2);
 
-		events.dispatchEvent("foo", 11);
-		events.dispatchEvent("bar", 22);
+		emitter.dispatchEvent("foo", 11);
+		emitter.dispatchEvent("bar", 22);
 
 		expect(handler1).toHaveBeenCalledTimes(1);
 		expect(handler1).toHaveBeenCalledWith(22);
 
 		expect(handler2).toHaveBeenCalledTimes(1);
 		expect(handler2).toHaveBeenCalledWith(11);
+	});
+
+	it("should not leave empty listener array", () => {
+		const emitter = new MultiEventEmitter<EventTypes>();
+		emitter.addListener("foo", handler1);
+		emitter.removeListener("foo", handler1);
+
+		expect(Object.entries((emitter as any).events)).toHaveLength(0);
+	});
+
+	it("should remove all listeners for specific event", () => {
+		const emitter = new MultiEventEmitter<EventTypes>();
+		emitter.addListener("foo", () => emitter.removeAllListeners("foo"));
+		emitter.addListener("foo", handler1);
+		emitter.addListener("bar", handler2);
+
+		emitter.dispatchEvent("foo", 11);
+		emitter.dispatchEvent("foo", 22);
+		emitter.dispatchEvent("bar", 22);
+
+		expect(handler1).toHaveBeenCalledTimes(1);
+		expect(handler2).toHaveBeenCalledTimes(1);
+	});
+
+	it("should remove all listeners", () => {
+		const emitter = new MultiEventEmitter<EventTypes>();
+		emitter.addListener("foo", () => emitter.removeAllListeners());
+		emitter.addListener("bar", handler1);
+
+		emitter.dispatchEvent("foo", 11);
+		emitter.dispatchEvent("bar", 22);
+
+		expect(handler1).toHaveBeenCalledTimes(0);
 	});
 });

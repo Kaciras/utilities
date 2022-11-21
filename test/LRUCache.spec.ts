@@ -35,6 +35,15 @@ it("should expire entries by TTL", () => {
 	expect(cache.get("key")).toBeUndefined();
 });
 
+it("should not expire entries without TTL", () => {
+	const cache = new LRUCache();
+	cache.set("key", 8964);
+
+	jest.runOnlyPendingTimers();
+
+	expect(cache.get("key")).toBe(8964);
+});
+
 it("should refresh expiration time on get", () => {
 	const cache = new LRUCache({ ttl: 1000 });
 	cache.set("key", 8964);

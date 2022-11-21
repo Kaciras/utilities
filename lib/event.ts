@@ -84,7 +84,7 @@ export class MultiEventEmitter<T extends EventsMap = Default> {
 	}
 
 	removeAllListeners(name?: keyof T) {
-		if (typeof name === "string") {
+		if (name !== undefined) {
 			delete this.events[name];
 		} else {
 			this.events = Object.create(null);

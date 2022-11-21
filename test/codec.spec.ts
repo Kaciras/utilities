@@ -1,4 +1,4 @@
-import { describe, it, expect } from "@jest/globals";
+import { describe, expect, it } from "@jest/globals";
 import { base64url, escapeHTML, svgToUrl } from "../lib/codec";
 
 describe("escapeHTML", () => {
@@ -15,11 +15,10 @@ describe("escapeHTML", () => {
 });
 
 describe("svgToUrl", () => {
-	const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M224 387.814V512L32 320l192-192v126.912C447.375 260.152 437.794 103.016 380.93 0 521.287 151.707 491.48 394.785 224 387.814z"/></svg>';
-	const encoded = "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M224 387.814V512L32 320l192-192v126.912C447.375 260.152 437.794 103.016 380.93 0 521.287 151.707 491.48 394.785 224 387.814z'/%3E%3C/svg%3E";
+	const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><defs><style>#rect { fill: blue; }</style></defs>%3C<rect id="rect" width="10" height="10"/></svg>';
 
 	it("should escape chars", () => {
-		expect(svgToUrl(svg)).toBe(encoded);
+		expect(svgToUrl(svg)).toMatchInlineSnapshot("\"%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3Cstyle%3E%23rect %7B fill: blue; %7D%3C/style%3E%3C/defs%3E%253C%3Crect id='rect' width='10' height='10'/%3E%3C/svg%3E\"");
 	});
 });
 
