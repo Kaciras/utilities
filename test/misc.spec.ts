@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { MultiMap, NeverAbort, silencePromise, sleep, uniqueId } from "../lib/misc";
+import { MultiMap, NeverAbort, silencePromise, sleep, uniqueId } from "../lib/misc.js";
 
 describe("NeverAbort", () => {
 	it("should not abort", () => {

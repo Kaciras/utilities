@@ -1,5 +1,5 @@
-import { it, expect } from "@jest/globals";
-import { sha256 } from "../lib/crypto";
+import { expect, it } from "@jest/globals";
+import { sha256 } from "../lib/crypto.js";
 
 const cases = [
 	["", "47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"],

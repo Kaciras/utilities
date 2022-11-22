@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { formatDuration, formatSize, parseSize, TimeUnit } from "../lib/format";
+import { formatDuration, formatSize, parseSize, TimeUnit } from "../lib/format.js";
 
 describe("formatTime", () => {
 	it("should format the duration", () => {
