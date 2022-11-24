@@ -6,7 +6,7 @@
  *
  * 这种功能也不难，于是就自己写了，顺便也能深入理解下 Comlink 的设计。
  */
-import { uniqueId } from "./misc.js";
+import { AbortError, uniqueId } from "./misc.js";
 
 /* ============================================================================= *
  *                         Layer 1：Message protocol
@@ -160,6 +160,8 @@ export type PoseMessage = (message: object) => void;
 
 export interface PromiseController {
 
+	timer: ReturnType<typeof setTimeout>;
+
 	resolve(value: unknown): void;
 
 	reject(reason: unknown): void;
@@ -184,26 +186,36 @@ export interface ReqResWrapper {
  * const response = await request({ text: "Hello" });
  *
  * @param publish The publish message function
+ * @param timeout
  */
-export function pubSub2ReqRes(publish: PoseMessage) {
+export function pubSub2ReqRes(publish: PoseMessage, timeout = 5000) {
 	const txMap = new Map<number, PromiseController>();
+
+	function onTimeout(id: number) {
+		const session = txMap.get(id);
+		if (session) {
+			txMap.delete(id);
+			session.reject(new AbortError());
+		}
+	}
 
 	function request(msg: any) {
 		const id = msg.id = uniqueId();
 		publish(msg);
-
+		const timer = setTimeout(onTimeout, timeout, id);
 		return new Promise((resolve, reject) => {
-			txMap.set(id, { resolve, reject });
+			txMap.set(id, { resolve, reject, timer });
 		});
 	}
 
 	function subscribe(msg: any) {
 		const session = txMap.get(msg.id);
 		if (session) {
+			clearTimeout(session.timer);
 			txMap.delete(msg.id);
 			session.resolve(msg);
 		} else {
-			throw new Error("Invalid message");
+			throw new Error("Message ID it not associated to session");
 		}
 	}
 
