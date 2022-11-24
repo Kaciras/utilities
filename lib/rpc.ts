@@ -6,6 +6,7 @@
  *
  * 这种功能也不难，于是就自己写了，顺便也能深入理解下 Comlink 的设计。
  */
+import { uniqueId } from "./misc.js";
 
 /* ============================================================================= *
  *                         Layer 1：Message protocol
@@ -20,11 +21,13 @@ export type RPCReceive = (message: RequestMessage, respond: SendResponse) => voi
 export type RPCReceiver = (receive: RPCReceive) => void;
 
 export interface RequestMessage {
+	id?: number;
 	args: any;
 	path: PropertyKey[];
 }
 
 export interface ResponseMessage {
+	id?: number;
 	value: any;
 	isError: boolean;
 }
@@ -36,9 +39,6 @@ export interface ResponseMessage {
  * @param message 要发送的消息
  */
 async function callRemote(sendFn: RPCSend, message: RequestMessage) {
-	if (process.env.NODE_ENV !== "production") {
-		console.debug("[RPC] Send message", message);
-	}
 	const response = await sendFn(message);
 	if (response.isError) {
 		throw response.value;
@@ -55,11 +55,7 @@ async function callRemote(sendFn: RPCSend, message: RequestMessage) {
  * @param response 发送响应的函数
  */
 function handleMessage(target: any, message: RequestMessage, response: SendResponse) {
-	const { path, args } = message;
-
-	if (process.env.NODE_ENV !== "production") {
-		console.debug("[RPC] Receive message", message);
-	}
+	const { id, path, args } = message;
 
 	let returnValue;
 	try {
@@ -67,12 +63,12 @@ function handleMessage(target: any, message: RequestMessage, response: SendRespo
 		const rawValue = findProperty(target, path);
 		returnValue = rawValue.apply(parent, args);
 	} catch (e) {
-		return response({ value: e, isError: true });
+		return response({ id, value: e, isError: true });
 	}
 
 	Promise.resolve(returnValue)
-		.then(value => response({ value, isError: false }))
-		.catch(value => response({ value, isError: true }));
+		.then(value => response({ id, value, isError: false }))
+		.catch(value => response({ id, value, isError: true }));
 }
 
 /**
@@ -159,6 +155,60 @@ class RPCHandler implements ProxyHandler<RPCSend> {
 /* ============================================================================= *
  *                           Layer 3: Exposed APIs
  * ============================================================================= */
+
+export type PoseMessage = (message: object) => void;
+
+export interface PromiseController {
+
+	resolve(value: unknown): void;
+
+	reject(reason: unknown): void;
+}
+
+export interface ReqResWrapper {
+
+	request(message: object): Promise<object>;
+
+	subscribe(message: object): void;
+
+	txMap: Map<number, PromiseController>;
+}
+
+/**
+ * Wrap publish-subscribe functions to request-response model.
+ * The remote service must attach request message id in response message.
+ *
+ * @example
+ * const { request, subscribe } = pubSub2ReqRes(window.postMessage);
+ * window.addEventListener("message", e => subscribe(e.data));
+ * const response = await request({ text: "Hello" });
+ *
+ * @param publish The publish message function
+ */
+export function pubSub2ReqRes(publish: PoseMessage) {
+	const txMap = new Map<number, PromiseController>();
+
+	function request(msg: any) {
+		const id = msg.id = uniqueId();
+		publish(msg);
+
+		return new Promise((resolve, reject) => {
+			txMap.set(id, { resolve, reject });
+		});
+	}
+
+	function subscribe(msg: any) {
+		const session = txMap.get(msg.id);
+		if (session) {
+			txMap.delete(msg.id);
+			session.resolve(msg);
+		} else {
+			throw new Error("Invalid message");
+		}
+	}
+
+	return { txMap, request, subscribe } as ReqResWrapper;
+}
 
 export function createRPCClient<T>(connection: RPCSend) {
 	return new Proxy(connection, new RPCHandler([])) as Remote<T>;
