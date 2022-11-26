@@ -1,4 +1,4 @@
-/**
+/*
  * 提供在内容脚本和后台脚本间简单的 RPC 功能。
  *
  * 主要参考了 Comlink，而且它有 PR 提出了这一功能，但过了两年也没有合并。
@@ -22,7 +22,7 @@ export type RPCReceiver = (receive: RPCReceive) => void;
 
 export interface RequestMessage {
 	id?: number;
-	args: any;
+	args: any[];
 	path: PropertyKey[];
 }
 
@@ -56,29 +56,22 @@ async function callRemote(sendFn: RPCSend, message: RequestMessage) {
  */
 function handleMessage(target: any, message: RequestMessage, response: SendResponse) {
 	const { id, path, args } = message;
-
-	let returnValue;
 	try {
 		for (let i = path.length - 1; i > 0; i--) {
 			target = target[path[i]];
 		}
-		returnValue = target[path[0]](...args);
+		Promise.resolve(target[path[0]](...args))
+			.then(value => response({ id, value, isError: false }))
+			.catch(value => response({ id, value, isError: true }));
 	} catch (e) {
 		return response({ id, value: e, isError: true });
 	}
-
-	Promise.resolve(returnValue)
-		.then(value => response({ id, value, isError: false }))
-		.catch(value => response({ id, value, isError: true }));
 }
 
 /* ============================================================================= *
- *                             Layer 2: 模拟服务对象
+ *                         Layer 2: The client object
  * ============================================================================= */
 
-/**
- * 用 Promise 包裹 T，如果 T 已经是 Promise 则原样返回，不会嵌套。
- */
 type Promisify<T> = T extends Promise<unknown> ? T : Promise<T>;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -101,8 +94,9 @@ export type Remote<T> = RemoteObject<T> & RemoteCallable<T>;
 class RPCHandler implements ProxyHandler<RPCSend> {
 
 	/**
-	 * 当前键的路径，用于访问深层属性。
-	 * 例如：target.foo.bar[0] => ["foo", "bar", 0]
+	 * Reversed keys for current property, e.g.
+	 * 
+	 * .foo.bar[0] => [0, "bar", "foo"]
 	 */
 	private readonly path: PropertyKey[];
 
@@ -117,7 +111,7 @@ class RPCHandler implements ProxyHandler<RPCSend> {
 	 * @param thisArg 没有用，因为调用时的 this 指向的的代理对象
 	 * @param args 参数
 	 */
-	apply(send: RPCSend, thisArg: any, args: any) {
+	apply(send: RPCSend, thisArg: any, args: any[]) {
 		return callRemote(send, { path: this.path, args });
 	}
 
@@ -176,7 +170,7 @@ export interface ReqResWrapper {
  * const response = await request({ text: "Hello" });
  *
  * @param publish The publish message function
- * @param timeout
+ * @param timeout The number of milliseconds to wait for response.
  */
 export function pubSub2ReqRes(publish: PoseMessage, timeout = 5000) {
 	const txMap = new Map<number, PromiseController>();
@@ -185,7 +179,7 @@ export function pubSub2ReqRes(publish: PoseMessage, timeout = 5000) {
 		const session = txMap.get(id);
 		if (session) {
 			txMap.delete(id);
-			session.reject(new AbortError());
+			session.reject(new AbortError("Timed out"));
 		}
 	}
 

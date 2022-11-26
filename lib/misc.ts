@@ -27,7 +27,7 @@ export function uniqueId() {
 	return uniqueIdCounter += 1;
 }
 
-class AbortError extends Error {
+export class AbortError extends Error {
 
 	constructor(...args: any[]) {
 		super(...args);

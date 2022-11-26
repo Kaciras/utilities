@@ -77,7 +77,7 @@ describe("pubSub2ReqRes", () => {
 		const { txMap, request } = pubSub2ReqRes(NOOP, 100);
 		const before = performance.now();
 
-		await expect(request({})).rejects.toThrow(new AbortError());
+		await expect(request({})).rejects.toThrow(new AbortError("Timed out"));
 
 		expect(txMap.size).toBe(0);
 		expect(performance.now() - before).toBeGreaterThanOrEqual(99);
@@ -143,6 +143,15 @@ describe("RPC", () => {
 		return expect(client.hello("world"))
 			.rejects
 			.toThrow(new TypeError("Test error"));
+	});
+
+	it("should support array index", () => {
+		const { request, addListener } = memoryPipe();
+		createRPCServer(addListener, {
+			foo: [null, () => "hello"],
+		});
+		const client = createRPCClient(request);
+		return expect(client.foo[1]()).resolves.toBe("hello");
 	});
 
 	it("should support nested objects", () => {
