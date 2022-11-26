@@ -59,9 +59,10 @@ function handleMessage(target: any, message: RequestMessage, response: SendRespo
 
 	let returnValue;
 	try {
-		const parent = findProperty(target, path.slice(0, -1));
-		const rawValue = findProperty(target, path);
-		returnValue = rawValue.apply(parent, args);
+		for (let i = path.length - 1; i > 0; i--) {
+			target = target[path[i]];
+		}
+		returnValue = target[path[0]](...args);
 	} catch (e) {
 		return response({ id, value: e, isError: true });
 	}
@@ -69,17 +70,6 @@ function handleMessage(target: any, message: RequestMessage, response: SendRespo
 	Promise.resolve(returnValue)
 		.then(value => response({ id, value, isError: false }))
 		.catch(value => response({ id, value, isError: true }));
-}
-
-/**
- * 获取对象在指定路径下的属性值。
- * 这个在 Comlink 是里内联的，但我觉得不好看还是抽出来了。
- *
- * @param object 对象
- * @param path 路径
- */
-function findProperty(object: any, path: PropertyKey[]) {
-	return path.reduce((parent, key) => parent[key], object);
 }
 
 /* ============================================================================= *
@@ -148,7 +138,7 @@ class RPCHandler implements ProxyHandler<RPCSend> {
 	 * @return 新的代理对象，对应到远端相应的成员
 	 */
 	get(send: RPCSend, prop: PropertyKey): any {
-		return new Proxy(send, new RPCHandler([...this.path, prop]));
+		return new Proxy(send, new RPCHandler([prop, ...this.path]));
 	}
 }
 
