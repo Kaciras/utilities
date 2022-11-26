@@ -1,10 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { AbortError, NOOP, sleep } from "../lib/misc.js";
-import { pubSub2ReqRes } from "../lib/rpc.js";
-
-function newDuplexPipe() {
-
-}
+import { createRPCClient, createRPCServer, pubSub2ReqRes } from "../lib/rpc.js";
 
 const TIMED_OUT = Symbol();
 
@@ -85,5 +81,76 @@ describe("pubSub2ReqRes", () => {
 
 		expect(txMap.size).toBe(0);
 		expect(performance.now() - before).toBeGreaterThanOrEqual(99);
+	});
+});
+
+function memoryPipe() {
+	let receive: any;
+
+	function addListener(re: any) {
+		receive = re;
+	}
+
+	function publish(message: any) {
+		queueMicrotask(() => receive?.(message, subscribe));
+	}
+
+	const { request, subscribe } = pubSub2ReqRes(publish, 100);
+
+	return { request, addListener };
+}
+
+describe("RPC", () => {
+	it("should works", async () => {
+		const { request, addListener } = memoryPipe();
+		createRPCServer(addListener, {
+			hello(name: string) {
+				return `hello ${name}`;
+			},
+		});
+		const client = createRPCClient(request);
+		expect(await client.hello("world")).toBe("hello world");
+	});
+
+	it("should fail if function not found", () => {
+		const { request, addListener } = memoryPipe();
+		createRPCServer(addListener, {});
+		const client = createRPCClient(request);
+		return expect(client.hello("world")).rejects.toThrow(TypeError);
+	});
+
+	it("should forward errors", () => {
+		const { request, addListener } = memoryPipe();
+		createRPCServer(addListener, {
+			hello() {
+				throw new TypeError("Test error");
+			},
+		});
+		const client = createRPCClient(request);
+		return expect(client.hello("world"))
+			.rejects
+			.toThrow(new TypeError("Test error"));
+	});
+
+	it("should forward rejections", () => {
+		const { request, addListener } = memoryPipe();
+		createRPCServer(addListener, {
+			hello() {
+				return Promise.reject(new TypeError("Test error"));
+			},
+		});
+		const client = createRPCClient(request);
+		return expect(client.hello("world"))
+			.rejects
+			.toThrow(new TypeError("Test error"));
+	});
+
+	it("should support nested objects", () => {
+		const { request, addListener } = memoryPipe();
+		createRPCServer(addListener, {
+			foo: { bar: { baz: () => "hello" } },
+		});
+		const client = createRPCClient(request);
+		return expect(client.foo.bar.baz()).resolves.toBe("hello");
 	});
 });

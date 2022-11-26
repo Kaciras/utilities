@@ -169,7 +169,7 @@ export interface PromiseController {
 
 export interface ReqResWrapper {
 
-	request(message: object): Promise<object>;
+	request(message: object): Promise<any>;
 
 	subscribe(message: object): void;
 
@@ -222,10 +222,10 @@ export function pubSub2ReqRes(publish: PoseMessage, timeout = 5000) {
 	return { txMap, request, subscribe } as ReqResWrapper;
 }
 
-export function createRPCClient<T>(connection: RPCSend) {
+export function createRPCClient<T = any>(connection: RPCSend) {
 	return new Proxy(connection, new RPCHandler([])) as Remote<T>;
 }
 
-export function createRPCServer(controller: any, addListener: RPCReceiver) {
+export function createRPCServer(addListener: RPCReceiver, controller: object) {
 	addListener((message, respond) => handleMessage(controller, message, respond));
 }
