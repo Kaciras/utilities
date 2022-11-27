@@ -1,10 +1,17 @@
 /*
- * 提供在内容脚本和后台脚本间简单的 RPC 功能。
+ * A simple RPC implementation for messaged-based API,
+ * Inspired by: https://github.com/GoogleChromeLabs/comlink
  *
- * 主要参考了 Comlink，而且它有 PR 提出了这一功能，但过了两年也没有合并。
- * https://github.com/GoogleChromeLabs/comlink/pull/414
+ * # Compare with Comlink
+ * In addition to function calls, Comlink also supports construct, get and set.
+ * But those operations is ugly, e.g.
+ * `const sum = (await remote.a) + (await remote.b)`
+ * And you cannot use like: `remote.a += 1`
  *
- * 这种功能也不难，于是就自己写了，顺便也能深入理解下 Comlink 的设计。
+ * On the other hand, get for value is conflict with get nested method,
+ * the server need `Comlink.proxy()` to distinguish them.
+ *
+ * IMO it's overdesign, so we only support function call.
  */
 import { AbortError, uniqueId } from "./misc.js";
 
@@ -32,14 +39,8 @@ export interface ResponseMessage {
 	isError: boolean;
 }
 
-/**
- * 发送消息并拆封返响应，返回结果或抛出异常。
- *
- * @param sendFn 发送消息的函数
- * @param message 要发送的消息
- */
-async function callRemote(sendFn: RPCSend, message: RequestMessage) {
-	const response = await sendFn(message);
+async function callRemote(send: RPCSend, message: RequestMessage) {
+	const response = await send(message);
 	if (response.isError) {
 		throw response.value;
 	} else {
@@ -48,11 +49,11 @@ async function callRemote(sendFn: RPCSend, message: RequestMessage) {
 }
 
 /**
- * 处理收到的消息，调用指定的方法。
+ * Handle client RPC request, call specific method in the target, and send the response.
  *
- * @param target 服务提供对象
- * @param message 消息
- * @param response 发送响应的函数
+ * @param target The service object contains methods that client can use.
+ * @param message RPC request message
+ * @param respond The function to send the response message.
  */
 function handleMessage(target: any, message: RequestMessage, respond: Respond) {
 	const { id, path, args } = message;
@@ -72,6 +73,12 @@ function handleMessage(target: any, message: RequestMessage, respond: Respond) {
  *                         Layer 2: The client object
  * ============================================================================= */
 
+/**
+ * Takes a type and wraps it in a Promise, if it not already is one.
+ * This is to avoid `Promise<Promise<T>>`.
+ *
+ * This is the inverse of `Awaited<T>`.
+ */
 type Promisify<T> = T extends Promise<unknown> ? T : Promise<T>;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -86,17 +93,13 @@ type RemoteCallable<T> = T extends (...args: infer Args) => infer R
 
 export type Remote<T> = RemoteObject<T> & RemoteCallable<T>;
 
-/**
- * 代理操作的处理器，比 Comlink 的简单不少。
- *
- * 目前不支持 set 功能，因为赋值操作是同步的，但远程调用都是异步的。
- */
 class RPCHandler implements ProxyHandler<RPCSend> {
 
 	/**
-	 * Reversed keys for current property, e.g.
-	 * 
-	 * .foo.bar[0] => [0, "bar", "foo"]
+	 * Keys for current property in reversed order, e.g.
+	 *
+	 * @example
+	 * createRPCClient().foo.bar[0] -> [0, "bar", "foo"]
 	 */
 	private readonly path: PropertyKey[];
 
@@ -104,33 +107,10 @@ class RPCHandler implements ProxyHandler<RPCSend> {
 		this.path = path;
 	}
 
-	/**
-	 * 调用远程提供的方法，返回异步的结果。
-	 *
-	 * @param send 发送消息的函数
-	 * @param thisArg 没有用，因为调用时的 this 指向的的代理对象
-	 * @param args 参数
-	 */
 	apply(send: RPCSend, thisArg: any, args: any[]) {
-		return callRemote(send, { path: this.path, args });
+		return callRemote(send, { _rpc_in_: 0, path: this.path, args });
 	}
 
-	/**
-	 * 与 Comlink 不同的是本模块不支持直接取值，因为会跟嵌套的代理对象冲突。
-	 *
-	 * 对此情况 Comlink 的解决方案是让代理对象使用 Comlink.proxy() 包装，
-	 * 给其加一个 [proxyMarker] 标记以作区分。
-	 *
-	 * 因为需要远程通信，取值是异步的要返回 Promise，调用方必须要等待，
-	 * 其用法只能是 `sum = (await remote.a) + (await remote.b)` 的形式很啰嗦，同时也违反直觉。
-	 * 一些直接赋值语句也无法使用比如 `remote.a++`.
-	 *
-	 * 我认为这属于过度设计，不如就用 `getXXX` 方法来取值。
-	 *
-	 * @param send 发送消息的函数
-	 * @param prop 要获取的成员名字
-	 * @return 新的代理对象，对应到远端相应的成员
-	 */
 	get(send: RPCSend, prop: PropertyKey): any {
 		return new Proxy(send, new RPCHandler([prop, ...this.path]));
 	}
