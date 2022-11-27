@@ -28,26 +28,26 @@ describe("pubSub2ReqRes", () => {
 	});
 
 	it("should ignore messages without id", () => {
-		pubSub2ReqRes(NOOP).subscribe({ foo: "bar" });
+		pubSub2ReqRes(NOOP).dispatch({ foo: "bar" });
 	});
 
 	it("should ignore messages with unknown id", () => {
-		const { request, subscribe } = pubSub2ReqRes(NOOP);
+		const { request, dispatch } = pubSub2ReqRes(NOOP);
 
 		const promise = request({});
-		subscribe({ id: -11, foo: "bar" });
+		dispatch({ id: -11, foo: "bar" });
 		return expectNotFulfilled(promise, 100);
 	});
 
 	it("should receive response", async () => {
 		const received: any[] = [];
-		const { txMap, request, subscribe } = pubSub2ReqRes(m => received.push(m));
+		const { txMap, request, dispatch } = pubSub2ReqRes(m => received.push(m));
 
 		const p1 = request({});
 		const p2 = request({});
 
 		const response = { id: received[1].id, msg: "foo" };
-		subscribe(response);
+		dispatch(response);
 		await expect(p2).resolves.toStrictEqual(response);
 
 		expect(txMap.size).toBe(1);
@@ -56,13 +56,13 @@ describe("pubSub2ReqRes", () => {
 
 	it("should clear timers", async () => {
 		let id = -1;
-		const { txMap, request, subscribe } = pubSub2ReqRes(m => id = (m as any).id, 100);
+		const { txMap, request, dispatch } = pubSub2ReqRes(m => id = (m as any).id, 100);
 
 		// noinspection ES6MissingAwait
 		request({});
 		const controller = txMap.get(id);
 
-		subscribe({ id });
+		dispatch({ id });
 
 		// Add session back and check it not be removed after timeout.
 		txMap.set(id, controller!);
@@ -89,10 +89,10 @@ function memoryPipe() {
 	}
 
 	function publish(message: any) {
-		queueMicrotask(() => receive?.(message, subscribe));
+		queueMicrotask(() => receive?.(message, dispatch));
 	}
 
-	const { request, subscribe } = pubSub2ReqRes(publish, 100);
+	const { request, dispatch } = pubSub2ReqRes(publish, 100);
 
 	return { request, addListener };
 }

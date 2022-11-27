@@ -12,11 +12,11 @@ import { AbortError, uniqueId } from "./misc.js";
  *                         Layer 1：Message protocol
  * ============================================================================= */
 
-export type SendResponse = (resp: ResponseMessage) => void;
+export type Respond = (resp: ResponseMessage) => void;
 
 export type RPCSend = (message: RequestMessage) => Promise<ResponseMessage>;
 
-export type RPCReceive = (message: RequestMessage, respond: SendResponse) => void;
+export type RPCReceive = (message: RequestMessage, respond: Respond) => void;
 
 export type RPCReceiver = (receive: RPCReceive) => void;
 
@@ -54,7 +54,7 @@ async function callRemote(sendFn: RPCSend, message: RequestMessage) {
  * @param message 消息
  * @param response 发送响应的函数
  */
-function handleMessage(target: any, message: RequestMessage, response: SendResponse) {
+function handleMessage(target: any, message: RequestMessage, respond: Respond) {
 	const { id, path, args } = message;
 	try {
 		for (let i = path.length - 1; i > 0; i--) {
@@ -140,7 +140,7 @@ class RPCHandler implements ProxyHandler<RPCSend> {
  *                           Layer 3: Exposed APIs
  * ============================================================================= */
 
-export type PoseMessage = (message: object) => void;
+export type PostMessage = (message: object) => void;
 
 export interface PromiseController {
 
@@ -172,7 +172,7 @@ export interface ReqResWrapper {
  * @param publish The publish message function
  * @param timeout The number of milliseconds to wait for response.
  */
-export function pubSub2ReqRes(publish: PoseMessage, timeout = 5000) {
+export function pubSub2ReqRes(publish: PostMessage, timeout = 5000) {
 	const txMap = new Map<number, PromiseController>();
 
 	function onTimeout(id: number) {
@@ -192,7 +192,7 @@ export function pubSub2ReqRes(publish: PoseMessage, timeout = 5000) {
 		});
 	}
 
-	function subscribe(msg: any) {
+	function dispatch(msg: any) {
 		const session = txMap.get(msg.id);
 		if (session) {
 			clearTimeout(session.timer);
@@ -201,7 +201,7 @@ export function pubSub2ReqRes(publish: PoseMessage, timeout = 5000) {
 		}
 	}
 
-	return { txMap, request, subscribe } as ReqResWrapper;
+	return { txMap, request, dispatch } as ReqResWrapper;
 }
 
 export function createRPCClient<T = any>(connection: RPCSend) {
