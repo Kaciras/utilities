@@ -27,19 +27,16 @@ describe("pubSub2ReqRes", () => {
 		expect(received).toStrictEqual([{ id: 2, value: 11 }, { id: 3, value: 33 }]);
 	});
 
-	it("should throw error when receive a message without id", () => {
-		const { subscribe } = pubSub2ReqRes(NOOP);
-		expect(() => subscribe({ foo: "bar" }))
-			.toThrow("Message ID it not associated to session");
+	it("should ignore messages without id", () => {
+		pubSub2ReqRes(NOOP).subscribe({ foo: "bar" });
 	});
 
-	it("should throw error when receive a message with unknown id", () => {
+	it("should ignore messages with unknown id", () => {
 		const { request, subscribe } = pubSub2ReqRes(NOOP);
 
-		request({});
-
-		expect(() => subscribe({ id: -11, foo: "bar" }))
-			.toThrow("Message ID it not associated to session");
+		const promise = request({});
+		subscribe({ id: -11, foo: "bar" });
+		return expectNotFulfilled(promise, 100);
 	});
 
 	it("should receive response", async () => {

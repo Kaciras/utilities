@@ -198,8 +198,6 @@ export function pubSub2ReqRes(publish: PoseMessage, timeout = 5000) {
 			clearTimeout(session.timer);
 			txMap.delete(msg.id);
 			session.resolve(msg);
-		} else {
-			throw new Error("Message ID it not associated to session");
 		}
 	}
 
