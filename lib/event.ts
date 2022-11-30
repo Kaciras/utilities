@@ -56,10 +56,11 @@ interface Default extends EventsMap {
 }
 
 /**
+ *
+ *
  * <h2>Alternatives</h2>
  * In Node, you can import EventEmitter from "event" instead.
- *
- *
+ * An only 152 KB library https://github.com/ai/nanoevents.
  */
 export class MultiEventEmitter<T extends EventsMap = Default> {
 

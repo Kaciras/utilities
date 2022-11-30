@@ -63,7 +63,7 @@ export function silencePromise(value: any) {
 }
 
 /**
- * A Map which Allow Multiple Values for the same Key.
+ * A Map which allows multiple values for the same Key.
  */
 export class MultiMap<K, V> extends Map<K, V[]> {
 

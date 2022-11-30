@@ -11,16 +11,19 @@ export * from "./misc.js";
 export { default as LRUCache } from "./LRUCache.js";
 
 /**
- * Gs
+ * Add exit listener to be called when process receive terminating signals.
  *
- * @param listener
+ * When receive double event, for example Ctrl-C is pressed twice,
+ * the process will exit immediately and code will be process.exitCode or 1.
+ *
+ * @param listener listener function
  */
 export function onExit(listener: (signal: Signals) => any) {
 	let exiting = false;
 
 	function handle(signal: Signals) {
 		if (exiting) {
-			process.exit(1);
+			process.exit(process.exitCode ?? 1);
 		} else {
 			exiting = true;
 			listener(signal);

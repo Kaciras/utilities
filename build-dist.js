@@ -56,7 +56,6 @@ async function buildPlatform(input, typeOfWindow) {
 	});
 
 	await bundle.write({
-		format: "esm",
 		dir: "dist",
 		chunkFileNames: "[name].js",
 	});

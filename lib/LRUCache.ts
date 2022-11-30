@@ -31,6 +31,8 @@ interface CacheEntry<T> {
 
 /**
  * A cache object support Least-Recently-Used and Time-To-Live elimination.
+ *
+ * TODO: benchmark against https://github.com/dominictarr/hashlru
  */
 export default class LRUCache<K, T> {
 

@@ -6,7 +6,6 @@
  */
 export async function fetchFile(request: RequestInfo, init?: RequestInit) {
 	const url = typeof request === "string" ? request : request.url;
-	const name = new URL(url).pathname.split("/").pop() || "download";
 
 	const response = await fetch(request, init);
 	if (!response.ok) {
@@ -17,5 +16,6 @@ export async function fetchFile(request: RequestInfo, init?: RequestInit) {
 	const timeHeader = response.headers.get("last-modified");
 	const lastModified = timeHeader ? new Date(timeHeader).getTime() : undefined;
 
+	const name = new URL(url).pathname.split("/").at(-1) || "download";
 	return new File([blob], name, { type: blob.type, lastModified });
 }
