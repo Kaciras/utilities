@@ -55,7 +55,7 @@ async function callRemote(send: RPCSend, message: RequestMessage) {
  * @param message RPC request message
  * @param respond The function to send the response message.
  */
-export function rpcServe(target: any, message: RequestMessage, respond: Respond) {
+export function serve(target: any, message: RequestMessage, respond: Respond) {
 	const { id, path, args } = message;
 	try {
 		for (let i = path.length - 1; i > 0; i--) {
@@ -195,10 +195,10 @@ export function pubSub2ReqRes(publish: PostMessage, timeout = 10e3) {
 	return { txMap, request, dispatch } as ReqResWrapper;
 }
 
-export function createRPCClient<T = any>(connection: RPCSend) {
+export function createClient<T = any>(connection: RPCSend) {
 	return new Proxy(connection, new RPCHandler([])) as Remote<T>;
 }
 
-export function createRPCServer(addListener: RPCReceiver, controller: object) {
-	addListener((message, respond) => rpcServe(controller, message, respond));
+export function createServer(addListener: RPCReceiver, controller: object) {
+	addListener((message, respond) => serve(controller, message, respond));
 }
