@@ -49,23 +49,23 @@ async function callRemote(send: RPCSend, message: RequestMessage) {
 }
 
 /**
- * Handle client RPC request, call specific method in the target, and send the response.
+ * Handle an RPC request, call specific method in the target, and send the response.
  *
  * @param target The service object contains methods that client can use.
  * @param message RPC request message
  * @param respond The function to send the response message.
  */
-function handleMessage(target: any, message: RequestMessage, respond: Respond) {
+export function rpcServe(target: any, message: RequestMessage, respond: Respond) {
 	const { id, path, args } = message;
 	try {
 		for (let i = path.length - 1; i > 0; i--) {
 			target = target[path[i]];
 		}
 		Promise.resolve(target[path[0]](...args))
-			.then(value => response({ id, value, isError: false }))
-			.catch(value => response({ id, value, isError: true }));
+			.then(value => respond({ id, value, isError: false }))
+			.catch(value => respond({ id, value, isError: true }));
 	} catch (e) {
-		return response({ id, value: e, isError: true });
+		return respond({ id, value: e, isError: true });
 	}
 }
 
@@ -108,7 +108,7 @@ class RPCHandler implements ProxyHandler<RPCSend> {
 	}
 
 	apply(send: RPCSend, thisArg: any, args: any[]) {
-		return callRemote(send, { _rpc_in_: 0, path: this.path, args });
+		return callRemote(send, { path: this.path, args });
 	}
 
 	get(send: RPCSend, prop: PropertyKey): any {
@@ -124,7 +124,7 @@ export type PostMessage = (message: object) => void;
 
 export interface PromiseController {
 
-	timer: ReturnType<typeof setTimeout>;
+	timer?: ReturnType<typeof setTimeout>;
 
 	resolve(value: unknown): void;
 
@@ -135,7 +135,7 @@ export interface ReqResWrapper {
 
 	request(message: object): Promise<any>;
 
-	subscribe(message: object): void;
+	dispatch(message: object): void;
 
 	txMap: Map<number, PromiseController>;
 }
@@ -144,15 +144,22 @@ export interface ReqResWrapper {
  * Wrap publish-subscribe functions to request-response model.
  * The remote service must attach request message id in response message.
  *
+ * <h2>NOTE</h2>
+ * If you disable timeout, there will be a memory leak when response
+ * message can't be received.
+ *
+ * WeakMap doesn't help in this scenario, since the key is deserialized from the message.
+ *
  * @example
  * const { request, subscribe } = pubSub2ReqRes(window.postMessage);
  * window.addEventListener("message", e => subscribe(e.data));
  * const response = await request({ text: "Hello" });
  *
  * @param publish The publish message function
- * @param timeout The number of milliseconds to wait for response.
+ * @param timeout The number of milliseconds to wait for response,
+ * 				  set to zero & negative value to disable timeout.
  */
-export function pubSub2ReqRes(publish: PostMessage, timeout = 5000) {
+export function pubSub2ReqRes(publish: PostMessage, timeout = 10e3) {
 	const txMap = new Map<number, PromiseController>();
 
 	function onTimeout(id: number) {
@@ -163,21 +170,25 @@ export function pubSub2ReqRes(publish: PostMessage, timeout = 5000) {
 		}
 	}
 
-	function request(msg: any) {
-		const id = msg.id = uniqueId();
-		publish(msg);
-		const timer = setTimeout(onTimeout, timeout, id);
+	function request(message: any) {
+		const id = message.id = uniqueId();
+		publish(message);
+
+		const timer = timeout > 0
+			? setTimeout(onTimeout, timeout, id)
+			: undefined;
+
 		return new Promise((resolve, reject) => {
 			txMap.set(id, { resolve, reject, timer });
 		});
 	}
 
-	function dispatch(msg: any) {
-		const session = txMap.get(msg.id);
+	function dispatch(message: any) {
+		const session = txMap.get(message.id);
 		if (session) {
 			clearTimeout(session.timer);
-			txMap.delete(msg.id);
-			session.resolve(msg);
+			txMap.delete(message.id);
+			session.resolve(message);
 		}
 	}
 
@@ -189,5 +200,5 @@ export function createRPCClient<T = any>(connection: RPCSend) {
 }
 
 export function createRPCServer(addListener: RPCReceiver, controller: object) {
-	addListener((message, respond) => handleMessage(controller, message, respond));
+	addListener((message, respond) => rpcServe(controller, message, respond));
 }

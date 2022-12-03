@@ -1,16 +1,27 @@
-import { describe, expect, it } from "@jest/globals";
-import { AbortError, NOOP, sleep } from "../lib/misc.js";
+import { describe, expect, it, jest } from "@jest/globals";
+import { AbortError, NOOP } from "../lib/misc.js";
 import { createRPCClient, createRPCServer, pubSub2ReqRes } from "../lib/rpc.js";
 
 const TIMED_OUT = Symbol();
 
-async function expectNotFulfilled(promise: Promise<unknown>, ms: number) {
+async function expectNotFulfilled(promise: Promise<unknown>, ms = 50) {
 	const t = new Promise(resolve => setTimeout(resolve, ms, TIMED_OUT));
 	const resolved = await Promise.race([promise, t]).catch(err => err);
 
 	if (resolved !== TIMED_OUT) {
 		throw new Error(`expected not to time out in ${ms}ms`);
 	}
+}
+
+function withFakeTimer(fn: any) {
+	return async (...args: unknown[]) => {
+		jest.useFakeTimers();
+		try {
+			await fn(...args);
+		} finally {
+			jest.useRealTimers();
+		}
+	};
 }
 
 describe("pubSub2ReqRes", () => {
@@ -36,7 +47,7 @@ describe("pubSub2ReqRes", () => {
 
 		const promise = request({});
 		dispatch({ id: -11, foo: "bar" });
-		return expectNotFulfilled(promise, 100);
+		return expectNotFulfilled(promise);
 	});
 
 	it("should receive response", async () => {
@@ -51,34 +62,41 @@ describe("pubSub2ReqRes", () => {
 		await expect(p2).resolves.toStrictEqual(response);
 
 		expect(txMap.size).toBe(1);
-		await expectNotFulfilled(p1, 100);
+		await expectNotFulfilled(p1);
 	});
 
-	it("should clear timers", async () => {
+	it("should clear the timer after transaction completed", withFakeTimer(() => {
 		let id = -1;
 		const { txMap, request, dispatch } = pubSub2ReqRes(m => id = (m as any).id, 100);
-
-		// noinspection ES6MissingAwait
 		request({});
-		const controller = txMap.get(id);
+		request({});
+		expect(jest.getTimerCount()).toBe(2);
 
 		dispatch({ id });
 
-		// Add session back and check it not be removed after timeout.
-		txMap.set(id, controller!);
-		await sleep(101);
+		expect(txMap.has(id)).toBe(false);
 		expect(txMap.size).toBe(1);
-	});
+		expect(jest.getTimerCount()).toBe(1);
+	}));
 
-	it("should clear expired sessions", async () => {
+	it("should support disable timeout", withFakeTimer( () => {
+		const { txMap, request } = pubSub2ReqRes(NOOP, 0);
+		request({});
+		request({});
+
+		expect(txMap.size).toBe(2);
+		expect(jest.getTimerCount()).toBe(0);
+	}));
+
+	it("should clear expired sessions", withFakeTimer(async () => {
 		const { txMap, request } = pubSub2ReqRes(NOOP, 100);
-		const before = performance.now();
+		const promise = request({});
 
-		await expect(request({})).rejects.toThrow(new AbortError("Timed out"));
+		jest.advanceTimersByTime(101);
 
 		expect(txMap.size).toBe(0);
-		expect(performance.now() - before).toBeGreaterThanOrEqual(99);
-	});
+		await expect(promise).rejects.toThrow(new AbortError("Timed out"));
+	}));
 });
 
 function memoryPipe() {
