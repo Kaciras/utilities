@@ -162,7 +162,7 @@ export interface ReqResWrapper {
 export function pubSub2ReqRes(publish: PostMessage, timeout = 10e3) {
 	const txMap = new Map<number, PromiseController>();
 
-	function onTimeout(id: number) {
+	function expire(id: number) {
 		const session = txMap.get(id);
 		if (session) {
 			txMap.delete(id);
@@ -174,9 +174,13 @@ export function pubSub2ReqRes(publish: PostMessage, timeout = 10e3) {
 		const id = message.id = uniqueId();
 		publish(message);
 
-		const timer = timeout > 0
-			? setTimeout(onTimeout, timeout, id)
-			: undefined;
+		let timer: ReturnType<typeof setTimeout>;
+		if (timeout > 0) {
+			timer = setTimeout(expire, timeout, id);
+
+			if (typeof window === "undefined")
+				timer.unref();
+		}
 
 		return new Promise((resolve, reject) => {
 			txMap.set(id, { resolve, reject, timer });
