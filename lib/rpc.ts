@@ -19,9 +19,9 @@ import { AbortError, uniqueId } from "./misc.js";
  *                         Layer 1：Message protocol
  * ============================================================================= */
 
-export type Respond = (resp: ResponseMessage, transfer: Transferable[]) => void;
+export type Respond = (resp: ResponseMessage, transfer?: Transferable[]) => void;
 
-export type RPCSend = (message: RequestMessage, transfer: Transferable[]) => Promise<ResponseMessage>;
+export type RPCSend = (message: RequestMessage, transfer?: Transferable[]) => Promise<ResponseMessage>;
 
 export type RPCReceive = (message: RequestMessage, respond: Respond) => void;
 
@@ -37,19 +37,19 @@ export interface ResponseMessage {
 	isError: boolean;
 }
 
-const kTransfer = Symbol();
+const transferCache = new WeakMap<any, Transferable[]>();
 
 export function transfer<T>(obj: T, transfers: Transferable[]) {
-	(obj as any)[kTransfer] = transfers;
+	transferCache.set(obj, transfers);
 	return obj;
 }
 
 async function callRemote(send: RPCSend, message: RequestMessage) {
 	const transfers: Transferable[] = [];
 	for (const arg of message.args) {
-		if (arg[kTransfer]) {
-			transfers.push(...arg[kTransfer]);
-			delete arg[kTransfer];
+		const ts = transferCache.get(arg);
+		if (ts) {
+			transfers.push(...ts);
 		}
 	}
 	const response = await send(message, transfers);
@@ -74,7 +74,7 @@ export async function serve(target: any, message: RequestMessage, respond: Respo
 			target = target[path[i]];
 		}
 		const value = await target[path[0]](...args);
-		const transfers = value[kTransfer];
+		const transfers = transferCache.get(value);
 		respond({ id, value, isError: false }, transfers);
 	} catch (e) {
 		respond({ id, value: e, isError: true }, []);
