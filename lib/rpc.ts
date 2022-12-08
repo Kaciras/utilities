@@ -19,9 +19,9 @@ import { AbortError, uniqueId } from "./misc.js";
  *                         Layer 1：Message protocol
  * ============================================================================= */
 
-export type Respond = (resp: ResponseMessage) => void;
+export type Respond = (resp: ResponseMessage, transfer: Transferable[]) => void;
 
-export type RPCSend = (message: RequestMessage) => Promise<ResponseMessage>;
+export type RPCSend = (message: RequestMessage, transfer: Transferable[]) => Promise<ResponseMessage>;
 
 export type RPCReceive = (message: RequestMessage, respond: Respond) => void;
 
@@ -37,8 +37,22 @@ export interface ResponseMessage {
 	isError: boolean;
 }
 
+const kTransfer = Symbol();
+
+export function transfer<T>(obj: T, transfers: Transferable[]) {
+	(obj as any)[kTransfer] = transfers;
+	return obj;
+}
+
 async function callRemote(send: RPCSend, message: RequestMessage) {
-	const response = await send(message);
+	const transfers: Transferable[] = [];
+	for (const arg of message.args) {
+		if (arg[kTransfer]) {
+			transfers.push(...arg[kTransfer]);
+			delete arg[kTransfer];
+		}
+	}
+	const response = await send(message, transfers);
 	if (response.isError) {
 		throw response.value;
 	} else {
@@ -53,17 +67,17 @@ async function callRemote(send: RPCSend, message: RequestMessage) {
  * @param message RPC request message
  * @param respond The function to send the response message.
  */
-export function serve(target: any, message: RequestMessage, respond: Respond) {
+export async function serve(target: any, message: RequestMessage, respond: Respond) {
 	const { id, path, args } = message;
 	try {
 		for (let i = path.length - 1; i > 0; i--) {
 			target = target[path[i]];
 		}
-		Promise.resolve(target[path[0]](...args))
-			.then(value => respond({ id, value, isError: false }))
-			.catch(value => respond({ id, value, isError: true }));
+		const value = await target[path[0]](...args);
+		const transfers = value[kTransfer];
+		respond({ id, value, isError: false }, transfers);
 	} catch (e) {
-		return respond({ id, value: e, isError: true });
+		respond({ id, value: e, isError: true }, []);
 	}
 }
 

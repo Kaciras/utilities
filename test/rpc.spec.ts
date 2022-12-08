@@ -1,6 +1,6 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { AbortError, NOOP } from "../lib/misc.js";
-import { createClient, createServer, pubSub2ReqRes } from "../lib/rpc.js";
+import { createClient, createServer, pubSub2ReqRes, Respond, RPCSend, serve, transfer } from "../lib/rpc.js";
 
 const TIMED_OUT = Symbol();
 
@@ -125,6 +125,43 @@ describe("RPC", () => {
 		}));
 		const client = createClient(request);
 		expect(await client.hello("world")).toBe("hello world");
+	});
+
+	it("should transfer object to server", async () => {
+		const request = jest.fn<RPCSend>(async () => ({ value: 11, isError: false }));
+		const client = createClient(request);
+
+		const arg0 = new Uint8Array([1, 2]);
+		const arg1 = new Uint8Array([3]);
+		await client.foobar(
+			transfer(arg0, [arg0.buffer]),
+			transfer(arg1, [arg1.buffer]),
+		);
+
+		const [message, transfers] = request.mock.calls[0];
+		expect(message).toStrictEqual({
+			path: ["foobar"],
+			args: [arg0, arg1],
+		});
+		expect(transfers).toStrictEqual([arg0.buffer, arg1.buffer]);
+	});
+
+	it("should transfer object to client", async () => {
+		const respond = jest.fn<Respond>();
+		const arg0 = new Uint8Array([1, 2]);
+
+		const foobar = () => transfer(arg0, [arg0.buffer]);
+		const msg = { path: ["foobar"], args: [] };
+
+		await serve({ foobar }, msg, respond);
+
+		const [message, transfers] = respond.mock.calls[0];
+		expect(message).toStrictEqual({
+			id: undefined,
+			value: arg0,
+			isError: false,
+		});
+		expect(transfers).toStrictEqual([arg0.buffer]);
 	});
 
 	it("should fail if function not found", () => {
