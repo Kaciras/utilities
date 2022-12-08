@@ -79,7 +79,7 @@ describe("pubSub2ReqRes", () => {
 		expect(jest.getTimerCount()).toBe(1);
 	}));
 
-	it("should support disable timeout", withFakeTimer( () => {
+	it("should support disable timeout", withFakeTimer(() => {
 		const { txMap, request } = pubSub2ReqRes(NOOP, 0);
 		request({});
 		request({});
@@ -118,29 +118,29 @@ function memoryPipe() {
 describe("RPC", () => {
 	it("should works", async () => {
 		const { request, addListener } = memoryPipe();
-		createServer(addListener, {
+		addListener(createServer({
 			hello(name: string) {
 				return `hello ${name}`;
 			},
-		});
+		}));
 		const client = createClient(request);
 		expect(await client.hello("world")).toBe("hello world");
 	});
 
 	it("should fail if function not found", () => {
 		const { request, addListener } = memoryPipe();
-		createServer(addListener, {});
+		addListener(createServer({}));
 		const client = createClient(request);
 		return expect(client.hello("world")).rejects.toThrow(TypeError);
 	});
 
 	it("should forward errors", () => {
 		const { request, addListener } = memoryPipe();
-		createServer(addListener, {
+		addListener(createServer({
 			hello() {
 				throw new TypeError("Test error");
 			},
-		});
+		}));
 		const client = createClient(request);
 		return expect(client.hello("world"))
 			.rejects
@@ -149,11 +149,11 @@ describe("RPC", () => {
 
 	it("should forward rejections", () => {
 		const { request, addListener } = memoryPipe();
-		createServer(addListener, {
+		addListener(createServer({
 			hello() {
 				return Promise.reject(new TypeError("Test error"));
 			},
-		});
+		}));
 		const client = createClient(request);
 		return expect(client.hello("world"))
 			.rejects
@@ -162,18 +162,18 @@ describe("RPC", () => {
 
 	it("should support array index", () => {
 		const { request, addListener } = memoryPipe();
-		createServer(addListener, {
+		addListener(createServer({
 			foo: [null, () => "hello"],
-		});
+		}));
 		const client = createClient(request);
 		return expect(client.foo[1]()).resolves.toBe("hello");
 	});
 
 	it("should support nested objects", () => {
 		const { request, addListener } = memoryPipe();
-		createServer(addListener, {
+		addListener(createServer({
 			foo: { bar: { baz: () => "hello" } },
-		});
+		}));
 		const client = createClient(request);
 		return expect(client.foo.bar.baz()).resolves.toBe("hello");
 	});

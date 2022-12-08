@@ -25,8 +25,6 @@ export type RPCSend = (message: RequestMessage) => Promise<ResponseMessage>;
 
 export type RPCReceive = (message: RequestMessage, respond: Respond) => void;
 
-export type RPCReceiver = (receive: RPCReceive) => void;
-
 export interface RequestMessage {
 	id?: number;
 	args: any[];
@@ -203,6 +201,6 @@ export function createClient<T = any>(connection: RPCSend) {
 	return new Proxy(connection, new RPCHandler([])) as Remote<T>;
 }
 
-export function createServer(addListener: RPCReceiver, controller: object) {
-	addListener((message, respond) => serve(controller, message, respond));
+export function createServer(controller: object): RPCReceive {
+	return (message, respond) => serve(controller, message, respond);
 }
