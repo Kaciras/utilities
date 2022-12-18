@@ -4,6 +4,7 @@ import Signals = NodeJS.Signals;
 export * from "./codec.js";
 export * from "./crypto.js";
 export * from "./event.js";
+export * from "./fetch.js";
 export * from "./format.js";
 export * from "./misc.js";
 

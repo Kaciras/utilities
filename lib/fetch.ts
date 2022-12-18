@@ -39,19 +39,6 @@ const defaultRequest: RequestInit = {
 	credentials: "include",
 };
 
-type BodyHandler<T> = (response: Response) => T | Promise<T>;
-
-async function jsonBodyHandler(response: Response) {
-	if (response.ok) {
-		return response.json();
-	}
-	let message = await response.text();
-	if (!message) {
-		message = response.statusText;
-	}
-	throw new FetchClientError(response, message);
-}
-
 async function check(response: Response) {
 	if (response.ok) {
 		return response;
@@ -63,27 +50,24 @@ type OnFulfilled<T, R> = ((value: T) => R | PromiseLike<R>) | null;
 type OnRejected<R> = ((reason: any) => R | PromiseLike<R>) | null;
 
 /**
- * 对 Promise<Response> 的封装，提供默认的检查机制和一些额外的功能。
+ * Wrapper for Promise<Response>, provide status checking and useful method alias.
  *
- * 为了 API 函数调用的简洁，设计上大部分是直接返回响应体，但也有获取头部和原始响应对象的。
- * 对此就需要一个简便的方式来获取响应的各个部分，也就有了这个封装。
- *
- * <h2>用法</h2>
  * @example
- * // 该类实现了 Promise<Response>，可以直接 await
+ * // await it will check the response status.
  * try {
- *     const res = await apiService.get(...);
- * } catch(e) {
+ *     const response = await client.get(...);
+ *     assert(response.ok);
+ * } catch (e) {
  *     console.error(e.message);
  * }
  *
- * // 直接 await 会检查响应的状态码，如果不想检查请使用 raw 属性
- * const unchecked = await apiService.get(...).raw;
+ * // Use `raw` to get the original response promise.
+ * const unchecked = await client.get(...).raw;
  *
- * // 只关心响应体则使用 data 属性
- * const data = await apiService.get(...).data;
+ * // Get the response body in JSON format.
+ * const data = await client.get(...).json<Type>();
  *
- * // 使用 location 来获取 Location 头
+ * // Get the Location header.
  * const location = await apiService.get(...).location;
  */
 export class ResponseFacade implements Promise<Response> {
@@ -114,7 +98,6 @@ export class ResponseFacade implements Promise<Response> {
 		return this.raw.then(check).finally(onFinally);
 	}
 
-	// 不能偷懒直接用 ...args 作为参数，否则调用方会报 TS1230 错误。
 	then<T = Response, R = never>(
 		onFulfilled?: OnFulfilled<Response, T>,
 		onRejected?: OnRejected<R>,
@@ -123,6 +106,9 @@ export class ResponseFacade implements Promise<Response> {
 	}
 }
 
+/**
+ * A very simple helper to make `fetch` simpler.
+ */
 export class FetchClient {
 
 	private readonly init: RequestInit;
@@ -136,19 +122,20 @@ export class FetchClient {
 	fetch(url: string, method?: string, data?: any, params?: Params) {
 		const { baseURL, init } = this;
 
+		// https://github.com/whatwg/url/issues/427
 		if (params) {
-			// https://github.com/whatwg/url/issues/427
+			const searchParams = new URLSearchParams();
 			for (const k of Object.keys(params)) {
-				if (params[k] === undefined)
-					delete params[k];
+				if (params[k] !== undefined)
+					searchParams.set(k, params[k]);
 			}
-			url = `${url}?${new URLSearchParams(params)}`;
+			url = `${url}?${searchParams}`;
 		}
 
 		const headers = new Headers(init.headers);
 		const custom: RequestInit = { method, headers };
 
-		// body 为 FormData 时会自动设置 Content-Type。
+		// fetch will auto set content-type if body is some types.
 		if (data instanceof FormData) {
 			custom.body = data;
 		} else if (data) {
