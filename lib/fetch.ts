@@ -23,12 +23,13 @@ export async function fetchFile(request: RequestInfo, init?: RequestInit) {
 export class FetchClientError extends Error {
 
 	private readonly response: Response;
-	private readonly data: any;
+	private readonly code: number;
 
-	constructor(response: Response, data: any, message: string) {
-		super(message);
-		this.data = data;
+	constructor(response: Response) {
+		super(`Fetch failed with status: ${response.status}`);
 		this.response = response;
+		this.code = response.status;
+		this.name = "FetchClientError";
 	}
 }
 
@@ -36,10 +37,91 @@ type Params = Record<string, any>;
 
 const defaultRequest: RequestInit = {
 	credentials: "include",
-	headers: {
-		"accept": "application/json",
-	},
 };
+
+type BodyHandler<T> = (response: Response) => T | Promise<T>;
+
+async function jsonBodyHandler(response: Response) {
+	if (response.ok) {
+		return response.json();
+	}
+	let message = await response.text();
+	if (!message) {
+		message = response.statusText;
+	}
+	throw new FetchClientError(response, message);
+}
+
+async function check(response: Response) {
+	if (response.ok) {
+		return response;
+	}
+	throw new FetchClientError(response);
+}
+
+type OnFulfilled<T, R> = ((value: T) => R | PromiseLike<R>) | null;
+type OnRejected<R> = ((reason: any) => R | PromiseLike<R>) | null;
+
+/**
+ * 对 Promise<Response> 的封装，提供默认的检查机制和一些额外的功能。
+ *
+ * 为了 API 函数调用的简洁，设计上大部分是直接返回响应体，但也有获取头部和原始响应对象的。
+ * 对此就需要一个简便的方式来获取响应的各个部分，也就有了这个封装。
+ *
+ * <h2>用法</h2>
+ * @example
+ * // 该类实现了 Promise<Response>，可以直接 await
+ * try {
+ *     const res = await apiService.get(...);
+ * } catch(e) {
+ *     console.error(e.message);
+ * }
+ *
+ * // 直接 await 会检查响应的状态码，如果不想检查请使用 raw 属性
+ * const unchecked = await apiService.get(...).raw;
+ *
+ * // 只关心响应体则使用 data 属性
+ * const data = await apiService.get(...).data;
+ *
+ * // 使用 location 来获取 Location 头
+ * const location = await apiService.get(...).location;
+ */
+export class ResponseFacade implements Promise<Response> {
+
+	readonly raw: Promise<Response>;
+
+	constructor(raw: Promise<Response>) {
+		this.raw = raw;
+	}
+
+	json<T = any>(): Promise<T> {
+		return this.then(r => r.json());
+	}
+
+	get location(): Promise<string> {
+		return this.then(r => r.headers.get("location")!);
+	}
+
+	get [Symbol.toStringTag]() {
+		return "ResponseFacade";
+	}
+
+	catch<E = never>(onRejected: OnRejected<E>) {
+		return this.raw.then(check).catch(onRejected);
+	}
+
+	finally(onFinally?: any): Promise<Response> {
+		return this.raw.then(check).finally(onFinally);
+	}
+
+	// 不能偷懒直接用 ...args 作为参数，否则调用方会报 TS1230 错误。
+	then<T = Response, R = never>(
+		onFulfilled?: OnFulfilled<Response, T>,
+		onRejected?: OnRejected<R>,
+	) {
+		return this.raw.then(check).then(onFulfilled, onRejected);
+	}
+}
 
 export class FetchClient {
 
@@ -51,9 +133,8 @@ export class FetchClient {
 		this.baseURL = baseURL;
 	}
 
-	async fetch<T>(url: string, method?: string, data?: any, params?: Params) {
+	fetch(url: string, method?: string, data?: any, params?: Params) {
 		const { baseURL, init } = this;
-		const custom: RequestInit = {};
 
 		if (params) {
 			// https://github.com/whatwg/url/issues/427
@@ -64,49 +145,42 @@ export class FetchClient {
 			url = `${url}?${new URLSearchParams(params)}`;
 		}
 
+		const headers = new Headers(init.headers);
+		const custom: RequestInit = { method, headers };
+
 		// body 为 FormData 时会自动设置 Content-Type。
 		if (data instanceof FormData) {
 			custom.body = data;
 		} else if (data) {
-			init.body = JSON.stringify(data);
-			custom.headers = { "content-type": "application/json" };
+			custom.body = JSON.stringify(data);
+			headers.set("content-type", "application/json");
 		}
 
 		const request = new Request(new URL(url, baseURL), init);
-		const response = await fetch(request, custom);
-
-		if (response.ok) {
-			return await response.json() as T;
-		}
-
-		let message = await response.text();
-		if (!message) {
-			message = response.statusText;
-		}
-		throw new FetchClientError(response, data, message);
+		return new ResponseFacade(fetch(request, custom));
 	}
 
 	head(url: string, params?: Params) {
-		return this.fetch<void>("HEAD", url, null, params);
+		return this.fetch(url, "HEAD", null, params);
 	}
 
-	get<R = void>(url: string, params?: Params) {
-		return this.fetch<R>("GET", url, null, params);
+	get(url: string, params?: Params) {
+		return this.fetch(url, "GET", null, params);
 	}
 
-	delete<R = void>(url: string, params?: Params) {
-		return this.fetch<R>("DELETE", url, null, params);
+	delete(url: string, params?: Params) {
+		return this.fetch(url, "DELETE", null, params);
 	}
 
-	post<R = void>(url: string, data?: any, params?: Params) {
-		return this.fetch<R>("POST", url, data, params);
+	post(url: string, data?: any, params?: Params) {
+		return this.fetch(url, "POST", data, params);
 	}
 
-	put<R = void>(url: string, data?: any, params?: Params) {
-		return this.fetch<R>("PUT", url, data, params);
+	put(url: string, data?: any, params?: Params) {
+		return this.fetch(url, "PUT", data, params);
 	}
 
-	patch<R = void>(url: string, data?: any, params?: Params) {
-		return this.fetch<R>("PATCH", url, data, params);
+	patch(url: string, data?: any, params?: Params) {
+		return this.fetch(url, "PATCH", data, params);
 	}
 }
