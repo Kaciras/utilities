@@ -1,5 +1,5 @@
 import { describe, expect, it, jest } from "@jest/globals";
-import { AbortError, NOOP } from "../lib/misc.js";
+import { AbortError, noop } from "../lib/misc.js";
 import { createClient, createServer, pubSub2ReqRes, Respond, RPCSend, serve, transfer } from "../lib/rpc.js";
 
 const TIMED_OUT = Symbol();
@@ -39,11 +39,11 @@ describe("pubSub2ReqRes", () => {
 	});
 
 	it("should ignore messages without id", () => {
-		pubSub2ReqRes(NOOP).dispatch({ foo: "bar" });
+		pubSub2ReqRes(noop).dispatch({ foo: "bar" });
 	});
 
 	it("should ignore messages with unknown id", () => {
-		const { request, dispatch } = pubSub2ReqRes(NOOP);
+		const { request, dispatch } = pubSub2ReqRes(noop);
 
 		const promise = request({});
 		dispatch({ id: -11, foo: "bar" });
@@ -80,7 +80,7 @@ describe("pubSub2ReqRes", () => {
 	}));
 
 	it("should support disable timeout", withFakeTimer(() => {
-		const { txMap, request } = pubSub2ReqRes(NOOP, 0);
+		const { txMap, request } = pubSub2ReqRes(noop, 0);
 		request({});
 		request({});
 
@@ -89,7 +89,7 @@ describe("pubSub2ReqRes", () => {
 	}));
 
 	it("should support remove session from outside", withFakeTimer(async () => {
-		const { txMap, request } = pubSub2ReqRes(NOOP, 100);
+		const { txMap, request } = pubSub2ReqRes(noop, 100);
 		const promise = request({});
 
 		txMap.clear();
@@ -100,7 +100,7 @@ describe("pubSub2ReqRes", () => {
 	}));
 
 	it("should clear expired sessions", withFakeTimer(async () => {
-		const { txMap, request } = pubSub2ReqRes(NOOP, 100);
+		const { txMap, request } = pubSub2ReqRes(noop, 100);
 		const promise = request({});
 
 		jest.advanceTimersByTime(101);

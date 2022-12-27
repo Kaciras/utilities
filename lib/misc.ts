@@ -1,9 +1,12 @@
 import tp from "timers/promises";
 
-export const NOOP = () => {};
+export type Awaitable<T> = T | Promise<T>;
+
+export const noop = () => {};
+export const identity = <T>(v: T) => v;
 
 /**
- * An AbortSignal object that never aborts.
+ * An AbortSignal that never aborts.
  */
 export const NeverAbort: AbortSignal = {
 	aborted: false,
@@ -59,7 +62,7 @@ export function sleep(ms: number, signal = NeverAbort) {
  * @param value An object that may or may not be `Promise`-like.
  */
 export function silencePromise(value: any) {
-	if (typeof value?.then === "function") value.catch(NOOP);
+	if (typeof value?.then === "function") value.catch(noop);
 }
 
 /**
@@ -75,7 +78,7 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 		return returnValue;
 	}
 
-	*items() {
+	* items() {
 		for (const list of super.values()) yield* list;
 	}
 

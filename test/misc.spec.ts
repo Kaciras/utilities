@@ -1,5 +1,11 @@
 import { describe, expect, it } from "@jest/globals";
-import { MultiMap, NeverAbort, silencePromise, sleep, uniqueId } from "../lib/misc.js";
+import { identity, MultiMap, NeverAbort, silencePromise, sleep, uniqueId } from "../lib/misc.js";
+
+describe("identity", () => {
+	it("should return the argument", () => {
+		expect(identity(1122)).toBe(1122);
+	});
+});
 
 describe("NeverAbort", () => {
 	it("should not abort", () => {
