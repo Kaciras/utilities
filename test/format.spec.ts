@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { formatDuration, formatSize, parseSize, TimeUnit } from "../lib/format.js";
+import { compositor, formatDuration, formatSize, parseSize, TimeUnit } from "../lib/format.js";
 
 describe("formatTime", () => {
 	it("should format the duration", () => {
@@ -72,5 +72,44 @@ describe("parseSize", () => {
 
 	it.each(cases)("should parse bytes %s", (number, string) => {
 		expect(parseSize(string)).toBe(number);
+	});
+});
+
+describe("compositor", () => {
+	const template = "AABBCC_DD_EEFF_GG_HHII_JJKK";
+
+	it("should throw error if placeholder not found", () => {
+		expect(() => compositor(template, { foo: "bar" })).toThrow(new Error("No match for: bar"));
+	});
+
+	it("should throw error if placeholders are overlapped", () => {
+		const p = {
+			foo: /_DD.*_GG/,
+			bar: /FF_.*_JJ/,
+		};
+		expect(() => compositor(template, p)).toThrow(new Error("Placeholder overlapped."));
+	});
+
+	it("should composite strings", () => {
+		const create = compositor(template, {
+			foo: "CC_DD_EE",
+			bar: /HHII/,
+		});
+		const composite = create();
+		composite.put("foo", "123");
+		composite.put("bar", "456");
+
+		expect(composite.toString()).toBe("AABB123FF_GG_456_JJKK");
+	});
+
+	it("should work with zero-width patterns", () => {
+		const create = compositor(template, {
+			foo: /(?<=EE)(?=FF)/,
+			bar: /(?<=EE)(?=FF)/,
+		});
+		const composite = create();
+		composite.put("foo", "123");
+		composite.put("bar", "456");
+		expect(composite.toString()).toBe("AABBCC_DD_EE123456FF_GG_HHII_JJKK");
 	});
 });

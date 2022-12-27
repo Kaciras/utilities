@@ -101,3 +101,99 @@ export function formatSize(value: number, fraction: 1024 | 1000 = 1024) {
 export function parseSize(value: string, fraction: 1024 | 1000 = 1024) {
 	return fromString(value, fraction === 1024 ? SIZE_UNITS_IEC : SIZE_UNITS_SI);
 }
+
+type Placeholders = Record<string, string | RegExp>;
+
+/**
+ * A simple string template engine, only support replace placeholders.
+ *
+ * It 10x faster than String.replaceAll() by splits the string ahead of time.
+ *
+ * @example
+ * const template = "<html>...</html>";
+ * const newComposite = compositor(template, {
+ * 		metadata: "<!--ssr-metadata-->",
+ * 		bodyAttrs: /(?<=<body.*?)(?=>)/s,
+ * 		appHtml: /(?<=<body.*?>).*(?=<\/body>)/s,
+ * });
+ *
+ * const c = newComposite();
+ * c.put("appHtml", appHtml);
+ * c.put("metadata", meta);
+ * c.put("bodyAttrs", ` class="${bodyClass}"`);
+ * return composite.toString();
+ *
+ * @param template The template string
+ * @param placeholders An object contains placeholders with its name as key.
+ */
+export function compositor<T extends Placeholders>(
+	template: string,
+	placeholders: T,
+) {
+	const nameToSlot = new Map<keyof T, number>();
+	const positions = [];
+
+	for (const name of Object.keys(placeholders)) {
+		const pattern = placeholders[name];
+		let startPos: number;
+		let endPos: number;
+
+		if (typeof pattern === "string") {
+			startPos = template.indexOf(pattern);
+			if (startPos === -1) {
+				throw new Error("No match for: " + pattern);
+			}
+			endPos = startPos + pattern.length;
+		} else {
+			const match = pattern.exec(template);
+			if (!match) {
+				throw new Error("No match for: " + pattern);
+			}
+			startPos = match.index;
+			endPos = startPos + match[0].length;
+		}
+
+		positions.push({ name, startPos, endPos });
+	}
+
+	// Sort by start position so we can check for overlap.
+	positions.sort((a, b) => a.startPos - b.startPos);
+
+	let lastEnd = 0;
+	const parts: string[] = [];
+
+	for (let i = 0; i < positions.length; i++) {
+		const { name, startPos, endPos } = positions[i];
+		nameToSlot.set(name, i * 2 + 1);
+
+		if (startPos < lastEnd) {
+			throw new Error("Placeholder overlapped.");
+		}
+
+		parts.push(template.slice(lastEnd, startPos));
+		parts.push(template.slice(startPos, lastEnd = endPos));
+	}
+
+	parts.push(template.slice(lastEnd));
+
+	return () => new Composite<T>(nameToSlot, [...parts]);
+}
+
+export class Composite<T extends Placeholders> {
+
+	private readonly nameToSlot: Map<keyof T, number>;
+	private readonly parts: string[];
+
+	constructor(nameToSlot: Map<keyof T, number>, parts: string[]) {
+		this.parts = parts;
+		this.nameToSlot = nameToSlot;
+	}
+
+	toString() {
+		return this.parts.join("");
+	}
+
+	put(name: keyof T, value: string) {
+		this.parts[this.nameToSlot.get(name)!] = value;
+	}
+}
