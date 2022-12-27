@@ -88,6 +88,17 @@ describe("pubSub2ReqRes", () => {
 		expect(jest.getTimerCount()).toBe(0);
 	}));
 
+	it("should support remove session from outside", withFakeTimer(async () => {
+		const { txMap, request } = pubSub2ReqRes(NOOP, 100);
+		const promise = request({});
+
+		txMap.clear();
+		jest.advanceTimersByTime(101);
+
+		jest.useRealTimers();
+		await expectNotFulfilled(promise);
+	}));
+
 	it("should clear expired sessions", withFakeTimer(async () => {
 		const { txMap, request } = pubSub2ReqRes(NOOP, 100);
 		const promise = request({});

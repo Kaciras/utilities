@@ -77,7 +77,7 @@ export async function serve(target: any, message: RequestMessage, respond: Respo
 		const transfers = transferCache.get(value);
 		respond({ id, value, isError: false }, transfers);
 	} catch (e) {
-		respond({ id, value: e, isError: true }, []);
+		respond({ id, value: e, isError: true });
 	}
 }
 
