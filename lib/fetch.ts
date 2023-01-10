@@ -39,7 +39,10 @@ const defaultRequest: RequestInit = {
 	credentials: "include",
 };
 
-async function check(response: Response) {
+type Check = (task: Promise<Response>) => Promise<Response>;
+
+async function checkStatus(fetching: Promise<Response>) {
+	const response = await fetching;
 	if (response.ok) {
 		return response;
 	}
@@ -74,8 +77,11 @@ export class ResponseFacade implements Promise<Response> {
 
 	readonly raw: Promise<Response>;
 
-	constructor(raw: Promise<Response>) {
+	private readonly check: Check;
+
+	constructor(raw: Promise<Response>, check: Check) {
 		this.raw = raw;
+		this.check = check;
 	}
 
 	json<T = any>(): Promise<T> {
@@ -91,36 +97,49 @@ export class ResponseFacade implements Promise<Response> {
 	}
 
 	catch<E = never>(onRejected: OnRejected<E>) {
-		return this.raw.then(check).catch(onRejected);
+		return this.check(this.raw).catch(onRejected);
 	}
 
 	finally(onFinally?: any): Promise<Response> {
-		return this.raw.then(check).finally(onFinally);
+		return this.check(this.raw).finally(onFinally);
 	}
 
 	then<T = Response, R = never>(
 		onFulfilled?: OnFulfilled<Response, T>,
 		onRejected?: OnRejected<R>,
 	) {
-		return this.raw.then(check).then(onFulfilled, onRejected);
+		return this.check(this.raw).then(onFulfilled, onRejected);
 	}
+}
+
+export interface FetchClientOptions {
+	baseURL?: string;
+	check?: Check;
+	init?: RequestInit;
 }
 
 /**
  * A very simple helper to make `fetch` simpler.
+ *
+ * # Alternatives
+ * [ky](https://github.com/sindresorhus/ky)
+ * [axios](https://github.com/axios/axios)
+ * [wretch](https://github.com/elbywan/wretch)
  */
 export class FetchClient {
 
 	private readonly init: RequestInit;
 	private readonly baseURL: string;
+	private readonly check: Check;
 
-	constructor(baseURL = "", init = defaultRequest) {
-		this.init = init;
-		this.baseURL = baseURL;
+	constructor(options: FetchClientOptions = {}) {
+		this.init = options.init ?? defaultRequest;
+		this.baseURL = options.baseURL ?? "";
+		this.check = options.check ?? checkStatus;
 	}
 
 	fetch(url: string, method?: string, data?: any, params?: Params) {
-		const { baseURL, init } = this;
+		const { baseURL, init, check } = this;
 
 		// https://github.com/whatwg/url/issues/427
 		if (params) {
@@ -144,7 +163,7 @@ export class FetchClient {
 		}
 
 		const request = new Request(new URL(url, baseURL), init);
-		return new ResponseFacade(fetch(request, custom));
+		return new ResponseFacade(fetch(request, custom), check);
 	}
 
 	head(url: string, params?: Params) {

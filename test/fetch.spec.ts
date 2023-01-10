@@ -1,5 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { getLocal } from "mockttp";
+import { identity } from "../lib/misc.js";
 import { FetchClient, FetchClientError } from "../lib/fetch.js";
 
 describe("FetchClient", () => {
@@ -8,7 +9,7 @@ describe("FetchClient", () => {
 	afterEach(() => httpServer.stop());
 
 	it("should works", async () => {
-		const client = new FetchClient(httpServer.url);
+		const client = new FetchClient({ baseURL: httpServer.url });
 
 		await httpServer.forGet("/").thenReply(200, "OKOK!");
 
@@ -17,11 +18,14 @@ describe("FetchClient", () => {
 	});
 
 	it("should merge headers", async () => {
-		const client = new FetchClient(httpServer.url, {
-			// @ts-ignore
-			headers: {
-				foo: "bar",
-				"content-type": "text/html",
+		const client = new FetchClient({
+			baseURL: httpServer.url,
+			init: {
+				// @ts-ignore
+				headers: {
+					foo: "bar",
+					"content-type": "text/html",
+				},
 			},
 		});
 		const json = { foo: 11, bar: 22 };
@@ -39,7 +43,7 @@ describe("FetchClient", () => {
 	});
 
 	it("should serialize parameters", async () => {
-		const client = new FetchClient(httpServer.url);
+		const client = new FetchClient({ baseURL: httpServer.url });
 		await httpServer.forHead("/")
 			.withExactQuery("?start=0&count=11")
 			.thenReply(201);
@@ -53,7 +57,7 @@ describe("FetchClient", () => {
 	});
 
 	it("should check the status", async () => {
-		const client = new FetchClient(httpServer.url);
+		const client = new FetchClient({ baseURL: httpServer.url });
 
 		await httpServer.forDelete("/posts/1").thenReply(451);
 
@@ -65,8 +69,8 @@ describe("FetchClient", () => {
 		expect((await response.raw).status).toBe(451);
 	});
 
-	it("should return the JSON body",async () => {
-		const client = new FetchClient(httpServer.url);
+	it("should return the JSON body", async () => {
+		const client = new FetchClient({ baseURL: httpServer.url });
 		const json = { foo: 11, bar: 22 };
 
 		await httpServer.forPatch("/")
@@ -76,8 +80,19 @@ describe("FetchClient", () => {
 		expect(actual).toEqual(json);
 	});
 
+	it("should support custom checking", async () => {
+		const check = jest.fn(identity);
+
+		const client = new FetchClient({ baseURL: httpServer.url, check });
+
+		const got = await client.get("/");
+		const response = await got;
+		expect(response.status).toBe(503);
+		expect(check).toHaveBeenCalledTimes(1);
+	});
+
 	it("should support submit FormData", async () => {
-		const client = new FetchClient(httpServer.url);
+		const client = new FetchClient({ baseURL: httpServer.url });
 
 		const ep = await httpServer.forPut("/").thenReply(200);
 
