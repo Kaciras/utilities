@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras/utilities",
-	"version": "0.6.0",
+	"version": "0.6.1",
 	"license": "MIT",
 	"description": "A set of common JS functions for node and browser.",
 	"author": "Kaciras <Kaciras@outlook.com>",
