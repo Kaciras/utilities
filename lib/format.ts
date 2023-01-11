@@ -109,6 +109,9 @@ type Placeholders = Record<string, string | RegExp>;
  *
  * It 10x faster than String.replaceAll() by splits the string ahead of time.
  *
+ * # Alternatives
+ * [mustache.js](https://github.com/janl/mustache.js)
+ *
  * @example
  * const template = "<html>...</html>";
  * const newComposite = compositor(template, {

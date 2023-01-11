@@ -24,7 +24,7 @@ export function saveFile(blob: Blob, name?: string) {
 /**
  * Open up a file picker dialog that allows the user to choose files.
  *
- * <h1>Limitation</h1>
+ * # Limitation
  * There is no way to detect the user clicked the cancel button,
  * if the user does，the returned Promise will never resolve.
  *

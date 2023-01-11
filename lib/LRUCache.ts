@@ -33,6 +33,11 @@ interface CacheEntry<T> {
  * A cache object support Least-Recently-Used and Time-To-Live elimination.
  *
  * TODO: benchmark against https://github.com/dominictarr/hashlru
+ *
+ * # Alternatives
+ * [lru-cache](https://github.com/isaacs/node-lru-cache)
+ * [Mnemonist is a curated collection of data structures](https://github.com/yomguithereal/mnemonist)
+ * [quick-lru](https://github.com/sindresorhus/quick-lru)
  */
 export default class LRUCache<K, T> {
 

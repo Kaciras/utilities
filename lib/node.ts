@@ -18,6 +18,9 @@ export { default as LRUCache } from "./LRUCache.js";
  * When receive double event, for example Ctrl-C is pressed twice,
  * the process will exit immediately and code will be process.exitCode or 1.
  *
+ * # Alternatives
+ * [node-graceful](https://github.com/mrbar42/node-graceful)
+ *
  * @param listener listener function
  */
 export function onExit(listener: (signal: Signals) => any) {

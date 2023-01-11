@@ -15,9 +15,9 @@
  */
 import { AbortError, uniqueId } from "./misc.js";
 
-/* ============================================================================= *
+/* ============================================================================= *\
  *                         Layer 1：Message protocol
- * ============================================================================= */
+\* ============================================================================= */
 
 export type Respond = (resp: ResponseMessage, transfer?: Transferable[]) => void;
 
@@ -156,7 +156,7 @@ export interface ReqResWrapper {
  * Wrap publish-subscribe functions to request-response model.
  * The remote service must attach request message id in response message.
  *
- * <h2>NOTE</h2>
+ * # NOTE
  * If you disable timeout, there will be a memory leak when response
  * message can't be received.
  *

@@ -10,7 +10,7 @@ const htmlEscapes: Record<string, string> = {
  * Escape special characters in the given string of text,
  * such that it can be interpolated in HTML content.
  *
- * <h2>Alternatives</h2>
+ * # Alternatives
  * To insert text into a DOM node, just assign `textContent`.
  */
 export function escapeHTML(html: string) {

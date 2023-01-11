@@ -119,7 +119,7 @@ export interface FetchClientOptions {
 }
 
 /**
- * A very simple helper to make `fetch` simpler.
+ * A very simple helper to make `fetch` easier.
  *
  * # Alternatives
  * [ky](https://github.com/sindresorhus/ky)
@@ -154,7 +154,7 @@ export class FetchClient {
 		const headers = new Headers(init.headers);
 		const custom: RequestInit = { method, headers };
 
-		// fetch will auto set content-type if body is some types.
+		// fetch will set content-type if body is some types.
 		if (data instanceof FormData) {
 			custom.body = data;
 		} else if (data) {

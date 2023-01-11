@@ -1,8 +1,10 @@
 type Handler<T extends any[]> = (...args: T) => any;
 
 /**
- * The SingleEventEmitter calls all listeners synchronously in the
- * order in which they were registered.
+ * Event dispatcher for only one type of event.
+ *
+ * Listeners are called synchronously in the order in which
+ * they were registered.
  */
 export class SingleEventEmitter<T extends any[] = any[]> {
 
@@ -56,11 +58,10 @@ interface Default extends EventsMap {
 }
 
 /**
+ * # Alternatives
+ * [nanoevents](https://github.com/ai/nanoevents).
  *
- *
- * <h2>Alternatives</h2>
  * In Node, you can import EventEmitter from "event" instead.
- * An only 152 KB library https://github.com/ai/nanoevents.
  */
 export class MultiEventEmitter<T extends EventsMap = Default> {
 
