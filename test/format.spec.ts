@@ -1,11 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { compositor, formatDuration, formatSize, parseSize, TimeUnit } from "../lib/format.js";
-
-describe("formatTime", () => {
-	it("should format the duration", () => {
-		expect(formatDuration(200, TimeUnit.Second)).toBe("3.33 m");
-	});
-});
+import { compositor, formatDuration, formatSize, parseSize } from "../lib/format.js";
 
 describe("formatSize", () => {
 	const invalid = [
@@ -72,6 +66,19 @@ describe("parseSize", () => {
 
 	it.each(cases)("should parse bytes %s", (number, string) => {
 		expect(parseSize(string)).toBe(number);
+	});
+});
+
+describe("formatDuration", () => {
+
+	const cases: Array<[number, string, string]> = [
+		[1234, "s", "20m 34s"],
+		[22, "ns", "22ns"],
+		[10000, "d", "10000d"],
+	];
+
+	it.each(cases)("should works %#", (number,unit, expected) => {
+		expect(formatDuration(number, unit)).toBe(expected);
 	});
 });
 

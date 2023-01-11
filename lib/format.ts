@@ -1,12 +1,12 @@
-export enum TimeUnit {
-	NanoSecond = 0,
-	MicroSecond = 2,
-	MilliSecond = 4,
-	Second = 6,
-	Minute = 8,
-	Hour = 10,
-	Day = 12,
-}
+export const TimeUnit = {
+	Day: 12,
+	Hour: 10,
+	Minute: 8,
+	Second: 6,
+	MilliSecond: 4,
+	MicroSecond: 2,
+	NanoSecond: 0,
+};
 
 const TIME_UNITS = [
 	"ns", 1000,
@@ -76,8 +76,20 @@ function fromString(value: string, units: any[]) {
 	throw new Error("Unknown unit: " + unit);
 }
 
-export function formatDuration(value: number, unit: TimeUnit) {
-	return toString(value, TIME_UNITS, unit);
+export function formatDuration(value: number, unit: string) {
+	let mod = 0;
+	for (let i = TIME_UNITS.indexOf(unit); i < TIME_UNITS.length; i += 2) {
+		const d = TIME_UNITS[i + 1] as number;
+		if (value < d) {
+			if(i === 0 || mod === 0) {
+				return `${Math.floor(value)}${TIME_UNITS[i]}`;
+			}
+			return `${Math.floor(value)}${TIME_UNITS[i]} ${mod}${TIME_UNITS[i - 2]}`;
+		}
+		mod = value % d;
+		value /= d;
+	}
+	return `${Math.floor(value)}d`;
 }
 
 /**
