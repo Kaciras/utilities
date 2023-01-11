@@ -73,12 +73,19 @@ describe("formatDuration", () => {
 
 	const cases: Array<[number, string, string]> = [
 		[1234, "s", "20m 34s"],
+		[97215, "s", "1d 3h"],
 		[22, "ns", "22ns"],
 		[10000, "d", "10000d"],
+
+		[0.5, "h", "30m"],
 	];
 
 	it.each(cases)("should works %#", (number,unit, expected) => {
 		expect(formatDuration(number, unit)).toBe(expected);
+	});
+
+	it("should support custom part count", () => {
+		expect(formatDuration(97215, "s", 4)).toBe("1d 3h 0m 15s");
 	});
 });
 

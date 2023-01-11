@@ -1,23 +1,3 @@
-export const TimeUnit = {
-	Day: 12,
-	Hour: 10,
-	Minute: 8,
-	Second: 6,
-	MilliSecond: 4,
-	MicroSecond: 2,
-	NanoSecond: 0,
-};
-
-const TIME_UNITS = [
-	"ns", 1000,
-	"us", 1000,
-	"ms", 1000,
-	"s", 60,
-	"m", 60,
-	"h", 24,
-	"d", Infinity,
-];
-
 const SIZE_UNITS_SI = [
 	"", 1000,
 	"K", 1000,
@@ -64,32 +44,57 @@ function fromString(value: string, units: any[]) {
 		throw new Error(`Can't parse: "${value}"`);
 	}
 	const [, v, unit = ""] = match;
-	let sss = Number(v);
+	let result = Number(v);
 
 	for (let i = 0; i < units.length; i += 2) {
 		if (units[i] === unit) {
-			return sss;
+			return result;
 		} else {
-			sss *= units[i + 1];
+			result *= units[i + 1];
 		}
 	}
 	throw new Error("Unknown unit: " + unit);
 }
 
-export function formatDuration(value: number, unit: string) {
-	let mod = 0;
-	for (let i = TIME_UNITS.indexOf(unit); i < TIME_UNITS.length; i += 2) {
-		const d = TIME_UNITS[i + 1] as number;
-		if (value < d) {
-			if(i === 0 || mod === 0) {
-				return `${Math.floor(value)}${TIME_UNITS[i]}`;
-			}
-			return `${Math.floor(value)}${TIME_UNITS[i]} ${mod}${TIME_UNITS[i - 2]}`;
-		}
-		mod = value % d;
-		value /= d;
+const TIME_UNITS: any[] = [
+	"ns", 1000,
+	"us", 1000,
+	"ms", 1000,
+	"s", 60,
+	"m", 60,
+	"h", 24,
+	"d", Infinity,
+];
+
+export function formatDuration(value: number, unit: string, parts = 2) {
+	let i = TIME_UNITS.indexOf(unit);
+	let d = 1;
+
+	for (; ; i += 2) {
+		const x = d * TIME_UNITS[i + 1];
+		if (value < x) break; else d = x;
 	}
-	return `${Math.floor(value)}d`;
+
+	let result = "";
+
+	for (;
+		i >= 0 && parts > 0 && value !== 0;
+		i -= 2, parts -= 1
+	) {
+		const t = Math.floor(value / d);
+
+		// Avoid leading zeros.
+		if (result.length !== 0 || t !== 0) {
+			result += t;
+			result += TIME_UNITS[i];
+			result += " ";
+		}
+
+		value = value % d;
+		d /= TIME_UNITS[i - 1];
+	}
+
+	return result.slice(0, -1);
 }
 
 /**
@@ -133,9 +138,9 @@ type Placeholders = Record<string, string | RegExp>;
  * });
  *
  * const c = newComposite();
- * c.put("appHtml", appHtml);
- * c.put("metadata", meta);
- * c.put("bodyAttrs", ` class="${bodyClass}"`);
+ * c.put("appHtml", "<div id='app'>...</div>");
+ * c.put("metadata", "<meta...>");
+ * c.put("bodyAttrs", " class='ssr dark'");
  * return composite.toString();
  *
  * @param template The template string
