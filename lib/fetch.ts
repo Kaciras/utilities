@@ -162,7 +162,7 @@ export class FetchClient {
 			headers.set("content-type", "application/json");
 		}
 
-		const request = new Request(new URL(url, baseURL), init);
+		const request = new Request(baseURL + url, init);
 		return new ResponseFacade(fetch(request, custom), check);
 	}
 
