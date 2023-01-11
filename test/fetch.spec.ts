@@ -13,7 +13,10 @@ describe("FetchClient", () => {
 
 		await httpServer.forGet("/").thenReply(200, "OKOK!");
 
-		const response = await client.get("/");
+		const facade = client.get("/");
+		const response = await facade;
+
+		expect("" + facade).toBe("[object ResponseFacade]");
 		await expect(response.text()).resolves.toBe("OKOK!");
 	});
 
@@ -40,6 +43,12 @@ describe("FetchClient", () => {
 
 		const response = await client.post("/", json);
 		await expect(response.text()).resolves.toBe("OKOK!");
+	});
+
+	it("should get the location", async () => {
+		const client = new FetchClient({ baseURL: httpServer.url });
+		await httpServer.forGet("/").thenReply(200, "OKOK!", { location: "/abc" });
+		await expect(client.get("/").location).resolves.toBe("/abc");
 	});
 
 	it("should serialize parameters", async () => {

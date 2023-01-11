@@ -53,8 +53,10 @@ function fromString(value: string, units: any[]) {
 			result *= units[i + 1];
 		}
 	}
-	throw new Error("Unknown unit: " + unit);
+	throw new Error(`Unknown unit: ${unit}B`);
 }
+
+type TimeUnit = "ns" | "ms" | "s" | "m" | "h" | "d";
 
 const TIME_UNITS: any[] = [
 	"ns", 1000,
@@ -66,16 +68,20 @@ const TIME_UNITS: any[] = [
 	"d", Infinity,
 ];
 
-export function formatDuration(value: number, unit: string, parts = 2) {
+export function formatDuration(value: number, unit: TimeUnit, parts = 2) {
 	let i = TIME_UNITS.indexOf(unit);
 	let d = 1;
+
+	if (i === -1) {
+		throw new Error(`Unknown time unit: ${unit}`);
+	}
 
 	for (; ; i += 2) {
 		const x = d * TIME_UNITS[i + 1];
 		if (value < x) break; else d = x;
 	}
 
-	const groups = [];
+	const groups: string[] = [];
 
 	// 1.16e-14 = 1/24/60/60/1000...
 	for (;
