@@ -77,6 +77,8 @@ describe("formatDuration", () => {
 		[22, "ns", "22ns"],
 		[10000, "d", "10000d"],
 
+		[0, "ns", "0ns"],
+		[0, "h", "0h"],
 		[0.5, "h", "30m"],
 	];
 
@@ -86,6 +88,7 @@ describe("formatDuration", () => {
 
 	it("should support custom part count", () => {
 		expect(formatDuration(97215, "s", 4)).toBe("1d 3h 0m 15s");
+		expect(formatDuration(0.522, "h", 5)).toBe("31m 19s 200ms");
 	});
 });
 

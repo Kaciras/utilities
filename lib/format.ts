@@ -75,26 +75,25 @@ export function formatDuration(value: number, unit: string, parts = 2) {
 		if (value < x) break; else d = x;
 	}
 
-	let result = "";
+	const groups = [];
 
+	// 1.16e-14 = 1/24/60/60/1000...
 	for (;
-		i >= 0 && parts > 0 && value !== 0;
+		i >= 0 && parts > 0 && value > 1.16e-14;
 		i -= 2, parts -= 1
 	) {
 		const t = Math.floor(value / d);
 
 		// Avoid leading zeros.
-		if (result.length !== 0 || t !== 0) {
-			result += t;
-			result += TIME_UNITS[i];
-			result += " ";
+		if (groups.length || t !== 0) {
+			groups.push(`${t}${TIME_UNITS[i]}`);
 		}
 
-		value = value % d;
+		value %= d;
 		d /= TIME_UNITS[i - 1];
 	}
 
-	return result.slice(0, -1);
+	return groups.length ? groups.join(" ") : `0${unit}`;
 }
 
 /**
