@@ -1,4 +1,21 @@
 /**
+ * Detect if the pointer is inside the element.
+ *
+ * @param event You can only get pointer position in event handler.
+ * @param el The element to check. if not present, use event.currentTarget.
+ * @see https://stackoverflow.com/q/2601097/7065321
+ */
+export function isPointerInside(event: MouseEvent, el?: Element) {
+	el ??= event.currentTarget as Element;
+
+	const { clientX, clientY } = event;
+	const rect = el.getBoundingClientRect();
+
+	return clientY > rect.top && clientY < rect.bottom &&
+		clientX > rect.left && clientX < rect.right;
+}
+
+/**
  * Swap the positions of nodeA and nodeB in the DOM.
  *
  * @see https://stackoverflow.com/a/10717422/7065321
