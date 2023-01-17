@@ -1,5 +1,5 @@
 /**
- * Fetch the resource into a File object.
+ * Fetch the resource into a File object, detect name and last modified from response.
  *
  * @param request This defines the resource that you wish to fetch.
  * @param init An object containing any custom settings that you want to apply to the request.
@@ -122,6 +122,7 @@ export interface FetchClientOptions {
  * A very simple helper to make `fetch` easier.
  *
  * # Alternatives
+ * [redaxios](https://github.com/developit/redaxios)
  * [ky](https://github.com/sindresorhus/ky)
  * [axios](https://github.com/axios/axios)
  * [wretch](https://github.com/elbywan/wretch)
@@ -138,10 +139,16 @@ export class FetchClient {
 		this.check = options.check ?? checkStatus;
 	}
 
-	fetch(url: string, method?: string, data?: any, params?: Params) {
+	fetch(url: string, method?: string, body?: any, params?: Params) {
 		const { baseURL, init, check } = this;
+		const headers = new Headers(init.headers);
 
-		// https://github.com/whatwg/url/issues/427
+		/*
+		 * We need to exclude undefined because it will be
+		 * serialized to "xx=undefined" by URLSearchParams.
+		 *
+		 * See https://github.com/whatwg/url/issues/427
+		 */
 		if (params) {
 			const searchParams = new URLSearchParams();
 			for (const k of Object.keys(params)) {
@@ -151,18 +158,19 @@ export class FetchClient {
 			url = `${url}?${searchParams}`;
 		}
 
-		const headers = new Headers(init.headers);
-		const custom: RequestInit = { method, headers };
-
 		// fetch will set content-type if body is some types.
-		if (data instanceof FormData) {
-			custom.body = data;
-		} else if (data) {
-			custom.body = JSON.stringify(data);
+		if (
+			body && typeof body === "object" &&
+			typeof body.append !== "function" &&
+			typeof body.text !== "function"
+		) {
+			body = JSON.stringify(body);
 			headers.set("content-type", "application/json");
 		}
 
+		const custom: RequestInit = { method, headers, body };
 		const request = new Request(baseURL + url, init);
+
 		return new ResponseFacade(fetch(request, custom), check);
 	}
 
