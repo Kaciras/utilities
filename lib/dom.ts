@@ -48,7 +48,7 @@ export function swapElements(nodeA: Element, nodeB: Element) {
  * @param from The array index at which to begin the search, default 0.
  * @return The first index of the element in the array; -1 if not found.
  */
-function indexInParent(el: Node, from?: number) {
+export function nthChild(el: Node, from?: number) {
 	return Array.prototype.indexOf.call(el.parentNode!.children, el, from);
 }
 
@@ -91,8 +91,8 @@ export function dragSortContext(swap = false) {
 		if (swap) {
 			swapElements(dragging, currentTarget);
 		} else {
-			const i = indexInParent(currentTarget);
-			const j = indexInParent(dragging, i);
+			const i = nthChild(currentTarget);
+			const j = nthChild(dragging, i);
 			if (j === -1) {
 				currentTarget.after(dragging);
 			} else {
