@@ -83,6 +83,13 @@ describe("formatDuration", () => {
 		expect(() => formatDuration(11, "foobar")).toThrow(new Error("Unknown time unit: foobar"));
 	});
 
+	it.each([
+		NaN, Infinity, Number.NEGATIVE_INFINITY, "11", undefined,
+	])("should throw with invalid value %s", value => {
+		// @ts-expect-error
+		expect(() => formatDuration(value, "s")).toThrow(new Error(`${value} is not a finite number`));
+	});
+
 	const cases: Array<[number, any, string]> = [
 		[60, "s", "1m"],
 		[1234, "s", "20m 34s"],

@@ -68,7 +68,25 @@ const TIME_UNITS: any[] = [
 	"d", Infinity,
 ];
 
+/**
+ * Convert the given duration in to a human-readable format.
+ *
+ * @example
+ * formatDuration(0, "s");			// "0s"
+ * formatDuration(10000, "d");		// "10000d"
+ * formatDuration(97215, "s", 4);	// "1d 3h 0m 15s"
+ * formatDuration(0.522, "h");		// "31m 19s"
+ * formatDuration(0.522, "h", 1);	// "31m"
+ * formatDuration(0.522, "h", 999);	// "31m 19s 200ms"
+ *
+ * @param value Numeric value to use.
+ * @param unit Unit ot the value.
+ * @param parts Maximum number of groups in result.
+ */
 export function formatDuration(value: number, unit: TimeUnit, parts = 2) {
+	if (!Number.isFinite(value)) {
+		throw new TypeError(`${value} is not a finite number`);
+	}
 	let i = TIME_UNITS.indexOf(unit);
 	let d = 1;
 
@@ -76,6 +94,7 @@ export function formatDuration(value: number, unit: TimeUnit, parts = 2) {
 		throw new Error(`Unknown time unit: ${unit}`);
 	}
 
+	// Find index of the largest unit.
 	for (; ; i += 2) {
 		const x = d * TIME_UNITS[i + 1];
 		if (value < x) break; else d = x;
@@ -83,8 +102,9 @@ export function formatDuration(value: number, unit: TimeUnit, parts = 2) {
 
 	const groups: string[] = [];
 
-	// 1.16e-14 = 1/24/60/60/1000...
+	// Backtrace to calculate each group.
 	for (;
+		// 1.16e-14 = 1/24/60/60/1000/1000/1000
 		i >= 0 && parts > 0 && value > 1.16e-14;
 		i -= 2, parts -= 1
 	) {
