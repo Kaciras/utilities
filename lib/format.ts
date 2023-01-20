@@ -1,28 +1,13 @@
-const SIZE_UNITS_SI = [
-	"", 1000,
-	"K", 1000,
-	"M", 1000,
-	"G", 1000,
-	"T", 1000,
-	"P", 1000,
-	"E", 1000,
-	"Z", 1000,
-	"Y", Infinity,
-];
+/*
+ * There two ways to convert a value to another unit, division and modulo.
+ * For example.
+ * - Division conversion: "90s" to "1.5m".
+ * - Modulo conversion: "90s" to "1m 30s".
+ *
+ * The n2s and s2n means "number to string" and "string to number".
+ */
 
-const SIZE_UNITS_IEC = [
-	"", 1024,
-	"K", 1024,
-	"M", 1024,
-	"G", 1024,
-	"T", 1024,
-	"P", 1024,
-	"E", 1024,
-	"Z", 1024,
-	"Y", Infinity,
-];
-
-function toString(value: number, units: any[], uIndex: number) {
+function n2sDivision(value: number, units: any[], uIndex: number) {
 	if (!Number.isFinite(value)) {
 		throw new TypeError(`${value} is not a finite number`);
 	}
@@ -38,8 +23,8 @@ function toString(value: number, units: any[], uIndex: number) {
 	return `${Number(v.toFixed(2))} ${units[uIndex]}`;
 }
 
-function fromString(value: string, units: any[]) {
-	const match = /^([-+0-9.]+)\s*(\w)?B$/.exec(value);
+function s2nDivision(value: string, units: any[]) {
+	const match = /^([-+0-9.]+)\s*(\w+)$/.exec(value);
 	if (!match) {
 		throw new Error(`Can't parse: "${value}"`);
 	}
@@ -53,7 +38,88 @@ function fromString(value: string, units: any[]) {
 			result *= units[i + 1];
 		}
 	}
-	throw new Error(`Unknown unit: ${unit}B`);
+	throw new Error(`Unknown unit: ${unit}`);
+}
+
+function n2sModulo(units: any[], value: number, unit: string, parts = 2) {
+	if (!Number.isFinite(value)) {
+		throw new TypeError(`${value} is not a finite number`);
+	}
+	let i = units.indexOf(unit);
+	let d = 1;
+
+	if (i === -1) {
+		throw new Error(`Unknown unit: ${unit}`);
+	}
+
+	// Find index of the largest unit.
+	for (; ; i += 2) {
+		const x = d * units[i + 1];
+		if (value < x) break; else d = x;
+	}
+
+	const groups: string[] = [];
+
+	// Backtrace to calculate each group.
+	for (;
+		// 1.16e-14 = 1/24/60/60/1000/1000/1000
+		i >= 0 && parts > 0 && value > 1.16e-14;
+		i -= 2, parts -= 1
+	) {
+		const t = Math.floor(value / d);
+
+		// Avoid leading zeros.
+		if (groups.length || t !== 0) {
+			groups.push(`${t}${units[i]}`);
+		}
+
+		value %= d;
+		d /= units[i - 1];
+	}
+
+	return groups.length ? groups.join(" ") : `0${unit}`;
+}
+
+const re = /\d+([a-z]+)\s*/gi;
+
+function s2nModulo(units: any[], value: string, unit: string) {
+	const i = units.indexOf(unit);
+	if (i === -1) {
+		throw new Error(`Unknown unit: ${unit}`);
+	}
+
+	let k = units.length - 1;
+	let seen = 0;
+	let result = 0;
+
+	for (const [matched, u] of value.matchAll(re)) {
+		const j = units.lastIndexOf(u, k);
+		k = j - 2;
+
+		if (j === -1) {
+			throw new Error(units.includes(u)
+				? "Units must be ordered from largest to smallest"
+				: `Unknown unit: ${u}`);
+		}
+
+		let n = parseFloat(matched);
+		if (j > i) {
+			for (let k = i; k < j; k += 2) {
+				n *= units[k + 1];
+			}
+		} else {
+			for (let k = j; k < i; k += 2) {
+				n /= units[k + 1];
+			}
+		}
+		result += n;
+		seen += matched.length;
+	}
+
+	if (seen === value.length && seen > 0) {
+		return result;
+	}
+	throw new Error(`Can not parse: "${value}"`);
 }
 
 type TimeUnit = "ns" | "ms" | "s" | "m" | "h" | "d";
@@ -85,85 +151,36 @@ const TIME_UNITS: any[] = [
  * @param parts Maximum number of groups in result.
  */
 export function formatDuration(value: number, unit: TimeUnit, parts = 2) {
-	if (!Number.isFinite(value)) {
-		throw new TypeError(`${value} is not a finite number`);
-	}
-	let i = TIME_UNITS.indexOf(unit);
-	let d = 1;
-
-	if (i === -1) {
-		throw new Error(`Unknown duration unit: ${unit}`);
-	}
-
-	// Find index of the largest unit.
-	for (; ; i += 2) {
-		const x = d * TIME_UNITS[i + 1];
-		if (value < x) break; else d = x;
-	}
-
-	const groups: string[] = [];
-
-	// Backtrace to calculate each group.
-	for (;
-		// 1.16e-14 = 1/24/60/60/1000/1000/1000
-		i >= 0 && parts > 0 && value > 1.16e-14;
-		i -= 2, parts -= 1
-	) {
-		const t = Math.floor(value / d);
-
-		// Avoid leading zeros.
-		if (groups.length || t !== 0) {
-			groups.push(`${t}${TIME_UNITS[i]}`);
-		}
-
-		value %= d;
-		d /= TIME_UNITS[i - 1];
-	}
-
-	return groups.length ? groups.join(" ") : `0${unit}`;
+	return n2sModulo(TIME_UNITS, value, unit, parts);
 }
-
-const re = /\d+([a-z]+)\s*/gi;
 
 export function parseDuration(value: string, unit: TimeUnit) {
-	const i = TIME_UNITS.indexOf(unit);
-	if (i === -1) {
-		throw new Error(`Unknown duration unit: ${unit}`);
-	}
-
-	let k = TIME_UNITS.length - 1;
-	let seen = 0;
-	let result = 0;
-
-	for (const [matched, u] of value.matchAll(re)) {
-		const j = TIME_UNITS.lastIndexOf(u, k);
-		k = j - 2;
-
-		if (j === -1) {
-			throw new Error(TIME_UNITS.includes(u)
-				? "Units must be ordered from largest to smallest"
-				: `Unknown duration unit: ${u}`);
-		}
-
-		let n = parseFloat(matched);
-		if (j > i) {
-			for (let k = i; k < j; k += 2) {
-				n *= TIME_UNITS[k + 1];
-			}
-		} else {
-			for (let k = j; k < i; k += 2) {
-				n /= TIME_UNITS[k + 1];
-			}
-		}
-		result += n;
-		seen += matched.length;
-	}
-
-	if (seen === value.length && seen > 0) {
-		return result;
-	}
-	throw new Error(`Can not convert: "${value}" to duration`);
+	return s2nModulo(TIME_UNITS, value, unit);
 }
+
+const SIZE_UNITS_SI = [
+	"B", 1000,
+	"KB", 1000,
+	"MB", 1000,
+	"GB", 1000,
+	"TB", 1000,
+	"PB", 1000,
+	"EB", 1000,
+	"ZB", 1000,
+	"YB", Infinity,
+];
+
+const SIZE_UNITS_IEC = [
+	"B", 1024,
+	"KB", 1024,
+	"MB", 1024,
+	"GB", 1024,
+	"TB", 1024,
+	"PB", 1024,
+	"EB", 1024,
+	"ZB", 1024,
+	"YB", Infinity,
+];
 
 /**
  * Convert bytes to a human-readable string.
@@ -174,7 +191,7 @@ export function parseDuration(value: string, unit: TimeUnit) {
  * @param fraction 1000 for SI or 1024 for IEC.
  */
 export function formatSize(value: number, fraction: 1024 | 1000 = 1024) {
-	return `${toString(value, fraction === 1024 ? SIZE_UNITS_IEC : SIZE_UNITS_SI, 0)}B`;
+	return `${n2sDivision(value, fraction === 1024 ? SIZE_UNITS_IEC : SIZE_UNITS_SI, 0)}`;
 }
 
 /**
@@ -184,7 +201,7 @@ export function formatSize(value: number, fraction: 1024 | 1000 = 1024) {
  * @param fraction 1000 for SI or 1024 for IEC.
  */
 export function parseSize(value: string, fraction: 1024 | 1000 = 1024) {
-	return fromString(value, fraction === 1024 ? SIZE_UNITS_IEC : SIZE_UNITS_SI);
+	return s2nDivision(value, fraction === 1024 ? SIZE_UNITS_IEC : SIZE_UNITS_SI);
 }
 
 type Placeholders = Record<string, string | RegExp>;
