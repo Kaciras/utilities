@@ -70,6 +70,7 @@ const TIME_UNITS: any[] = [
 
 /**
  * Convert the given duration in to a human-readable format.
+ * Support units from nanoseconds to days.
  *
  * @example
  * formatDuration(0, "s");			// "0s"
@@ -91,7 +92,7 @@ export function formatDuration(value: number, unit: TimeUnit, parts = 2) {
 	let d = 1;
 
 	if (i === -1) {
-		throw new Error(`Unknown time unit: ${unit}`);
+		throw new Error(`Unknown duration unit: ${unit}`);
 	}
 
 	// Find index of the largest unit.
@@ -120,6 +121,48 @@ export function formatDuration(value: number, unit: TimeUnit, parts = 2) {
 	}
 
 	return groups.length ? groups.join(" ") : `0${unit}`;
+}
+
+const re = /\d+([a-z]+)\s*/gi;
+
+export function parseDuration(value: string, unit: TimeUnit) {
+	const i = TIME_UNITS.indexOf(unit);
+	if (i === -1) {
+		throw new Error(`Unknown duration unit: ${unit}`);
+	}
+
+	let k = TIME_UNITS.length - 1;
+	let seen = 0;
+	let result = 0;
+
+	for (const [matched, u] of value.matchAll(re)) {
+		const j = TIME_UNITS.lastIndexOf(u, k);
+		k = j - 2;
+
+		if (j === -1) {
+			throw new Error(TIME_UNITS.includes(u)
+				? "Units must be ordered from largest to smallest"
+				: `Unknown duration unit: ${u}`);
+		}
+
+		let n = parseFloat(matched);
+		if (j > i) {
+			for (let k = i; k < j; k += 2) {
+				n *= TIME_UNITS[k + 1];
+			}
+		} else {
+			for (let k = j; k < i; k += 2) {
+				n /= TIME_UNITS[k + 1];
+			}
+		}
+		result += n;
+		seen += matched.length;
+	}
+
+	if (seen === value.length && seen > 0) {
+		return result;
+	}
+	throw new Error(`Can not convert: "${value}" to duration`);
 }
 
 /**

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { compositor, formatDuration, formatSize, parseSize } from "../lib/format.js";
+import { compositor, formatDuration, formatSize, parseDuration, parseSize } from "../lib/format.js";
 
 describe("formatSize", () => {
 	const invalid = [
@@ -80,7 +80,7 @@ describe("formatDuration", () => {
 
 	it("should throw with invalid unit", () => {
 		// @ts-expect-error
-		expect(() => formatDuration(11, "foobar")).toThrow(new Error("Unknown time unit: foobar"));
+		expect(() => formatDuration(11, "foobar")).toThrow(new Error("Unknown duration unit: foobar"));
 	});
 
 	it.each([
@@ -108,6 +108,40 @@ describe("formatDuration", () => {
 	it("should support custom part count", () => {
 		expect(formatDuration(97215, "s", 4)).toBe("1d 3h 0m 15s");
 		expect(formatDuration(0.522, "h", 99)).toBe("31m 19s 200ms");
+	});
+});
+
+describe("parseDuration", () => {
+	it("should throw with invalid unit", () => {
+		// @ts-expect-error
+		expect(() => parseDuration("11s", "foobar")).toThrow(new Error("Unknown duration unit: foobar"));
+	});
+
+	it.each([
+		"", "11", "h", "1d after the 3h", "11W", "3m 1d", undefined,
+	])("should throw with invalid value %s", value => {
+		// @ts-expect-error
+		expect(() => parseDuration(value, "s")).toThrow();
+	});
+
+	const cases: Array<[number, any, string]> = [
+		[60, "s", "1m"],
+		[1234, "s", "20m 34s"],
+		// [97215, "s", "1d 3h"],
+		[22, "ns", "22ns"],
+		[10000, "d", "10000d"],
+
+		[0, "ns", "0ns"],
+		[0, "h", "0h"],
+		[0.5, "h", "30m"],
+	];
+	it.each(cases)("should works %#", (expected, unit, str) => {
+		expect(parseDuration(str, unit)).toBe(expected);
+	});
+
+	it("should works again", () => {
+		expect(parseDuration("1d 3h 0m 15s", "s")).toBe(97215);
+		expect(parseDuration("31m 19s 200ms", "h")).toBeCloseTo(0.522, 4);
 	});
 });
 
