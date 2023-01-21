@@ -101,9 +101,16 @@ export function dragSortContext(swap = false) {
 		}
 	}
 
-	return (element: GlobalEventHandlers) => {
-		element.addEventListener("dragstart", dragstart);
-		element.addEventListener("dragend", dragend);
-		element.addEventListener("dragenter", dragenter);
+	return {
+		register(element: GlobalEventHandlers) {
+			element.addEventListener("dragstart", dragstart);
+			element.addEventListener("dragend", dragend);
+			element.addEventListener("dragenter", dragenter);
+		},
+		unregister(element: GlobalEventHandlers) {
+			element.removeEventListener("dragstart", dragstart);
+			element.removeEventListener("dragend", dragend);
+			element.removeEventListener("dragenter", dragenter);
+		},
 	};
 }
