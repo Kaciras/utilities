@@ -84,10 +84,18 @@ describe("formatDuration", () => {
 	});
 
 	it.each([
-		NaN, Infinity, Number.NEGATIVE_INFINITY, "11", undefined,
+		undefined,
+		NaN,
+		Infinity,
+		Number.NEGATIVE_INFINITY,
+		"11",
 	])("should throw with invalid value %s", value => {
 		// @ts-expect-error
 		expect(() => formatDuration(value, "s")).toThrow(new Error(`${value} is not a finite number`));
+	});
+
+	it("should throw with negative value", () => {
+		expect(() => formatDuration(-11, "s")).toThrow("value (-11) can not be negative");
 	});
 
 	const cases: Array<[number, any, string]> = [
@@ -118,7 +126,14 @@ describe("parseDuration", () => {
 	});
 
 	it.each([
-		"", "11", "h", "1d after the 3h", "11W", "3m 1d", undefined,
+		undefined,
+		"",
+		"11",
+		"h",
+		"-11h",
+		"1d after the 3h",
+		"11W",
+		"3m 1d",
 	])("should throw with invalid value %s", value => {
 		// @ts-expect-error
 		expect(() => parseDuration(value, "s")).toThrow();
@@ -127,21 +142,17 @@ describe("parseDuration", () => {
 	const cases: Array<[number, any, string]> = [
 		[60, "s", "1m"],
 		[1234, "s", "20m 34s"],
-		// [97215, "s", "1d 3h"],
+		[97215, "s", "1d 3h 0m 15s"],
 		[22, "ns", "22ns"],
 		[10000, "d", "10000d"],
+		[0.522, "h", "31m 19s 200ms"],
 
 		[0, "ns", "0ns"],
 		[0, "h", "0h"],
 		[0.5, "h", "30m"],
 	];
 	it.each(cases)("should works %#", (expected, unit, str) => {
-		expect(parseDuration(str, unit)).toBe(expected);
-	});
-
-	it("should works again", () => {
-		expect(parseDuration("1d 3h 0m 15s", "s")).toBe(97215);
-		expect(parseDuration("31m 19s 200ms", "h")).toBeCloseTo(0.522, 4);
+		expect(parseDuration(str, unit)).toBeCloseTo(expected, 5);
 	});
 });
 

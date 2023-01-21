@@ -57,6 +57,10 @@ function n2sModulo(units: any[], value: number, unit: string, parts = 2) {
 	if (!Number.isFinite(value)) {
 		throw new TypeError(`${value} is not a finite number`);
 	}
+	if (value < 0) {
+		throw new Error(`value (${value}) can not be negative`);
+	}
+
 	let i = units.indexOf(unit);
 	let d = 1;
 
