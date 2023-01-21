@@ -5,8 +5,7 @@ import swc from "@swc/core";
 import replace from "@rollup/plugin-replace";
 import isBuiltin from "is-builtin-module";
 
-// noinspection JSCheckFunctionSignatures `JSON.parse` support Buffer.
-const swcrc = JSON.parse(readFileSync(".swcrc"));
+const swcrc = JSON.parse(readFileSync(".swcrc", "utf8"));
 
 const JS_RE = /\.[mc]?[jt]sx?$/;
 const EXTENSIONS = [".ts", ".tsx", ".mjs", ".js", ".cjs", ".jsx"];
@@ -28,7 +27,7 @@ const swcTransform = {
 			.find(existsSync);
 	},
 
-	async transform(code, id) {
+	transform(code, id) {
 		swcrc.filename = id;
 		return swc.transformSync(code, swcrc);
 	},
@@ -51,7 +50,9 @@ async function buildPlatform(input, typeOfWindow) {
 		plugins: [
 			resolveBuiltinModule,
 			swcTransform,
-			replace({ "typeof window": typeOfWindow }),
+			replace({ 
+				"typeof window": typeOfWindow,
+			}),
 		],
 	});
 

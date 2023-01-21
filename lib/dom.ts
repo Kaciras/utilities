@@ -58,8 +58,8 @@ export function nthChild(el: Node, from?: number) {
  *
  * TODO: sort items between different parent.
  *
- * This function creates a "Drag context" and return a register function.
- * Elements registered in the same context can drag to swap with each other.
+ * This function creates a "Drag context". Elements registered in the
+ * same context can drag to swap with each other.
  *
  * You need add draggable="true" to the element if it is not default draggable.
  *

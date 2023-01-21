@@ -5,9 +5,19 @@
  * - Modulo conversion: "90s" to "1m 30s".
  *
  * The n2s and s2n means "number to string" and "string to number".
+ *
+ * All conversion functions take a unit argument, which is an array of
+ * length 2N containing the N units from smallest to largest, and
+ * the multiplier to the next unit.
+ * e.g.
+ * [
+ *     "second", 60,		// 60 seconds is a minute.
+ *     "minute", 60,		// 60 minute is a hour.
+ *     "hour", Infinity,	// No more units, the multiplier is infinity.
+ * ]
  */
 
-function n2sDivision(value: number, units: any[], uIndex: number) {
+function n2sDivision(units: any[], value: number, uIndex: number) {
 	if (!Number.isFinite(value)) {
 		throw new TypeError(`${value} is not a finite number`);
 	}
@@ -23,8 +33,10 @@ function n2sDivision(value: number, units: any[], uIndex: number) {
 	return `${Number(v.toFixed(2))} ${units[uIndex]}`;
 }
 
-function s2nDivision(value: string, units: any[]) {
-	const match = /^([-+0-9.]+)\s*(\w+)$/.exec(value);
+const divRE = /^([-+0-9.]+)\s*(\w+)$/;
+
+function s2nDivision(units: any[], value: string) {
+	const match = divRE.exec(value);
 	if (!match) {
 		throw new Error(`Can't parse: "${value}"`);
 	}
@@ -80,7 +92,7 @@ function n2sModulo(units: any[], value: number, unit: string, parts = 2) {
 	return groups.length ? groups.join(" ") : `0${unit}`;
 }
 
-const re = /\d+([a-z]+)\s*/gi;
+const groupRE = /\d+([a-z]+)\s*/gi;
 
 function s2nModulo(units: any[], value: string, unit: string) {
 	const i = units.indexOf(unit);
@@ -92,7 +104,7 @@ function s2nModulo(units: any[], value: string, unit: string) {
 	let seen = 0;
 	let result = 0;
 
-	for (const [matched, u] of value.matchAll(re)) {
+	for (const [matched, u] of value.matchAll(groupRE)) {
 		const j = units.lastIndexOf(u, k);
 		k = j - 2;
 
@@ -154,6 +166,18 @@ export function formatDuration(value: number, unit: TimeUnit, parts = 2) {
 	return n2sModulo(TIME_UNITS, value, unit, parts);
 }
 
+/**
+ * Convert duration string to number in specified unit.
+ *
+ * @example
+ * parseDuration("10000d", "d");		// 10000
+ * parseDuration("0h", "s");			// 0
+ * parseDuration("0.5m", "s");			// 30
+ * parseDuration("1d 3h 0m 15s", "s");	// 97215
+ *
+ * @param value The string to parse.
+ * @param unit Target unit to converted to.
+ */
 export function parseDuration(value: string, unit: TimeUnit) {
 	return s2nModulo(TIME_UNITS, value, unit);
 }
@@ -191,7 +215,7 @@ const SIZE_UNITS_IEC = [
  * @param fraction 1000 for SI or 1024 for IEC.
  */
 export function formatSize(value: number, fraction: 1024 | 1000 = 1024) {
-	return `${n2sDivision(value, fraction === 1024 ? SIZE_UNITS_IEC : SIZE_UNITS_SI, 0)}`;
+	return `${n2sDivision(fraction === 1024 ? SIZE_UNITS_IEC : SIZE_UNITS_SI, value, 0)}`;
 }
 
 /**
@@ -201,7 +225,7 @@ export function formatSize(value: number, fraction: 1024 | 1000 = 1024) {
  * @param fraction 1000 for SI or 1024 for IEC.
  */
 export function parseSize(value: string, fraction: 1024 | 1000 = 1024) {
-	return s2nDivision(value, fraction === 1024 ? SIZE_UNITS_IEC : SIZE_UNITS_SI);
+	return s2nDivision(fraction === 1024 ? SIZE_UNITS_IEC : SIZE_UNITS_SI, value);
 }
 
 type Placeholders = Record<string, string | RegExp>;

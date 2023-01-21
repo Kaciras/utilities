@@ -29,9 +29,10 @@ export class FetchClientError extends Error {
 		super(`Fetch failed with status: ${response.status}`);
 		this.response = response;
 		this.code = response.status;
-		this.name = "FetchClientError";
 	}
 }
+
+FetchClientError.prototype.name ="FetchClientError";
 
 type Params = Record<string, any>;
 
