@@ -118,6 +118,10 @@ function s2nModulo(units: any[], value: string, unit: string) {
 				: `Unknown unit: ${u}`);
 		}
 
+		/*
+		 * Similar performance compared to prebuilt table.
+		 * See benchmark/format.js
+		 */
 		let n = parseFloat(matched);
 		if (j > i) {
 			for (let k = i; k < j; k += 2) {
