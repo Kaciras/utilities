@@ -40,7 +40,7 @@ function s2nDivision(units: any[], value: string) {
 	if (!match) {
 		throw new Error(`Can't parse: "${value}"`);
 	}
-	const [, v, unit = ""] = match;
+	const [, v, unit] = match;
 	let result = Number(v);
 
 	for (let i = 0; i < units.length; i += 2) {

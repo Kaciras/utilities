@@ -139,6 +139,13 @@ describe("parseDuration", () => {
 		expect(() => parseDuration(value, "s")).toThrow();
 	});
 
+	it.each([
+		"11h 22h",
+		"3ms 1m",
+	])("should throw error if groups in wrong order", value => {
+		expect(() => parseDuration(value, "s")).toThrow("Units must be ordered from largest to smallest");
+	});
+
 	const cases: Array<[number, any, string]> = [
 		[60, "s", "1m"],
 		[1234, "s", "20m 34s"],
