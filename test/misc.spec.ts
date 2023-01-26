@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { identity, MultiMap, NeverAbort, silencePromise, sleep, uniqueId } from "../lib/misc.js";
+import { identity, MultiMap, NeverAbort, silencePromise, silentCall, sleep, uniqueId } from "../lib/misc.js";
 
 describe("identity", () => {
 	it("should return the argument", () => {
@@ -56,6 +56,16 @@ describe("sleep", () => {
 			// eslint-disable-next-line jest/no-conditional-expect
 			expect(e.name).toBe("AbortError");
 		}
+	});
+});
+
+describe("silence", () => {
+	const returnFn = () => 11;
+	const throwFn = () => { throw new Error(); };
+
+	it("should works", () => {
+		expect(silentCall(returnFn)).toBe(11);
+		expect(silentCall(throwFn)).toBeUndefined();
 	});
 });
 

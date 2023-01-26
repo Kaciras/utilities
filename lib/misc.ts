@@ -56,6 +56,13 @@ export function sleep(ms: number, signal = NeverAbort) {
 }
 
 /**
+ * Call a function silently. returns undefined if any error occurs.
+ */
+export function silentCall<T>(fn: () => T) {
+	try { return fn(); } catch { /* return undefined; */ }
+}
+
+/**
  * Silence a Promise-like object. This is useful for avoiding non-harmful,
  * but potentially confusing "uncaught play promise" rejection error messages.
  *
