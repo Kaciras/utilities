@@ -20,14 +20,16 @@
 const divRE = /^([-+0-9.]+)\s*(\w+)$/;
 const groupRE = /\d+([a-z]+)\s*/gi;
 
-export class UnitConvertor {
+export class UnitConvertor<T extends readonly string[]> {
 
 	private readonly name: string;
-	private readonly units: any[];
+	private readonly units: T;
+	private readonly fractions: number[];
 
-	constructor(name: string, units: any[]) {
+	constructor(name: string, units: T, fractions: number[]) {
 		this.name = name;
 		this.units = units;
+		this.fractions = fractions;
 	}
 
 	/**
@@ -40,13 +42,13 @@ export class UnitConvertor {
 		if (!Number.isFinite(value)) {
 			throw new TypeError(`${value} is not a finite number`);
 		}
-		const { units } = this;
+		const { units, fractions } = this;
 		let v = Math.abs(value);
 
-		for (; uIndex < units.length; uIndex += 2) {
-			if (v < units[uIndex + 1])
+		for (; uIndex < units.length; uIndex++) {
+			if (v < fractions[uIndex])
 				break;
-			v /= units[uIndex + 1];
+			v /= fractions[uIndex];
 		}
 
 		if (value < 0) v = -v;
@@ -54,7 +56,7 @@ export class UnitConvertor {
 	}
 
 	s2nDivision(value: string) {
-		const { name, units } = this;
+		const { name, units, fractions } = this;
 		const match = divRE.exec(value);
 		if (!match) {
 			throw new Error(`Can not convert "${value}" to ${name}`);
@@ -62,17 +64,17 @@ export class UnitConvertor {
 		const [, v, unit] = match;
 		let result = Number(v);
 
-		for (let i = 0; i < units.length; i += 2) {
+		for (let i = 0; i < units.length; i++) {
 			if (units[i] === unit) {
 				return result;
 			} else {
-				result *= units[i + 1];
+				result *= fractions[i];
 			}
 		}
 		throw new Error(`Unknown ${name} unit: ${unit}`);
 	}
 
-	n2sModulo(value: number, unit: string, parts = 2) {
+	n2sModulo(value: number, unit: T[number], parts = 2) {
 		if (!Number.isFinite(value)) {
 			throw new TypeError(`${value} is not a finite number`);
 		}
@@ -80,7 +82,7 @@ export class UnitConvertor {
 			throw new Error(`value (${value}) can not be negative`);
 		}
 
-		const { name, units } = this;
+		const { name, units, fractions } = this;
 		let i = units.indexOf(unit);
 		let d = 1;
 
@@ -89,8 +91,8 @@ export class UnitConvertor {
 		}
 
 		// Find index of the largest unit.
-		for (; ; i += 2) {
-			const x = d * units[i + 1];
+		for (; ; i++) {
+			const x = d * fractions[i];
 			if (value < x) break; else d = x;
 		}
 
@@ -100,7 +102,7 @@ export class UnitConvertor {
 		for (;
 			// 1.16e-14 = 1/24/60/60/1000/1000/1000
 			i >= 0 && parts > 0 && value > 1.16e-14;
-			i -= 2, parts -= 1
+			i--, parts -= 1
 		) {
 			const t = Math.floor(value / d);
 
@@ -110,14 +112,14 @@ export class UnitConvertor {
 			}
 
 			value %= d;
-			d /= units[i - 1];
+			d /= fractions[i - 1];
 		}
 
 		return groups.length ? groups.join(" ") : `0${unit}`;
 	}
 
-	s2nModulo(value: string, unit: string) {
-		const { name, units } = this;
+	s2nModulo(value: string, unit: T[number]) {
+		const { name, units, fractions } = this;
 		const i = units.indexOf(unit);
 		if (i === -1) {
 			throw new Error(`Unknown ${name} unit: ${unit}`);
@@ -129,7 +131,7 @@ export class UnitConvertor {
 
 		for (const [matched, u] of value.matchAll(groupRE)) {
 			const j = units.lastIndexOf(u, k);
-			k = j - 2;
+			k = j - 1;
 
 			if (j === -1) {
 				throw new Error(units.includes(u)
@@ -143,12 +145,12 @@ export class UnitConvertor {
 			 */
 			let n = parseFloat(matched);
 			if (j > i) {
-				for (let k = i; k < j; k += 2) {
-					n *= units[k + 1];
+				for (let k = i; k < j; k += 1) {
+					n *= fractions[k];
 				}
 			} else {
-				for (let k = j; k < i; k += 2) {
-					n /= units[k + 1];
+				for (let k = j; k < i; k += 1) {
+					n /= fractions[k];
 				}
 			}
 			result += n;
@@ -162,17 +164,8 @@ export class UnitConvertor {
 	}
 }
 
-type TimeUnit = "ns" | "ms" | "s" | "m" | "h" | "d";
-
-const TIME_UNITS: any[] = [
-	"ns", 1000,
-	"us", 1000,
-	"ms", 1000,
-	"s", 60,
-	"m", 60,
-	"h", 24,
-	"d", Infinity,
-];
+const TIME_UNITS = ["ns", "us", "ms", "s", "m", "h", "d"] as const;
+const TIME_FRACTIONS = [1000, 1000, 1000, 60, 60, 24, Infinity];
 
 /**
  * Convert the given duration in to a human-readable format.
@@ -204,41 +197,21 @@ const TIME_UNITS: any[] = [
  * @param unit Target unit to converted to.
  */
 
-export const durationConvertor = new UnitConvertor("time", TIME_UNITS);
+export const durationConvertor = new UnitConvertor("time", TIME_UNITS, TIME_FRACTIONS);
 
-const SIZE_UNITS_SI = [
-	"B", 1000,
-	"KB", 1000,
-	"MB", 1000,
-	"GB", 1000,
-	"TB", 1000,
-	"PB", 1000,
-	"EB", 1000,
-	"ZB", 1000,
-	"YB", Infinity,
-];
-
-const SIZE_UNITS_IEC = [
-	"B", 1024,
-	"KB", 1024,
-	"MB", 1024,
-	"GB", 1024,
-	"TB", 1024,
-	"PB", 1024,
-	"EB", 1024,
-	"ZB", 1024,
-	"YB", Infinity,
-];
+const SIZE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"] as const;
+const SIZE_FRACTIONS_SI =  [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, Infinity];
+const SIZE_FRACTIONS_IEC = [1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, Infinity];
 
 /**
  * Convert between bytes and human-readable string using SI prefixes.
  */
-export const dataSizeSI = new UnitConvertor("data size", SIZE_UNITS_SI);
+export const dataSizeSI = new UnitConvertor("data size", SIZE_UNITS, SIZE_FRACTIONS_SI);
 
 /**
  * Convert between bytes and human-readable string using IEC prefixes.
  */
-export const dataSizeIEC = new UnitConvertor("data size", SIZE_UNITS_IEC);
+export const dataSizeIEC = new UnitConvertor("data size", SIZE_UNITS, SIZE_FRACTIONS_IEC);
 
 type Placeholders = Record<string, string | RegExp>;
 
