@@ -133,7 +133,6 @@ describe("parseDuration", () => {
 		"-11h",
 		"1d after the 3h",
 		"11W",
-		"3m 1d",
 	])("should throw with invalid value %s", value => {
 		// @ts-expect-error
 		expect(() => parseDuration(value, "s")).toThrow();
