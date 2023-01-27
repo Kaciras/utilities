@@ -17,132 +17,149 @@
  * ]
  */
 
-function n2sDivision(units: any[], value: number, uIndex: number) {
-	if (!Number.isFinite(value)) {
-		throw new TypeError(`${value} is not a finite number`);
-	}
-	let v = Math.abs(value);
-
-	for (; uIndex < units.length; uIndex += 2) {
-		if (v < units[uIndex + 1])
-			break;
-		v /= units[uIndex + 1];
-	}
-
-	if (value < 0) v = -v;
-	return `${Number(v.toFixed(2))} ${units[uIndex]}`;
-}
-
 const divRE = /^([-+0-9.]+)\s*(\w+)$/;
-
-function s2nDivision(name: string, units: any[], value: string) {
-	const match = divRE.exec(value);
-	if (!match) {
-		throw new Error(`Can not convert "${value}" to ${name}`);
-	}
-	const [, v, unit] = match;
-	let result = Number(v);
-
-	for (let i = 0; i < units.length; i += 2) {
-		if (units[i] === unit) {
-			return result;
-		} else {
-			result *= units[i + 1];
-		}
-	}
-	throw new Error(`Unknown ${name} unit: ${unit}`);
-}
-
-function n2sModulo(
-	name: string, units: any[], value: number, 
-	unit: string, parts = 2,
-) {
-	if (!Number.isFinite(value)) {
-		throw new TypeError(`${value} is not a finite number`);
-	}
-	if (value < 0) {
-		throw new Error(`value (${value}) can not be negative`);
-	}
-
-	let i = units.indexOf(unit);
-	let d = 1;
-
-	if (i === -1) {
-		throw new Error(`Unknown ${name} unit: ${unit}`);
-	}
-
-	// Find index of the largest unit.
-	for (; ; i += 2) {
-		const x = d * units[i + 1];
-		if (value < x) break; else d = x;
-	}
-
-	const groups: string[] = [];
-
-	// Backtrace to calculate each group.
-	for (;
-		// 1.16e-14 = 1/24/60/60/1000/1000/1000
-		i >= 0 && parts > 0 && value > 1.16e-14;
-		i -= 2, parts -= 1
-	) {
-		const t = Math.floor(value / d);
-
-		// Avoid leading zeros.
-		if (groups.length || t !== 0) {
-			groups.push(`${t}${units[i]}`);
-		}
-
-		value %= d;
-		d /= units[i - 1];
-	}
-
-	return groups.length ? groups.join(" ") : `0${unit}`;
-}
-
 const groupRE = /\d+([a-z]+)\s*/gi;
 
-function s2nModulo(name: string, units: any[], value: string, unit: string) {
-	const i = units.indexOf(unit);
-	if (i === -1) {
+export class UnitConvertor {
+
+	private readonly name: string;
+	private readonly units: any[];
+
+	constructor(name: string, units: any[]) {
+		this.name = name;
+		this.units = units;
+	}
+
+	/**
+	 * The result may lose precision and cannot be converted back.
+	 *
+	 * @param value
+	 * @param uIndex
+	 */
+	n2sDivision(value: number, uIndex = 0) {
+		if (!Number.isFinite(value)) {
+			throw new TypeError(`${value} is not a finite number`);
+		}
+		const { units } = this;
+		let v = Math.abs(value);
+
+		for (; uIndex < units.length; uIndex += 2) {
+			if (v < units[uIndex + 1])
+				break;
+			v /= units[uIndex + 1];
+		}
+
+		if (value < 0) v = -v;
+		return `${Number(v.toFixed(2))} ${units[uIndex]}`;
+	}
+
+	s2nDivision(value: string) {
+		const { name, units } = this;
+		const match = divRE.exec(value);
+		if (!match) {
+			throw new Error(`Can not convert "${value}" to ${name}`);
+		}
+		const [, v, unit] = match;
+		let result = Number(v);
+
+		for (let i = 0; i < units.length; i += 2) {
+			if (units[i] === unit) {
+				return result;
+			} else {
+				result *= units[i + 1];
+			}
+		}
 		throw new Error(`Unknown ${name} unit: ${unit}`);
 	}
 
-	let k = units.length - 1;
-	let seen = 0;
-	let result = 0;
-
-	for (const [matched, u] of value.matchAll(groupRE)) {
-		const j = units.lastIndexOf(u, k);
-		k = j - 2;
-
-		if (j === -1) {
-			throw new Error(units.includes(u)
-				? "Units must be ordered from largest to smallest"
-				: `Unknown ${name} unit: ${u}`);
+	n2sModulo(value: number, unit: string, parts = 2) {
+		if (!Number.isFinite(value)) {
+			throw new TypeError(`${value} is not a finite number`);
+		}
+		if (value < 0) {
+			throw new Error(`value (${value}) can not be negative`);
 		}
 
-		/*
-		 * Similar performance compared to prebuilt table.
-		 * See benchmark/format.js
-		 */
-		let n = parseFloat(matched);
-		if (j > i) {
-			for (let k = i; k < j; k += 2) {
-				n *= units[k + 1];
-			}
-		} else {
-			for (let k = j; k < i; k += 2) {
-				n /= units[k + 1];
-			}
+		const { name, units } = this;
+		let i = units.indexOf(unit);
+		let d = 1;
+
+		if (i === -1) {
+			throw new Error(`Unknown ${name} unit: ${unit}`);
 		}
-		result += n;
-		seen += matched.length;
+
+		// Find index of the largest unit.
+		for (; ; i += 2) {
+			const x = d * units[i + 1];
+			if (value < x) break; else d = x;
+		}
+
+		const groups: string[] = [];
+
+		// Backtrace to calculate each group.
+		for (;
+			// 1.16e-14 = 1/24/60/60/1000/1000/1000
+			i >= 0 && parts > 0 && value > 1.16e-14;
+			i -= 2, parts -= 1
+		) {
+			const t = Math.floor(value / d);
+
+			// Avoid leading zeros.
+			if (groups.length || t !== 0) {
+				groups.push(`${t}${units[i]}`);
+			}
+
+			value %= d;
+			d /= units[i - 1];
+		}
+
+		return groups.length ? groups.join(" ") : `0${unit}`;
 	}
 
-	if (seen === value.length && seen > 0) {
-		return result;
+	s2nModulo(value: string, unit: string) {
+		const { name, units } = this;
+		const i = units.indexOf(unit);
+		if (i === -1) {
+			throw new Error(`Unknown ${name} unit: ${unit}`);
+		}
+
+		let k = units.length - 1;
+		let seen = 0;
+		let result = 0;
+
+		for (const [matched, u] of value.matchAll(groupRE)) {
+			const j = units.lastIndexOf(u, k);
+			k = j - 2;
+
+			if (j === -1) {
+				throw new Error(units.includes(u)
+					? "Units must be ordered from largest to smallest"
+					: `Unknown ${name} unit: ${u}`);
+			}
+
+			/*
+			 * Similar performance compared to prebuilt table.
+			 * See benchmark/format.js
+			 */
+			let n = parseFloat(matched);
+			if (j > i) {
+				for (let k = i; k < j; k += 2) {
+					n *= units[k + 1];
+				}
+			} else {
+				for (let k = j; k < i; k += 2) {
+					n /= units[k + 1];
+				}
+			}
+			result += n;
+			seen += matched.length;
+		}
+
+		if (seen === value.length && seen > 0) {
+			return result;
+		}
+		throw new Error(`Can not convert "${value}" to ${name}`);
 	}
-	throw new Error(`Can not convert "${value}" to ${name}`);
 }
 
 type TimeUnit = "ns" | "ms" | "s" | "m" | "h" | "d";
@@ -173,9 +190,6 @@ const TIME_UNITS: any[] = [
  * @param unit Unit ot the value.
  * @param parts Maximum number of groups in result.
  */
-export function formatDuration(value: number, unit: TimeUnit, parts = 2) {
-	return n2sModulo("time", TIME_UNITS, value, unit, parts);
-}
 
 /**
  * Convert duration string to number in specified unit.
@@ -189,9 +203,8 @@ export function formatDuration(value: number, unit: TimeUnit, parts = 2) {
  * @param value The string to parse.
  * @param unit Target unit to converted to.
  */
-export function parseDuration(value: string, unit: TimeUnit) {
-	return s2nModulo("time", TIME_UNITS, value, unit);
-}
+
+export const durationConvertor = new UnitConvertor("time", TIME_UNITS);
 
 const SIZE_UNITS_SI = [
 	"B", 1000,
@@ -218,26 +231,14 @@ const SIZE_UNITS_IEC = [
 ];
 
 /**
- * Convert bytes to a human-readable string.
- *
- * The result may lose precision and cannot be converted back.
- *
- * @param value The number to format.
- * @param fraction 1000 for SI or 1024 for IEC.
+ * Convert between bytes and human-readable string using SI prefixes.
  */
-export function formatSize(value: number, unit: string, fraction: 1024 | 1000 = 1024) {
-	return `${n2sDivision(fraction === 1024 ? SIZE_UNITS_IEC : SIZE_UNITS_SI, value, 0)}`;
-}
+export const dataSizeSI = new UnitConvertor("data size", SIZE_UNITS_SI);
 
 /**
- * Parse size string to number of bytes.
- *
- * @param value The size string.
- * @param fraction 1000 for SI or 1024 for IEC.
+ * Convert between bytes and human-readable string using IEC prefixes.
  */
-export function parseSize(value: string, fraction: 1024 | 1000 = 1024) {
-	return s2nDivision("data size", fraction === 1024 ? SIZE_UNITS_IEC : SIZE_UNITS_SI, value);
-}
+export const dataSizeIEC = new UnitConvertor("data size", SIZE_UNITS_IEC);
 
 type Placeholders = Record<string, string | RegExp>;
 

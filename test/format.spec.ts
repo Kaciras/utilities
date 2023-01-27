@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
-import { compositor, formatDuration, formatSize, parseDuration, parseSize } from "../lib/format.js";
+import { compositor, dataSizeIEC, dataSizeSI, durationConvertor } from "../lib/format.js";
 
-describe("formatSize", () => {
+describe("n2sDivision", () => {
 	const invalid = [
 		Infinity,
 		NaN,
@@ -10,7 +10,7 @@ describe("formatSize", () => {
 	];
 
 	it.each(invalid)("should throws on invalid input %#", (input) => {
-		expect(() => formatSize(input)).toThrow(TypeError(`${input} is not a finite number`));
+		expect(() => dataSizeIEC.n2sDivision(input)).toThrow(TypeError(`${input} is not a finite number`));
 	});
 
 	const cases: Array<[number, string]> = [
@@ -28,13 +28,13 @@ describe("formatSize", () => {
 		[-1025, "-1 KB"],
 	];
 	it.each(cases)("should format bytes %s", (number, string) => {
-		expect(formatSize(number)).toBe(string);
+		expect(dataSizeIEC.n2sDivision(number)).toBe(string);
 	});
 
 	it.each([
 		[1e30, "1000000 YB"],
 	])("should format bytes %s in SI", (number, string) => {
-		expect(formatSize(number, 1000)).toBe(string);
+		expect(dataSizeSI.n2sDivision(number)).toBe(string);
 	});
 });
 
@@ -45,12 +45,12 @@ describe("parseSize", () => {
 		" 1023 B",
 		"1023 B ",
 	];
-	it.each(invalid)("should throws on invalid input %#", (input) => {
-		expect(() => parseSize(input)).toThrow(new Error(`Can't parse: "${input}"`));
+	it.each(invalid)("should throws on invalid input %#", input => {
+		expect(() => dataSizeIEC.s2nDivision(input)).toThrow(new Error(`Can not convert "${input}" to data size`));
 	});
 
 	it("should throw on unknown unit", () => {
-		expect(() => parseSize("1023 SB")).toThrow(new Error("Unknown unit: SB"));
+		expect(() => dataSizeIEC.s2nDivision("1023 SB")).toThrow(new Error("Unknown data size unit: SB"));
 	});
 
 	const cases: Array<[number, string]> = [
@@ -68,11 +68,11 @@ describe("parseSize", () => {
 		[-1023, "-1023B"],
 	];
 	it.each(cases)("should parse bytes %s", (number, string) => {
-		expect(parseSize(string)).toBe(number);
+		expect(dataSizeIEC.s2nDivision(string)).toBe(number);
 	});
 
 	it("should parse the value in SI", () => {
-		expect(parseSize("1023 MB", 1000)).toBe(1023_000_000);
+		expect(dataSizeSI.s2nDivision("1023 MB")).toBe(1023_000_000);
 	});
 });
 
@@ -80,7 +80,7 @@ describe("formatDuration", () => {
 
 	it("should throw with invalid unit", () => {
 		// @ts-expect-error
-		expect(() => formatDuration(11, "foobar")).toThrow(new Error("Unknown duration unit: foobar"));
+		expect(() => durationConvertor.n2sModulo(11, "foobar")).toThrow(new Error("Unknown time unit: foobar"));
 	});
 
 	it.each([
@@ -91,11 +91,11 @@ describe("formatDuration", () => {
 		"11",
 	])("should throw with invalid value %s", value => {
 		// @ts-expect-error
-		expect(() => formatDuration(value, "s")).toThrow(new Error(`${value} is not a finite number`));
+		expect(() => durationConvertor.n2sModulo(value, "s")).toThrow(new Error(`${value} is not a finite number`));
 	});
 
 	it("should throw with negative value", () => {
-		expect(() => formatDuration(-11, "s")).toThrow("value (-11) can not be negative");
+		expect(() => durationConvertor.n2sModulo(-11, "s")).toThrow("value (-11) can not be negative");
 	});
 
 	const cases: Array<[number, any, string]> = [
@@ -110,19 +110,19 @@ describe("formatDuration", () => {
 		[0.5, "h", "30m"],
 	];
 	it.each(cases)("should works %#", (number, unit, expected) => {
-		expect(formatDuration(number, unit)).toBe(expected);
+		expect(durationConvertor.n2sModulo(number, unit)).toBe(expected);
 	});
 
 	it("should support custom part count", () => {
-		expect(formatDuration(97215, "s", 4)).toBe("1d 3h 0m 15s");
-		expect(formatDuration(0.522, "h", 99)).toBe("31m 19s 200ms");
+		expect(durationConvertor.n2sModulo(97215, "s", 4)).toBe("1d 3h 0m 15s");
+		expect(durationConvertor.n2sModulo(0.522, "h", 99)).toBe("31m 19s 200ms");
 	});
 });
 
 describe("parseDuration", () => {
 	it("should throw with invalid unit", () => {
 		// @ts-expect-error
-		expect(() => parseDuration("11s", "foobar")).toThrow(new Error("Unknown duration unit: foobar"));
+		expect(() => durationConvertor.s2nModulo("11s", "foobar")).toThrow(new Error("Unknown time unit: foobar"));
 	});
 
 	it.each([
@@ -135,14 +135,14 @@ describe("parseDuration", () => {
 		"11W",
 	])("should throw with invalid value %s", value => {
 		// @ts-expect-error
-		expect(() => parseDuration(value, "s")).toThrow();
+		expect(() => durationConvertor.s2nModulo(value, "s")).toThrow();
 	});
 
 	it.each([
 		"11h 22h",
 		"3ms 1m",
 	])("should throw error if groups in wrong order", value => {
-		expect(() => parseDuration(value, "s")).toThrow("Units must be ordered from largest to smallest");
+		expect(() => durationConvertor.s2nModulo(value, "s")).toThrow("Units must be ordered from largest to smallest");
 	});
 
 	const cases: Array<[number, any, string]> = [
@@ -158,7 +158,7 @@ describe("parseDuration", () => {
 		[0.5, "h", "30m"],
 	];
 	it.each(cases)("should works %#", (expected, unit, str) => {
-		expect(parseDuration(str, unit)).toBeCloseTo(expected, 5);
+		expect(durationConvertor.s2nModulo(str, unit)).toBeCloseTo(expected, 5);
 	});
 });
 
