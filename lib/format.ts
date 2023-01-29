@@ -19,11 +19,11 @@
 
 //@formatter:off
 const SIZE_UNITS			= ["B", "KB",  "MB",  "GB",  "TB",  "PB",  "EB",  "ZB",  "YB"] as const;
-const SIZE_FRACTIONS_SI		= [ 1,  1e3,   1e6,   1e9,   1e12,  1e15,  1e18,  1e21,  1e24,  Infinity];
-const SIZE_FRACTIONS_IEC	= [ 1,  2**10, 2**20, 2**30, 2**40, 2**50, 2**60, 2**70, 2**80, Infinity];
+const SIZE_FRACTIONS_SI		= [ 1,  1e3,   1e6,   1e9,   1e12,  1e15,  1e18,  1e21,  1e24];
+const SIZE_FRACTIONS_IEC	= [ 1,  2**10, 2**20, 2**30, 2**40, 2**50, 2**60, 2**70, 2**80];
 
 const TIME_UNITS			= ["ns", "us", "ms", "s",  "m",   "h",   "d"] as const;
-const TIME_FRACTIONS		= [ 1,   1e3,  1e6,  1e9,  6e10, 36e11, 864e11, Infinity];
+const TIME_FRACTIONS		= [ 1,   1e3,  1e6,  1e9,  6e10, 36e11, 864e11];
 // @formatter:on
 
 const divRE = /^([-+0-9.]+)\s*(\w+)$/;
@@ -69,7 +69,9 @@ export class UnitConvertor<T extends readonly string[]> {
 		const uIndex = this.getFractionIndex(unit);
 		let v = Math.abs(value) * fractions[uIndex];
 
-		let x = fractions.findIndex(f => f > v);
+		let x = 0;
+		while (fractions[x] <= v && x < units.length) x++;
+
 		x = Math.max(0, x - 1);
 		v /= fractions[x];
 
@@ -105,9 +107,7 @@ export class UnitConvertor<T extends readonly string[]> {
 		value *= fractions[i];
 
 		// Find index of the largest unit.
-		for (; ; i++) {
-			if (fractions[i] > value) break;
-		}
+		while (fractions[i] <= value && i < units.length) i++;
 
 		const groups: string[] = [];
 
