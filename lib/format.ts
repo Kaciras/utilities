@@ -18,12 +18,12 @@
  */
 
 //@formatter:off
-const SIZE_UNITS			= ["B", "B", "KB",  "MB",  "GB",  "TB",  "PB",  "EB",  "ZB",  "YB"] as const;
-const SIZE_FRACTIONS_SI		= [-1,   1,  1e3,   1e6,   1e9,   1e12,  1e15,  1e18,  1e21,  1e24,  Infinity];
-const SIZE_FRACTIONS_IEC	= [-1,   1,  2**10, 2**20, 2**30, 2**40, 2**50, 2**60, 2**70, 2**80, Infinity];
+const SIZE_UNITS			= ["B", "KB",  "MB",  "GB",  "TB",  "PB",  "EB",  "ZB",  "YB"] as const;
+const SIZE_FRACTIONS_SI		= [ 1,  1e3,   1e6,   1e9,   1e12,  1e15,  1e18,  1e21,  1e24,  Infinity];
+const SIZE_FRACTIONS_IEC	= [ 1,  2**10, 2**20, 2**30, 2**40, 2**50, 2**60, 2**70, 2**80, Infinity];
 
-const TIME_UNITS			= ["ns", "ns", "us", "ms", "s",  "m",   "h",   "d"] as const;
-const TIME_FRACTIONS		= [-1,    1,   1e3,  1e6,  1e9,  6e10, 36e10, 864e10, Infinity];
+const TIME_UNITS			= ["ns", "us", "ms", "s",  "m",   "h",   "d"] as const;
+const TIME_FRACTIONS		= [ 1,   1e3,  1e6,  1e9,  6e10, 36e11, 864e11, Infinity];
 // @formatter:on
 
 const divRE = /^([-+0-9.]+)\s*(\w+)$/;
@@ -43,10 +43,10 @@ export class UnitConvertor<T extends readonly string[]> {
 
 	private getFractionIndex(unit?: string) {
 		if (unit === undefined) {
-			return 1;
+			return 0;
 		}
 		const { units, name } = this;
-		const i = units.indexOf(unit, 1);
+		const i = units.indexOf(unit);
 		if (i !== -1) {
 			return i;
 		}
@@ -69,7 +69,8 @@ export class UnitConvertor<T extends readonly string[]> {
 		const uIndex = this.getFractionIndex(unit);
 		let v = Math.abs(value) * fractions[uIndex];
 
-		let x = fractions.findIndex(f => f > v) - 1;
+		let x = fractions.findIndex(f => f > v);
+		x = Math.max(0, x - 1);
 		v /= fractions[x];
 
 		// TODO: Is Math.sign better?
@@ -99,28 +100,26 @@ export class UnitConvertor<T extends readonly string[]> {
 			throw new Error(`value (${value}) can not be negative`);
 		}
 
-		const { name, units, fractions } = this;
+		const { units, fractions } = this;
 		let i = this.getFractionIndex(unit);
-
-		if (i === -1) {
-			throw new Error(`Unknown ${name} unit: ${unit}`);
-		}
 		value *= fractions[i];
 
 		// Find index of the largest unit.
 		for (; ; i++) {
-			if (value < fractions[i]) break;
+			if (fractions[i] > value) break;
 		}
 
 		const groups: string[] = [];
 
 		// Backtrace to calculate each group.
-		for (;
-			i >= 0 && parts > 0 && value > 1.16e-14;
-			i--, parts -= 1
-		) {
-			const t = Math.floor(value / fractions[i]);
-			value %= fractions[i];
+		for (i--; i >= 0 && parts > 0; i--, parts -= 1) {
+			const f = fractions[i];
+
+			// Avoid tailing zeros.
+			if (value * f < 1) break;
+
+			const t = Math.floor(value / f);
+			value %= f;
 
 			// Avoid leading zeros.
 			if (groups.length || t !== 0) {
@@ -133,10 +132,7 @@ export class UnitConvertor<T extends readonly string[]> {
 
 	s2nModulo(value: string, unit: T[number]) {
 		const { name, units, fractions } = this;
-		const i = units.indexOf(unit);
-		if (i === -1) {
-			throw new Error(`Unknown ${name} unit: ${unit}`);
-		}
+		const i = this.getFractionIndex(unit);
 
 		let k = units.length - 1;
 		let seen = 0;
@@ -152,26 +148,12 @@ export class UnitConvertor<T extends readonly string[]> {
 					: `Unknown ${name} unit: ${u}`);
 			}
 
-			/*
-			 * Similar performance compared to prebuilt table.
-			 * See benchmark/format.js
-			 */
-			let n = parseFloat(matched);
-			if (j > i) {
-				for (let k = i; k < j; k += 1) {
-					n *= fractions[k];
-				}
-			} else {
-				for (let k = j; k < i; k += 1) {
-					n /= fractions[k];
-				}
-			}
-			result += n;
 			seen += matched.length;
+			result += parseFloat(matched) * fractions[j];
 		}
 
 		if (seen === value.length && seen > 0) {
-			return result;
+			return result / fractions[i];
 		}
 		throw new Error(`Can not convert "${value}" to ${name}`);
 	}
