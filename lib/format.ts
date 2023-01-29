@@ -17,6 +17,15 @@
  * ]
  */
 
+//@formatter:off
+const SIZE_UNITS			= ["B", "B", "KB",  "MB",  "GB",  "TB",  "PB",  "EB",  "ZB",  "YB"] as const;
+const SIZE_FRACTIONS_SI		= [-1,   1,  1e3,   1e6,   1e9,   1e12,  1e15,  1e18,  1e21,  1e24,  Infinity];
+const SIZE_FRACTIONS_IEC	= [-1,   1,  2**10, 2**20, 2**30, 2**40, 2**50, 2**60, 2**70, 2**80, Infinity];
+
+const TIME_UNITS			= ["ns", "ns", "us", "ms", "s",  "m",   "h",   "d"] as const;
+const TIME_FRACTIONS		= [-1,    1,   1e3,  1e6,  1e9,  6e10, 36e10, 864e10, Infinity];
+// @formatter:on
+
 const divRE = /^([-+0-9.]+)\s*(\w+)$/;
 const groupRE = /\d+([a-z]+)\s*/gi;
 
@@ -32,49 +41,57 @@ export class UnitConvertor<T extends readonly string[]> {
 		this.fractions = fractions;
 	}
 
+	private getFractionIndex(unit?: string) {
+		if (unit === undefined) {
+			return 1;
+		}
+		const { units, name } = this;
+		const i = units.indexOf(unit, 1);
+		if (i !== -1) {
+			return i;
+		}
+		throw new Error(`Unknown ${name} unit: ${unit}`);
+	}
+
 	/**
 	 * The result may lose precision and cannot be converted back.
 	 *
 	 * @param value
-	 * @param uIndex
+	 * @param unit
+	 * @param precision
 	 */
-	n2sDivision(value: number, uIndex = 0) {
+	n2sDivision(value: number, unit?: T[number], precision = 2) {
 		if (!Number.isFinite(value)) {
 			throw new TypeError(`${value} is not a finite number`);
 		}
 		const { units, fractions } = this;
-		let v = Math.abs(value);
 
-		for (; uIndex < units.length; uIndex++) {
-			if (v < fractions[uIndex])
-				break;
-			v /= fractions[uIndex];
-		}
+		const uIndex = this.getFractionIndex(unit);
+		let v = Math.abs(value) * fractions[uIndex];
 
+		let x = fractions.findIndex(f => f > v) - 1;
+		v /= fractions[x];
+
+		// TODO: Is Math.sign better?
 		if (value < 0) v = -v;
-		return `${Number(v.toFixed(2))} ${units[uIndex]}`;
+		return `${Number(v.toFixed(precision))} ${units[x]}`;
 	}
 
-	s2nDivision(value: string) {
-		const { name, units, fractions } = this;
+	s2nDivision(value: string, target?: T[number]) {
+		const { name, fractions } = this;
 		const match = divRE.exec(value);
 		if (!match) {
 			throw new Error(`Can not convert "${value}" to ${name}`);
 		}
 		const [, v, unit] = match;
-		let result = Number(v);
 
-		for (let i = 0; i < units.length; i++) {
-			if (units[i] === unit) {
-				return result;
-			} else {
-				result *= fractions[i];
-			}
-		}
-		throw new Error(`Unknown ${name} unit: ${unit}`);
+		const uIndex = this.getFractionIndex(unit);
+		const x = this.getFractionIndex(target);
+
+		return Number(v) * fractions[uIndex] / fractions[x];
 	}
 
-	n2sModulo(value: number, unit: T[number], parts = 2) {
+	n2sModulo(value: number, unit?: T[number], parts = 2) {
 		if (!Number.isFinite(value)) {
 			throw new TypeError(`${value} is not a finite number`);
 		}
@@ -83,36 +100,32 @@ export class UnitConvertor<T extends readonly string[]> {
 		}
 
 		const { name, units, fractions } = this;
-		let i = units.indexOf(unit);
-		let d = 1;
+		let i = this.getFractionIndex(unit);
 
 		if (i === -1) {
 			throw new Error(`Unknown ${name} unit: ${unit}`);
 		}
+		value *= fractions[i];
 
 		// Find index of the largest unit.
 		for (; ; i++) {
-			const x = d * fractions[i];
-			if (value < x) break; else d = x;
+			if (value < fractions[i]) break;
 		}
 
 		const groups: string[] = [];
 
 		// Backtrace to calculate each group.
 		for (;
-			// 1.16e-14 = 1/24/60/60/1000/1000/1000
 			i >= 0 && parts > 0 && value > 1.16e-14;
 			i--, parts -= 1
 		) {
-			const t = Math.floor(value / d);
+			const t = Math.floor(value / fractions[i]);
+			value %= fractions[i];
 
 			// Avoid leading zeros.
 			if (groups.length || t !== 0) {
 				groups.push(`${t}${units[i]}`);
 			}
-
-			value %= d;
-			d /= fractions[i - 1];
 		}
 
 		return groups.length ? groups.join(" ") : `0${unit}`;
@@ -164,9 +177,6 @@ export class UnitConvertor<T extends readonly string[]> {
 	}
 }
 
-const TIME_UNITS = ["ns", "us", "ms", "s", "m", "h", "d"] as const;
-const TIME_FRACTIONS = [1000, 1000, 1000, 60, 60, 24, Infinity];
-
 /**
  * Convert the given duration in to a human-readable format.
  * Support units from nanoseconds to days.
@@ -198,10 +208,6 @@ const TIME_FRACTIONS = [1000, 1000, 1000, 60, 60, 24, Infinity];
  */
 
 export const durationConvertor = new UnitConvertor("time", TIME_UNITS, TIME_FRACTIONS);
-
-const SIZE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"] as const;
-const SIZE_FRACTIONS_SI =  [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, Infinity];
-const SIZE_FRACTIONS_IEC = [1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, Infinity];
 
 /**
  * Convert between bytes and human-readable string using SI prefixes.
