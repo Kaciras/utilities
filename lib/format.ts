@@ -78,13 +78,11 @@ export class UnitConvertor<T extends readonly string[]> {
 			throw new TypeError(`${value} is not a finite number`);
 		}
 		const { units, fractions } = this;
-		let v = Math.abs(value) * this.getFraction(unit);
+		let v = value * this.getFraction(unit);
 
-		const i = this.largest(v);
+		const i = this.largest(Math.abs(v));
 		v /= fractions[i];
 
-		// TODO: Is Math.sign better?
-		if (value < 0) v = -v;
 		return `${Number(v.toFixed(precision))} ${units[i]}`;
 	}
 
