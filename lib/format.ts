@@ -41,16 +41,29 @@ export class UnitConvertor<T extends readonly string[]> {
 		this.fractions = fractions;
 	}
 
-	private getFractionIndex(unit?: string) {
+	/**
+	 * Get the fraction of the unit, throw error if the unit is invalid.
+	 */
+	private getFraction(unit?: string) {
 		if (unit === undefined) {
-			return 0;
+			return 1;
 		}
-		const { units, name } = this;
+		const { units, name, fractions } = this;
 		const i = units.indexOf(unit);
 		if (i !== -1) {
-			return i;
+			return fractions[i];
 		}
 		throw new Error(`Unknown ${name} unit: ${unit}`);
+	}
+
+	/**
+	 * Find the index of the largest fraction that is less than the value.
+	 */
+	private largest(value: number) {
+		const s = this.fractions;
+		let i = 0;
+		while (s[i] <= value && i < s.length) i++;
+		return Math.max(0, i - 1);
 	}
 
 	/**
@@ -65,33 +78,25 @@ export class UnitConvertor<T extends readonly string[]> {
 			throw new TypeError(`${value} is not a finite number`);
 		}
 		const { units, fractions } = this;
+		let v = Math.abs(value) * this.getFraction(unit);
 
-		const uIndex = this.getFractionIndex(unit);
-		let v = Math.abs(value) * fractions[uIndex];
-
-		let x = 0;
-		while (fractions[x] <= v && x < units.length) x++;
-
-		x = Math.max(0, x - 1);
-		v /= fractions[x];
+		const i = this.largest(v);
+		v /= fractions[i];
 
 		// TODO: Is Math.sign better?
 		if (value < 0) v = -v;
-		return `${Number(v.toFixed(precision))} ${units[x]}`;
+		return `${Number(v.toFixed(precision))} ${units[i]}`;
 	}
 
 	s2nDivision(value: string, target?: T[number]) {
-		const { name, fractions } = this;
+		const { name } = this;
 		const match = divRE.exec(value);
 		if (!match) {
 			throw new Error(`Can not convert "${value}" to ${name}`);
 		}
 		const [, v, unit] = match;
 
-		const uIndex = this.getFractionIndex(unit);
-		const x = this.getFractionIndex(target);
-
-		return Number(v) * fractions[uIndex] / fractions[x];
+		return Number(v) * this.getFraction(unit) / this.getFraction(target);
 	}
 
 	n2sModulo(value: number, unit?: T[number], parts = 2) {
@@ -101,18 +106,14 @@ export class UnitConvertor<T extends readonly string[]> {
 		if (value < 0) {
 			throw new Error(`value (${value}) can not be negative`);
 		}
-
 		const { units, fractions } = this;
-		let i = this.getFractionIndex(unit);
-		value *= fractions[i];
-
-		// Find index of the largest unit.
-		while (fractions[i] <= value && i < units.length) i++;
+		value *= this.getFraction(unit);
 
 		const groups: string[] = [];
+		let i = this.largest(value);
 
 		// Backtrace to calculate each group.
-		for (i--; i >= 0 && parts > 0; i--, parts -= 1) {
+		for (; i >= 0 && parts > 0; i--, parts -= 1) {
 			const f = fractions[i];
 
 			// Avoid tailing zeros.
@@ -120,11 +121,7 @@ export class UnitConvertor<T extends readonly string[]> {
 
 			const t = Math.floor(value / f);
 			value %= f;
-
-			// Avoid leading zeros.
-			if (groups.length || t !== 0) {
-				groups.push(`${t}${units[i]}`);
-			}
+			groups.push(`${t}${units[i]}`);
 		}
 
 		return groups.length ? groups.join(" ") : `0${unit}`;
@@ -132,28 +129,26 @@ export class UnitConvertor<T extends readonly string[]> {
 
 	s2nModulo(value: string, unit: T[number]) {
 		const { name, units, fractions } = this;
-		const i = this.getFractionIndex(unit);
-
 		let k = units.length - 1;
 		let seen = 0;
 		let result = 0;
 
 		for (const [matched, u] of value.matchAll(groupRE)) {
-			const j = units.lastIndexOf(u, k);
-			k = j - 1;
+			const i = units.lastIndexOf(u, k);
+			k = i - 1;
 
-			if (j === -1) {
+			if (i === -1) {
 				throw new Error(units.includes(u)
 					? "Units must be ordered from largest to smallest"
 					: `Unknown ${name} unit: ${u}`);
 			}
 
 			seen += matched.length;
-			result += parseFloat(matched) * fractions[j];
+			result += parseFloat(matched) * fractions[i];
 		}
 
 		if (seen === value.length && seen > 0) {
-			return result / fractions[i];
+			return result / this.getFraction(unit);
 		}
 		throw new Error(`Can not convert "${value}" to ${name}`);
 	}
