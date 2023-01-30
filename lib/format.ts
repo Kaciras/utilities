@@ -62,7 +62,11 @@ export class UnitConvertor<T extends readonly string[]> {
 	private largest(value: number) {
 		const s = this.fractions;
 		let i = 0;
-		while (s[i] <= value && i < s.length) i++;
+
+		// When i outbound, (s[i] <= value) is false.
+		while (s[i] <= value) i++;
+
+		// (i = 0) when (value < 1), fallback to the minimum unit.
 		return Math.max(0, i - 1);
 	}
 
