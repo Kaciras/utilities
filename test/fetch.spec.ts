@@ -1,7 +1,30 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { getLocal } from "mockttp";
 import { identity } from "../lib/misc.js";
-import { FetchClient, FetchClientError } from "../lib/fetch.js";
+import { FetchClient, FetchClientError, ResponseFacade } from "../lib/fetch.js";
+
+describe("ResponseFacade", () => {
+	it("should implement Promise API", async () => {
+		let thenCalled = false;
+		let finallyCalled = false;
+		let caught = null;
+
+		const error = new Error();
+		await new ResponseFacade(Promise.reject(error), identity)
+			.then(() => thenCalled = true)
+			.catch(e => caught = e)
+			.finally(() => finallyCalled = true);
+
+		expect(thenCalled).toBe(false);
+		expect(caught).toBe(error);
+		expect(finallyCalled).toBe(true);
+	});
+
+	it("should have string representation", () => {
+		const facade = new ResponseFacade(Promise.reject(), identity);
+		expect("" + facade).toBe("[object ResponseFacade]");
+	});
+});
 
 describe("FetchClient", () => {
 	const httpServer = getLocal();
@@ -10,13 +33,9 @@ describe("FetchClient", () => {
 
 	it("should works", async () => {
 		const client = new FetchClient({ baseURL: httpServer.url });
-
 		await httpServer.forGet("/").thenReply(200, "OKOK!");
 
-		const facade = client.get("/");
-		const response = await facade;
-
-		expect("" + facade).toBe("[object ResponseFacade]");
+		const response = await client.get("/");
 		await expect(response.text()).resolves.toBe("OKOK!");
 	});
 
@@ -67,15 +86,16 @@ describe("FetchClient", () => {
 
 	it("should check the status", async () => {
 		const client = new FetchClient({ baseURL: httpServer.url });
-
 		await httpServer.forDelete("/posts/1").thenReply(451);
 
 		const response = client.delete("/posts/1");
-		await expect(response)
-			.rejects
-			.toThrow(FetchClientError);
 
 		expect((await response.raw).status).toBe(451);
+
+		const error = await response.catch(identity);
+		expect(error).toBeInstanceOf(FetchClientError);
+		expect(error.name).toBe("FetchClientError");
+		expect(error.message).toBe("Fetch failed with status: 451");
 	});
 
 	it("should return the JSON body", async () => {

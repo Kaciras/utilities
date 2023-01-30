@@ -2,19 +2,9 @@
  * There two ways to convert a value to another unit, division and modulo.
  * For example.
  * - Division conversion: "90s" to "1.5m".
- * - Modulo conversion: "90s" to "1m 30s".
+ * - Modulo conversion:   "90s" to "1m 30s".
  *
  * The n2s and s2n means "number to string" and "string to number".
- *
- * All conversion functions take a unit argument, which is an array of
- * length 2N containing the N units from smallest to largest, and
- * the multiplier to the next unit.
- * e.g.
- * [
- *     "second", 60,		// 60 seconds is a minute.
- *     "minute", 60,		// 60 minute is a hour.
- *     "hour", Infinity,	// No more units, the multiplier is infinity.
- * ]
  */
 
 //@formatter:off
@@ -73,9 +63,9 @@ export class UnitConvertor<T extends readonly string[]> {
 	/**
 	 * The result may lose precision and cannot be converted back.
 	 *
-	 * @param value
-	 * @param unit
-	 * @param precision
+	 * @param value Numeric value to use.
+	 * @param unit Unit ot the value.
+	 * @param precision The number of digits to appear after the decimal point.
 	 */
 	n2sDivision(value: number, unit?: T[number], precision = 2) {
 		if (!Number.isFinite(value)) {
@@ -90,17 +80,45 @@ export class UnitConvertor<T extends readonly string[]> {
 		return `${Number(v.toFixed(precision))} ${units[i]}`;
 	}
 
-	s2nDivision(value: string, target?: T[number]) {
-		const { name } = this;
+	/**
+	 * Convert string to number in specified unit.
+	 *
+	 * @example
+	 * durationConvertor.s2nModulo("10000d", "d");			// 10000
+	 * durationConvertor.s2nModulo("0h", "s");				// 0
+	 * durationConvertor.s2nModulo("0.5m", "s");			// 30
+	 * durationConvertor.s2nModulo("1d 3h 0m 15s", "s");	// 97215
+	 *
+	 * @param value The string to parse.
+	 * @param unit Target unit to converted to.
+	 */
+	s2nDivision(value: string, unit?: T[number]) {
 		const match = divRE.exec(value);
 		if (!match) {
-			throw new Error(`Can not convert "${value}" to ${name}`);
+			throw new Error(`Can not convert "${value}" to ${this.name}`);
 		}
-		const [, v, unit] = match;
-
-		return Number(v) * this.getFraction(unit) / this.getFraction(target);
+		const [, v, u] = match;
+		return Number(v) * this.getFraction(u) / this.getFraction(unit);
 	}
 
+	/**
+	 * Formats a value and unit.
+	 *
+	 * The result may lose precision and cannot be converted back.
+	 *
+	 * @example
+	 * durationConvertor.n2sModulo(0.1, "ns");			// "0ns"
+	 * durationConvertor.n2sModulo(0, "s");				// "0s"
+	 * durationConvertor.n2sModulo(10000, "d");			// "10000d"
+	 * durationConvertor.n2sModulo(97215, "s", 4);		// "1d 3h 0m 15s"
+	 * durationConvertor.n2sModulo(0.522, "h");			// "31m 19s"
+	 * durationConvertor.n2sModulo(0.522, "h", 1);		// "31m"
+	 * durationConvertor.n2sModulo(0.522, "h", 999);	// "31m 19s 200ms"
+	 *
+	 * @param value Numeric value to use.
+	 * @param unit Unit ot the value.
+	 * @param parts Maximum number of groups in result.
+	 */
 	n2sModulo(value: number, unit?: T[number], parts = 2) {
 		if (!Number.isFinite(value)) {
 			throw new TypeError(`${value} is not a finite number`);
@@ -129,9 +147,21 @@ export class UnitConvertor<T extends readonly string[]> {
 		return groups.length ? groups.join(" ") : `0${unit}`;
 	}
 
-	s2nModulo(value: string, unit: T[number]) {
+	/**
+	 * Convert string to number in specified unit.
+	 *
+	 * @example
+	 * durationConvertor.s2nModulo("10000d", "d");			// 10000
+	 * durationConvertor.s2nModulo("0h", "s");				// 0
+	 * durationConvertor.s2nModulo("0.5m", "s");			// 30
+	 * durationConvertor.s2nModulo("1d 3h 0m 15s", "s");	// 97215
+	 *
+	 * @param value The string to parse.
+	 * @param unit Target unit to converted to.
+	 */
+	s2nModulo(value: string, unit?: T[number]) {
 		const { name, units, fractions } = this;
-		let k = units.length - 1;
+		let k = Infinity;
 		let seen = 0;
 		let result = 0;
 
@@ -157,35 +187,9 @@ export class UnitConvertor<T extends readonly string[]> {
 }
 
 /**
- * Convert the given duration in to a human-readable format.
+ * Convert between duration and human-readable string.
  * Support units from nanoseconds to days.
- *
- * @example
- * formatDuration(0, "s");			// "0s"
- * formatDuration(10000, "d");		// "10000d"
- * formatDuration(97215, "s", 4);	// "1d 3h 0m 15s"
- * formatDuration(0.522, "h");		// "31m 19s"
- * formatDuration(0.522, "h", 1);	// "31m"
- * formatDuration(0.522, "h", 999);	// "31m 19s 200ms"
- *
- * @param value Numeric value to use.
- * @param unit Unit ot the value.
- * @param parts Maximum number of groups in result.
  */
-
-/**
- * Convert duration string to number in specified unit.
- *
- * @example
- * parseDuration("10000d", "d");		// 10000
- * parseDuration("0h", "s");			// 0
- * parseDuration("0.5m", "s");			// 30
- * parseDuration("1d 3h 0m 15s", "s");	// 97215
- *
- * @param value The string to parse.
- * @param unit Target unit to converted to.
- */
-
 export const durationConvertor = new UnitConvertor("time", TIME_UNITS, TIME_FRACTIONS);
 
 /**

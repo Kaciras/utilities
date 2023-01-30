@@ -37,9 +37,14 @@ describe("n2sDivision", () => {
 	])("should format bytes %s in SI", (number, string) => {
 		expect(dataSizeSI.n2sDivision(number)).toBe(string);
 	});
+
+	it("should support specific unit of the value", () => {
+		expect(dataSizeSI.n2sDivision(10000, "YB")).toBe("10000 YB");
+		expect(dataSizeSI.n2sDivision(512e4, "MB")).toBe("5.12 TB");
+	});
 });
 
-describe("parseSize", () => {
+describe("s2nDivision", () => {
 	const invalid = [
 		"",
 		"foobar",
@@ -75,9 +80,14 @@ describe("parseSize", () => {
 	it("should parse the value in SI", () => {
 		expect(dataSizeSI.s2nDivision("1023 MB")).toBe(1023_000_000);
 	});
+
+	it("should support specific target unit", () => {
+		expect(dataSizeSI.s2nDivision("10000 YB", "YB")).toBe(10000);
+		expect(dataSizeSI.s2nDivision("5.12 TB", "MB")).toBe(512e4);
+	});
 });
 
-describe("formatDuration", () => {
+describe("n2sModulo", () => {
 
 	it("should throw with invalid unit", () => {
 		// @ts-expect-error
@@ -106,7 +116,9 @@ describe("formatDuration", () => {
 		[22, "ns", "22ns"],
 		[10000, "d", "10000d"],
 
+		[0.1, "ns", "0ns"], // Modulo format ignore value smaller than one minimum unit.
 		[0, "ns", "0ns"],
+		[1, "ns", "1ns"],
 		[0, "h", "0h"],
 		[0.5, "h", "30m"],
 	];
@@ -120,30 +132,35 @@ describe("formatDuration", () => {
 	});
 });
 
-describe("parseDuration", () => {
-	it("should throw with invalid unit", () => {
+describe("s2nModulo", () => {
+	it("should throw error with invalid target unit", () => {
 		// @ts-expect-error
-		expect(() => durationConvertor.s2nModulo("11s", "foobar")).toThrow(new Error("Unknown time unit: foobar"));
+		expect(() => durationConvertor.s2nModulo("11s", "foobar"))
+			.toThrow(new Error("Unknown time unit: foobar"));
+	});
+
+	it("should throw error when value has invalid unit", () => {
+		expect(() => durationConvertor.s2nModulo("11W"))
+			.toThrow(new Error("Unknown time unit: W"));
 	});
 
 	it.each([
-		undefined,
+		"1d after the 3h",
 		"",
 		"11",
 		"h",
 		"-11h",
-		"1d after the 3h",
-		"11W",
 	])("should throw with invalid value %s", value => {
-		// @ts-expect-error
-		expect(() => durationConvertor.s2nModulo(value, "s")).toThrow();
+		expect(() => durationConvertor.s2nModulo(value, "s"))
+			.toThrow(new Error(`Can not convert "${value}" to time`));
 	});
 
 	it.each([
 		"11h 22h",
 		"3ms 1m",
 	])("should throw error if groups in wrong order", value => {
-		expect(() => durationConvertor.s2nModulo(value, "s")).toThrow("Units must be ordered from largest to smallest");
+		expect(() => durationConvertor.s2nModulo(value, "s"))
+			.toThrow(new Error("Units must be ordered from largest to smallest"));
 	});
 
 	const cases: Array<[number, any, string]> = [
