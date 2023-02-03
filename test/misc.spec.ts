@@ -1,9 +1,45 @@
 import { describe, expect, it } from "@jest/globals";
-import { identity, MultiMap, NeverAbort, silencePromise, silentCall, sleep, uniqueId } from "../lib/misc.js";
+import { identity, inherit, MultiMap, NeverAbort, silencePromise, silentCall, sleep, uniqueId } from "../lib/misc.js";
 
 describe("identity", () => {
 	it("should return the argument", () => {
 		expect(identity(1122)).toBe(1122);
+	});
+});
+
+describe("inherit", () => {
+	const invalidArgs = ["", 11, undefined, true, Symbol()];
+
+	it.each(invalidArgs)("should throw error for invalid parent %s", p => {
+		// @ts-expect-error
+		expect(() => inherit(p, 45)).toThrow();
+	});
+
+	it("should support null as parent", () => {
+		const instance = inherit(null, { aa: 11 });
+		expect(instance.aa).toBe(11);
+		expect(Object.getPrototypeOf(instance)).toBeNull();
+	});
+
+	it("should set prototype to the parent object", () => {
+		const foo = { aa: 11, bb: 22 };
+		const instance = inherit(foo, { aa: 33 });
+
+		expect(instance.aa).toBe(33);
+		expect(instance.bb).toBe(22);
+	});
+
+	it("should set prototype to the parent class", () => {
+		class Foo {
+			aa() { return 11; }
+
+			bb() { return 22; }
+		}
+
+		const instance = inherit(Foo, { aa() { return 33;} });
+
+		expect(instance.aa()).toBe(33);
+		expect(instance.bb()).toBe(22);
 	});
 });
 

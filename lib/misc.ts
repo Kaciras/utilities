@@ -5,6 +5,10 @@ export type Awaitable<T> = T | Promise<T>;
 export const noop = () => {};
 export const identity = <T>(v: T) => v;
 
+// https://stackoverflow.com/a/38642922/7065321
+// eslint-disable-next-line @typescript-eslint/ban-types
+type Constructor<T> = Function & { prototype: T }
+
 /**
  * An AbortSignal that never aborts.
  */
@@ -119,4 +123,22 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 		const list = super.get(key);
 		return list ? list.indexOf(value) !== -1 : false;
 	}
+}
+
+/**
+ * Create a new instance with the `parent` as prototype and the `value` as child.
+ *
+ * # NOTES
+ * If the parent is a constructor, it will not be called and just use the `prototype`.
+ * Does not support override getter-only properties.
+ *
+ * This function does not use `Object.setPrototypeOf` because it has bad performance.
+ *
+ * @param parent Prototype of returned object.
+ * @param value Provide properties for returned object.
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf
+ */
+export function inherit<P extends object | null, C>(parent: P | Constructor<P> , value: C) {
+	const proto = typeof parent === "function" ? parent.prototype : parent;
+	return Object.assign(Object.create(proto), value) as P extends null ? C : P & C;
 }
