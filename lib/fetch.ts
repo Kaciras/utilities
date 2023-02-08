@@ -20,6 +20,9 @@ export async function fetchFile(request: RequestInfo, init?: RequestInit) {
 	return new File([blob], name, { type: blob.type, lastModified });
 }
 
+/**
+ * The HTTP request was successful but failed the application layer checks.
+ */
 export class FetchClientError extends Error {
 
 	private readonly response: Response;
@@ -32,7 +35,7 @@ export class FetchClientError extends Error {
 	}
 }
 
-FetchClientError.prototype.name ="FetchClientError";
+FetchClientError.prototype.name = "FetchClientError";
 
 type Params = Record<string, any>;
 

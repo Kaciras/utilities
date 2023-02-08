@@ -144,7 +144,7 @@ export default class LRUCache<K, T> {
 		}
 	}
 
-	*[Symbol.iterator]() {
+	* [Symbol.iterator]() {
 		for (const [key, e] of this.map) yield [key, e.value];
 	}
 

@@ -52,7 +52,7 @@ describe("s2nDivision", () => {
 		"1023 B ",
 	];
 	it.each(invalid)("should throws on invalid input %#", input => {
-		expect(() => dataSizeIEC.s2nDivision(input)).toThrow(new Error(`Can not convert "${input}" to data size`));
+		expect(() => dataSizeSI.s2nDivision(input)).toThrow(new Error(`Can not convert "${input}" to data size`));
 	});
 
 	it("should throw on unknown unit", () => {

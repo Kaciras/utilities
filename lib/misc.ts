@@ -129,7 +129,8 @@ export class MultiMap<K, V> extends Map<K, V[]> {
  * Create a new instance with the `parent` as prototype and the `value` as child.
  *
  * # NOTES
- * If the parent is a constructor, it will not be called and just use the `prototype`.
+ * If the parent is a constructor, it will not be called and just use its `prototype`.
+ *
  * Does not support override getter-only properties.
  *
  * This function does not use `Object.setPrototypeOf` because it has bad performance.

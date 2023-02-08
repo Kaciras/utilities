@@ -37,8 +37,31 @@ export interface ResponseMessage {
 	isError: boolean;
 }
 
+/**
+ * Because RPC should keep the signature of the remote function, we cannot add a parameter
+ * for transfers to remote function.
+ *
+ * We track transferable values with a map. This brings a new problem that
+ * we cannot ensure that all the values added to the map are used.
+ *
+ * This has the potential for memory leaks, so use WeakMap instead of Map.
+ */
 const transferCache = new WeakMap<any, Transferable[]>();
 
+/**
+ * By default, every function parameter, return value and object property value is copied,
+ * in the sense of structured cloning.
+ *
+ * If you want a value to be transferred rather than copied,
+ * you can wrap the value in a transfer() call and provide a list of transferable values:
+ *
+ * @example
+ * const data = new Uint8Array([1, 2, 3, 4, 5]);
+ * await client.someFunction(transfer(data, [data.buffer]));
+ *
+ * @param obj The object contains transferable values.
+ * @param transfers List of values to transfer.
+ */
 export function transfer<T>(obj: T, transfers: Transferable[]) {
 	transferCache.set(obj, transfers);
 	return obj;

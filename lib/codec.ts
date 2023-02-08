@@ -44,7 +44,7 @@ export function svgToUrl(svg: string) {
 /**
  * Convert the Blob to base64-encoded data url string。
  *
- * <h1>Alternatives</h1>
+ * # Alternatives
  * If you don't need serialization, use `URL.createObjectURL` for better performance.
  */
 export function blobToBase64URL(blob: Blob) {
