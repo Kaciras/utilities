@@ -21,7 +21,8 @@ describe("ResponseFacade", () => {
 	});
 
 	it("should have string representation", () => {
-		const facade = new ResponseFacade(Promise.reject(), identity);
+		const fetching = Promise.resolve(new Response());
+		const facade = new ResponseFacade(fetching, identity);
 		expect("" + facade).toBe("[object ResponseFacade]");
 	});
 });
