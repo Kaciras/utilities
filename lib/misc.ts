@@ -139,7 +139,7 @@ export class MultiMap<K, V> extends Map<K, V[]> {
  * @param value Provide properties for returned object.
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf
  */
-export function inherit<P extends object | null, C>(parent: P | Constructor<P> , value: C) {
+export function createInstance<P extends object | null, C>(parent: P | Constructor<P> , value: C) {
 	const proto = typeof parent === "function" ? parent.prototype : parent;
 	return Object.assign(Object.create(proto), value) as P extends null ? C : P & C;
 }
