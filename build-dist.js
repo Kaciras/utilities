@@ -5,13 +5,14 @@ import swc from "@swc/core";
 import replace from "@rollup/plugin-replace";
 import isBuiltin from "is-builtin-module";
 
+// Can not use import-assertion because the filename has no extension.
 const swcrc = JSON.parse(readFileSync(".swcrc", "utf8"));
 
 const JS_RE = /\.[mc]?[jt]sx?$/;
 const EXTENSIONS = [".ts", ".tsx", ".mjs", ".js", ".cjs", ".jsx"];
 
 const swcTransform = {
-	name: "swc-transform",
+	name: "swc-transform-sync",
 
 	resolveId(id, importer) {
 		if (id.startsWith("\0")) {
@@ -33,6 +34,7 @@ const swcTransform = {
 	},
 };
 
+// Tells Rollup that Node builtin modules are side-effect free.
 const resolveBuiltinModule = {
 	name: "node-builtin",
 	resolveId(id) {

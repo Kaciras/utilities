@@ -6,6 +6,12 @@ export default {
 	htmlReporter: {
 		fileName: "coverage/stryker.html",
 	},
+	ignorePatterns: [
+		".idea",
+		"/coverage",
+		"/dist",
+		"/test/tree-shaking.ts"
+	],
 	tempDirName: "stryker-tmp",
 	coverageAnalysis: "perTest",
 	testRunner: "jest",
