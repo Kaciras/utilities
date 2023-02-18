@@ -1,18 +1,19 @@
 import { expect, it } from "@jest/globals";
-import isBuiltin from "is-builtin-module";
 import { Plugin, rollup } from "rollup";
+import isBuiltin from "is-builtin-module";
+import { noop } from "../lib/misc.js";
 
 function importOnlyEntry(file: string): Plugin {
 	return {
 		name: "import-only-entry",
 		buildStart() {
-			this.emitFile({ type: "chunk", id: "__IMPORT_ENTRY__" });
+			this.emitFile({ type: "chunk", id: "__INPUT__" });
 		},
 		resolveId(id: string) {
-			if (id === "__IMPORT_ENTRY__") return id;
+			if (id === "__INPUT__") return id;
 		},
 		load(id: string) {
-			if (id === "__IMPORT_ENTRY__") return `import "${file}"`;
+			if (id === "__INPUT__") return `import "${file}"`;
 		},
 	};
 }
@@ -33,6 +34,7 @@ it.each([
 	"./dist/node.js",
 ])("should export all members as tree-shakable for %s", async file => {
 	const bundle = await rollup({
+		onwarn: noop,
 		plugins: [resolveBuiltinModule, importOnlyEntry(file)],
 	});
 	expect((await bundle.generate({})).output[0].code).toBe("\n");
