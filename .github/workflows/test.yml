@@ -17,6 +17,8 @@ jobs:
 
       - run: pnpm install
 
+      - run: node build-dist.js
+
       - run: pnpm test -- --coverage
         env:
           NODE_OPTIONS: --experimental-vm-modules

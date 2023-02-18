@@ -25,6 +25,12 @@ export async function fetchFile(request: RequestInfo, init?: RequestInit) {
  */
 export class FetchClientError extends Error {
 
+	/*
+	 * Don't do `FetchClientError.prototype.name=<name>`
+	 * because it can not be tree-shaking.
+	 */
+	name = "FetchClientError";
+
 	private readonly response: Response;
 	private readonly code: number;
 
@@ -34,8 +40,6 @@ export class FetchClientError extends Error {
 		this.code = response.status;
 	}
 }
-
-FetchClientError.prototype.name = "FetchClientError";
 
 type Params = Record<string, any>;
 
