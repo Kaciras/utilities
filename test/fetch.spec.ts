@@ -44,7 +44,6 @@ describe("FetchClient", () => {
 		const client = new FetchClient({
 			baseURL: httpServer.url,
 			init: {
-				// @ts-ignore
 				headers: {
 					foo: "bar",
 					"content-type": "text/html",
@@ -63,6 +62,23 @@ describe("FetchClient", () => {
 
 		const response = await client.post("/", json);
 		await expect(response.text()).resolves.toBe("OKOK!");
+	});
+
+	it("should not modify the base request", async () => {
+		const baseRequest = {
+			method: "POST",
+			headers: { foo: "bar" },
+		};
+		const client = new FetchClient({
+			baseURL: httpServer.url,
+			init: baseRequest,
+		});
+		await httpServer.forGet("/").thenReply(200, "OKOK!");
+
+		const response = await client.get("/");
+		await expect(response.text()).resolves.toBe("OKOK!");
+		expect(baseRequest.method).toBe("POST");
+		expect(baseRequest.headers).toStrictEqual({ foo: "bar" });
 	});
 
 	it("should get the location", async () => {
@@ -96,7 +112,7 @@ describe("FetchClient", () => {
 		const error = await response.catch(identity);
 		expect(error).toBeInstanceOf(FetchClientError);
 		expect(error.name).toBe("FetchClientError");
-		expect(error.message).toBe("Fetch failed with status: 451");
+		expect(error.message).toBe("Fetch failed. (451)");
 	});
 
 	it("should return the JSON body", async () => {
@@ -110,7 +126,7 @@ describe("FetchClient", () => {
 		expect(actual).toEqual(json);
 	});
 
-	it("should support custom checking", async () => {
+	it("should support custom checker", async () => {
 		const check = jest.fn(identity);
 
 		const client = new FetchClient({ baseURL: httpServer.url, check });

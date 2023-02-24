@@ -34,8 +34,8 @@ export class FetchClientError extends Error {
 	private readonly response: Response;
 	private readonly code: number;
 
-	constructor(response: Response) {
-		super(`Fetch failed with status: ${response.status}`);
+	constructor(response: Response, msg?: string) {
+		super(msg ?? `Fetch failed. (${response.status})`);
 		this.response = response;
 		this.code = response.status;
 	}
