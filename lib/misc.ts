@@ -141,20 +141,38 @@ export class MultiMap<K, V> extends Map<K, V[]> {
  * { a: 1, b: 2, c: 4 },
  * { a: 1, b: 2, c: 5 },
  */
-export function cartesianProduct<K extends string, V>(src: Record<K, V[]>) {
+export function cartesianProductObj<K extends string, V>(src: Record<K, V[]>) {
 	type Out = Record<K, V>;
 
 	const entries = Object.entries(src) as Array<[K, V[]]>;
-	const draft = {} as Out;
+	const temp = {} as Out;
 
 	function* recursive(index: number): Iterable<Out> {
 		if (index === entries.length) {
-			yield Object.assign({}, draft);
+			yield { ...temp };
 		} else {
 			const [key, values] = entries[index];
 			for (const value of values) {
-				draft[key] = value;
+				temp[key] = value;
 				yield* recursive(index + 1);
+			}
+		}
+	}
+
+	return recursive(0);
+}
+
+export function cartesianProductArray<T>(entries: T[][]) {
+	const temp: T[] = [];
+
+	function* recursive(index: number): Iterable<T[]> {
+		if (index === entries.length) {
+			yield [...temp];
+		} else {
+			for (const value of entries[index]) {
+				temp.push(value);
+				yield* recursive(index + 1);
+				temp.pop();
 			}
 		}
 	}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import {
-	cartesianProduct,
+	cartesianProductArray,
+	cartesianProductObj,
 	createInstance,
 	identity,
 	MultiMap,
@@ -207,45 +208,81 @@ describe("MultiMap", () => {
 	});
 });
 
-describe("cartesianProduct", () => {
+describe("cartesianProductObj", () => {
 	it("should support empty fields", () => {
-		const params = Array.from(cartesianProduct({
+		const params = Array.from(cartesianProductObj({
 			a: [0, 1],
 			b: [],
 			c: [2, 3, 4],
 		}));
 		expect(params).toHaveLength(0);
 	});
-	
+
 	it("should support empty object", () => {
-		const params = Array.from(cartesianProduct({}));
+		const params = Array.from(cartesianProductObj({}));
 
 		expect(params).toHaveLength(1);
 		expect(Object.keys(params[0])).toHaveLength(0);
 	});
 
-	it("should generate cartesian product", () => {
-		const params = cartesianProduct({
+	it("should works", () => {
+		const params = cartesianProductObj({
 			a: [0, 1],
-			b: [2, 3, 4],
+			b: [20, 30, 40],
 		});
 		const expected = expect.arrayContaining([
-			{ a: 0, b: 2 },
-			{ a: 0, b: 3 },
-			{ a: 0, b: 4 },
-			{ a: 1, b: 2 },
-			{ a: 1, b: 3 },
-			{ a: 1, b: 4 },
+			{ a: 0, b: 20 },
+			{ a: 0, b: 30 },
+			{ a: 0, b: 40 },
+			{ a: 1, b: 20 },
+			{ a: 1, b: 30 },
+			{ a: 1, b: 40 },
 		]);
 		expect(Array.from(params)).toEqual(expected);
 	});
 
 	it("should isolate each product", () => {
-		const [first, second] = cartesianProduct({
+		const [first, second] = cartesianProductObj({
 			a: [0],
-			b: [2, 3],
+			b: [20, 30],
 		});
 		first.a = 8964;
-		expect(second).toStrictEqual({ a: 0, b: 3 });
+		expect(second).toStrictEqual({ a: 0, b: 30 });
+	});
+});
+
+describe("cartesianProductArray", () => {
+	it("should support empty fields", () => {
+		const iter = cartesianProductArray([
+			[0, 1],
+			[],
+			[2, 3, 4],
+		]);
+		expect(Array.from(iter)).toHaveLength(0);
+	});
+
+	it("should support empty array", () => {
+		const params = Array.from(cartesianProductArray([]));
+		expect(params).toEqual([[]]);
+	});
+
+	it("should works", () => {
+		const iter = cartesianProductArray([
+			[0, 1],
+			[20, 30, 40],
+		]);
+		expect(Array.from(iter)).toEqual([
+			[0, 20], [0, 30], [0, 40],
+			[1, 20], [1, 30], [1, 40],
+		]);
+	});
+
+	it("should isolate each product", () => {
+		const [first, second] = cartesianProductArray([
+			[0],
+			[20, 30],
+		]);
+		first[0] = 8964;
+		expect(second).toStrictEqual([0, 30]);
 	});
 });
