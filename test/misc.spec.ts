@@ -239,4 +239,13 @@ describe("cartesianProduct", () => {
 		]);
 		expect(Array.from(params)).toEqual(expected);
 	});
+
+	it("should isolate each product", () => {
+		const [first, second] = cartesianProduct({
+			a: [0],
+			b: [2, 3],
+		});
+		first.a = 8964;
+		expect(second).toStrictEqual({ a: 0, b: 3 });
+	});
 });

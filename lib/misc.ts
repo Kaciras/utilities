@@ -125,8 +125,6 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 	}
 }
 
-type ConfigData = Record<string, any>;
-
 /**
  *
  * @example
@@ -143,20 +141,21 @@ type ConfigData = Record<string, any>;
  * { a: 1, b: 2, c: 4 },
  * { a: 1, b: 2, c: 5 },
  */
-export function cartesianProduct(src: Record<string, any[]>) {
-	type Out = Record<string, any>;
+export function cartesianProduct<K extends string, V>(src: Record<K, V[]>) {
+	type Out = Record<K, V>;
 
-	const entries = Object.entries(src);
-	const draft: Out = {};
+	const entries = Object.entries(src) as Array<[K, V[]]>;
+	const draft = {} as Out;
 
-	function* recursive(i: number): Iterable<Out> {
-		if (i === entries.length) {
-			return yield Object.assign({}, draft);
-		}
-		const [key, values] = entries[i];
-		for (const value of values) {
-			draft[key] = value;
-			yield* recursive(i + 1);
+	function* recursive(index: number): Iterable<Out> {
+		if (index === entries.length) {
+			yield Object.assign({}, draft);
+		} else {
+			const [key, values] = entries[index];
+			for (const value of values) {
+				draft[key] = value;
+				yield* recursive(index + 1);
+			}
 		}
 	}
 
