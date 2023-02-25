@@ -3,8 +3,9 @@ import { base64url, escapeHTML, svgToUrl } from "../lib/codec.js";
 
 describe("escapeHTML", () => {
 	const cases = [
+		['&foo <> bar "fizz" l\'a', "&amp;foo &lt;&gt; bar &quot;fizz&quot; l&#39;a"],
 		["</p><a onclick=", "&lt;/p&gt;&lt;a onclick="],
-		["' onclick=alert(1)", "&#039; onclick=alert(1)"],
+		["' onclick=alert(1)", "&#39; onclick=alert(1)"],
 		['" onclick=alert(1)', "&quot; onclick=alert(1)"],
 		["alert&lpar;1&rpar;", "alert&amp;lpar;1&amp;rpar;"],
 	];

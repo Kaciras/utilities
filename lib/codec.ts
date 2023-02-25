@@ -3,7 +3,7 @@ const htmlEscapes: Record<string, string> = {
 	"<": "&lt;",
 	">": "&gt;",
 	'"': "&quot;",
-	"'": "&#039;",
+	"'": "&#39;",
 };
 
 /**
