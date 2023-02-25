@@ -125,6 +125,44 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 	}
 }
 
+type ConfigData = Record<string, any>;
+
+/**
+ *
+ * @example
+ * cartesianProduct({
+ *     a: [0, 1],
+ *     b: [2],
+ *     c: [3, 4, 5]
+ * });
+ * // Return an iterable of:
+ * { a: 0, b: 2, c: 3 },
+ * { a: 0, b: 2, c: 4 },
+ * { a: 0, b: 2, c: 5 },
+ * { a: 1, b: 2, c: 3 },
+ * { a: 1, b: 2, c: 4 },
+ * { a: 1, b: 2, c: 5 },
+ */
+export function cartesianProduct(src: Record<string, any[]>) {
+	type Out = Record<string, any>;
+
+	const entries = Object.entries(src);
+	const draft: Out = {};
+
+	function* recursive(i: number): Iterable<Out> {
+		if (i === entries.length) {
+			return yield Object.assign({}, draft);
+		}
+		const [key, values] = entries[i];
+		for (const value of values) {
+			draft[key] = value;
+			yield* recursive(i + 1);
+		}
+	}
+
+	return recursive(0);
+}
+
 /**
  * Create a new instance with the `parent` as prototype and the `value` as child.
  *
@@ -139,7 +177,7 @@ export class MultiMap<K, V> extends Map<K, V[]> {
  * @param value Provide properties for returned object.
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf
  */
-export function createInstance<P extends object | null, C>(parent: P | Constructor<P> , value: C) {
+export function createInstance<P extends object | null, C>(parent: P | Constructor<P>, value: C) {
 	const proto = typeof parent === "function" ? parent.prototype : parent;
 	return Object.assign(Object.create(proto), value) as P extends null ? C : P & C;
 }

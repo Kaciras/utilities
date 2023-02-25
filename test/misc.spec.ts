@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import {
+	cartesianProduct,
 	createInstance,
 	identity,
 	MultiMap,
@@ -7,7 +8,7 @@ import {
 	silencePromise,
 	silentCall,
 	sleep,
-	uniqueId
+	uniqueId,
 } from "../lib/misc.js";
 
 describe("identity", () => {
@@ -203,5 +204,39 @@ describe("MultiMap", () => {
 		expect(iterator.next()).toStrictEqual({ done: false, value: 22 });
 		expect(iterator.next()).toStrictEqual({ done: false, value: 33 });
 		expect(iterator.next().done).toBe(true);
+	});
+});
+
+describe("cartesianProduct", () => {
+	it("should support empty fields", () => {
+		const params = Array.from(cartesianProduct({
+			a: [0, 1],
+			b: [],
+			c: [2, 3, 4],
+		}));
+		expect(params).toHaveLength(0);
+	});
+	
+	it("should support empty object", () => {
+		const params = Array.from(cartesianProduct({}));
+
+		expect(params).toHaveLength(1);
+		expect(Object.keys(params[0])).toHaveLength(0);
+	});
+
+	it("should generate cartesian product", () => {
+		const params = cartesianProduct({
+			a: [0, 1],
+			b: [2, 3, 4],
+		});
+		const expected = expect.arrayContaining([
+			{ a: 0, b: 2 },
+			{ a: 0, b: 3 },
+			{ a: 0, b: 4 },
+			{ a: 1, b: 2 },
+			{ a: 1, b: 3 },
+			{ a: 1, b: 4 },
+		]);
+		expect(Array.from(params)).toEqual(expected);
 	});
 });
