@@ -86,10 +86,10 @@ describe("uniqueId", () => {
 describe("sleep", () => {
 	it("should fulfill after the time", async () => {
 		const begin = performance.now();
-		await sleep(100);
+		await sleep(50);
 		const end = performance.now();
 
-		expect(end - begin).toBeGreaterThan(99);
+		expect(end - begin).toBeGreaterThan(49);
 	});
 
 	it("should reject when cancelled", async () => {

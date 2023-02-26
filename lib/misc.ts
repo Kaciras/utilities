@@ -126,20 +126,21 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 }
 
 /**
+ * Get the cartesian product generator of objects.
  *
  * @example
- * cartesianProduct({
+ * cartesianProductObj({
  *     a: [0, 1],
  *     b: [2],
  *     c: [3, 4, 5]
  * });
- * // Return an iterable of:
- * { a: 0, b: 2, c: 3 },
- * { a: 0, b: 2, c: 4 },
- * { a: 0, b: 2, c: 5 },
- * { a: 1, b: 2, c: 3 },
- * { a: 1, b: 2, c: 4 },
- * { a: 1, b: 2, c: 5 },
+ * // Returns an iterable of:
+ * { a: 0, b: 2, c: 3 }
+ * { a: 0, b: 2, c: 4 }
+ * { a: 0, b: 2, c: 5 }
+ * { a: 1, b: 2, c: 3 }
+ * { a: 1, b: 2, c: 4 }
+ * { a: 1, b: 2, c: 5 }
  */
 export function cartesianProductObj<K extends string, V>(src: Record<K, V[]>) {
 	type Out = Record<K, V>;
@@ -162,6 +163,23 @@ export function cartesianProductObj<K extends string, V>(src: Record<K, V[]>) {
 	return recursive(0);
 }
 
+/**
+ * Get the cartesian product generator of multiple arrays.
+ *
+ * @example
+ * cartesianProductArray([
+ *     [0, 1],
+ *     [2],
+ *     [3, 4, 5]
+ * ]);
+ * // Returns an iterable of:
+ * [0, 2, 3]
+ * [0, 2, 4]
+ * [0, 2, 5]
+ * [1, 2, 3]
+ * [1, 2, 4]
+ * [1, 2, 5]
+ */
 export function cartesianProductArray<T>(entries: T[][]) {
 	const temp: T[] = [];
 

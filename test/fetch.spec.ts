@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
+import { afterAll, beforeAll, describe, expect, it, jest } from "@jest/globals";
 import { getLocal } from "mockttp";
 import { identity } from "../lib/misc.js";
 import { FetchClient, FetchClientError, ResponseFacade } from "../lib/fetch.js";
@@ -28,9 +28,10 @@ describe("ResponseFacade", () => {
 });
 
 describe("FetchClient", () => {
+	// We don't restart the server each test, always setup rules before fetching.
 	const httpServer = getLocal();
-	beforeEach(() => httpServer.start());
-	afterEach(() => httpServer.stop());
+	beforeAll(() => httpServer.start());
+	afterAll(() => httpServer.stop());
 
 	it("should works", async () => {
 		const client = new FetchClient({ baseURL: httpServer.url });
@@ -128,11 +129,11 @@ describe("FetchClient", () => {
 
 	it("should support custom checker", async () => {
 		const check = jest.fn(identity);
+		await httpServer.forGet("/").thenReply(503);
 
 		const client = new FetchClient({ baseURL: httpServer.url, check });
+		const response = await client.get("/");
 
-		const got = await client.get("/");
-		const response = await got;
 		expect(response.status).toBe(503);
 		expect(check).toHaveBeenCalledTimes(1);
 	});
