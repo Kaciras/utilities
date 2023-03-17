@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, jest } from "@jest/globals";
 import { getLocal } from "mockttp";
-import { identity } from "../lib/misc.js";
+import { identity } from "../lib/lang.js";
 import { FetchClient, FetchClientError, ResponseFacade } from "../lib/fetch.js";
 
 describe("ResponseFacade", () => {

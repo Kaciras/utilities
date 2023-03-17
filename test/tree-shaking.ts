@@ -1,7 +1,7 @@
 import { expect, it } from "@jest/globals";
 import { Plugin, rollup } from "rollup";
 import isBuiltin from "is-builtin-module";
-import { noop } from "../lib/misc.js";
+import { noop } from "../lib/lang.js";
 
 function importOnlyEntry(file: string): Plugin {
 	return {

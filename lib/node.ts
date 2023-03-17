@@ -2,6 +2,7 @@ import process from "process";
 import Signals = NodeJS.Signals;
 
 export * from "./codec.js";
+export * from "./lang.js";
 export * from "./crypto.js";
 export * from "./event.js";
 export * from "./fetch.js";

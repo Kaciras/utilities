@@ -1,4 +1,5 @@
 export * from "./codec.js";
+export * from "./lang.js";
 export * from "./crypto.js";
 export * from "./event.js";
 export * from "./format.js";

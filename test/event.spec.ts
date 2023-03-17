@@ -1,5 +1,5 @@
 import { describe, expect, it, jest } from "@jest/globals";
-import { noop } from "../lib/misc.js";
+import { noop } from "../lib/lang.js";
 import { MultiEventEmitter, SingleEventEmitter } from "../lib/event.js";
 
 describe("SingleEventEmitter", () => {
