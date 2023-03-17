@@ -133,6 +133,10 @@ export default class LRUCache<K, T> {
 		this.map.set(key, e);
 	}
 
+	/*
+	 * Map iteration always starts with the oldest element,
+	 * so we use this for cache eviction.
+	 */
 	private pruneIfNeeded() {
 		if (this.size <= this.capacity) {
 			return;

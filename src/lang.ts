@@ -129,16 +129,15 @@ export function cartesianProductObj<K extends string, V>(src: Record<K, V[]>) {
  * [1, 2, 5]
  */
 export function cartesianProductArray<T>(entries: T[][]) {
-	const temp: T[] = [];
+	const temp = new Array<T>(entries.length);
 
 	function* recursive(index: number): Iterable<T[]> {
 		if (index === entries.length) {
 			yield [...temp];
 		} else {
 			for (const value of entries[index]) {
-				temp.push(value);
+				temp[index] = value;
 				yield* recursive(index + 1);
-				temp.pop();
 			}
 		}
 	}

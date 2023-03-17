@@ -16,13 +16,13 @@ Goals:
 
 ## Install
 
-This package is pure ESM, It cannot be `require()`'d from CommonJS.
+This package is pure ESM, it cannot be `require()`'d from CommonJS.
 
 ```
 pnpm i @kaciras/utilities
 ```
 
-The package has 2 entry points, "./node" for Node runtime and "./browser" for browsers. Most functions work for both, there are still a few functions that only work in specific runtime.
+The package has 2 entry points, "./node" for NodeJS and "./browser" for browsers. Most functions work for both, but there are still a few functions that only work in one runtime.
 
 ```javascript
 // Import for Node.
