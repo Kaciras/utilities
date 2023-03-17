@@ -4,19 +4,27 @@ import { identity } from "../src/lang.js";
 import { FetchClient, FetchClientError, ResponseFacade } from "../src/fetch.js";
 
 describe("ResponseFacade", () => {
-	it("should implement Promise API", async () => {
-		let thenCalled = false;
-		let finallyCalled = false;
-		let caught = null;
-
+	it("should implement Promise.then", async () => {
 		const error = new Error();
+		let caught = null;
+		let thenCalled = false;
+
 		await new ResponseFacade(Promise.reject(error), identity)
 			.then(() => thenCalled = true)
-			.catch(e => caught = e)
+			.catch(error => caught = error);
+
+		expect(caught).toBe(error);
+		expect(thenCalled).toBe(false);
+	});
+
+	it("should implement Promise.finally", async () => {
+		const error = new Error();
+		let finallyCalled = false;
+
+		const f = new ResponseFacade(Promise.reject(error), identity)
 			.finally(() => finallyCalled = true);
 
-		expect(thenCalled).toBe(false);
-		expect(caught).toBe(error);
+		await expect(f).rejects.toThrow(error);
 		expect(finallyCalled).toBe(true);
 	});
 
