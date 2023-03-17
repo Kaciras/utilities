@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { NeverAbort, sleep, uniqueId } from "../lib/misc.js";
+import { NeverAbort, sleep, uniqueId } from "../src/misc.js";
 
 describe("NeverAbort", () => {
 	it("should not abort", () => {

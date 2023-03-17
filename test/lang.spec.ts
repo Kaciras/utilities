@@ -7,7 +7,7 @@ import {
 	MultiMap,
 	silencePromise,
 	silentCall,
-} from "../lib/lang.js";
+} from "../src/lang.js";
 
 
 describe("identity", () => {

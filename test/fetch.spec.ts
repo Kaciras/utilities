@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, jest } from "@jest/globals";
 import { getLocal } from "mockttp";
-import { identity } from "../lib/lang.js";
-import { FetchClient, FetchClientError, ResponseFacade } from "../lib/fetch.js";
+import { identity } from "../src/lang.js";
+import { FetchClient, FetchClientError, ResponseFacade } from "../src/fetch.js";
 
 describe("ResponseFacade", () => {
 	it("should implement Promise API", async () => {

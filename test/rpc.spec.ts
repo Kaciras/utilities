@@ -1,7 +1,7 @@
 import { describe, expect, it, jest } from "@jest/globals";
-import { noop } from "../lib/lang.js";
-import { AbortError } from "../lib/misc.js";
-import { createClient, createServer, pubSub2ReqRes, Respond, RPCSend, serve, transfer } from "../lib/rpc.js";
+import { noop } from "../src/lang.js";
+import { AbortError } from "../src/misc.js";
+import { createClient, createServer, pubSub2ReqRes, Respond, RPCSend, serve, transfer } from "../src/rpc.js";
 
 const TIMED_OUT = Symbol();
 

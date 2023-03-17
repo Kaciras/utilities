@@ -1,7 +1,7 @@
 import { expect, it } from "@jest/globals";
 import { Plugin, rollup } from "rollup";
 import isBuiltin from "is-builtin-module";
-import { noop } from "../lib/lang.js";
+import { noop } from "../src/lang.js";
 
 function importOnlyEntry(file: string): Plugin {
 	return {
@@ -30,8 +30,8 @@ const resolveBuiltinModule: Plugin = {
 };
 
 it.each([
-	"./dist/browser.js",
-	"./dist/node.js",
+	"./lib/browser.js",
+	"./lib/node.js",
 ])("should export all members as tree-shakable for %s", async file => {
 	const bundle = await rollup({
 		onwarn: noop,

@@ -1,4 +1,4 @@
-import { dataSizeIEC, durationConvertor } from "../dist/node.js";
+import { dataSizeIEC, durationConvertor } from "../lib/node.js";
 
 function n2sDivision(units, value, uIndex) {
 	if (!Number.isFinite(value)) {

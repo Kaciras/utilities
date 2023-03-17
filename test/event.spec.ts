@@ -1,6 +1,6 @@
 import { describe, expect, it, jest } from "@jest/globals";
-import { noop } from "../lib/lang.js";
-import { MultiEventEmitter, SingleEventEmitter } from "../lib/event.js";
+import { noop } from "../src/lang.js";
+import { MultiEventEmitter, SingleEventEmitter } from "../src/event.js";
 
 describe("SingleEventEmitter", () => {
 	const handler1 = jest.fn();

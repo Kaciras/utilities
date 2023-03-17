@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { base64url, escapeHTML, svgToUrl } from "../lib/codec.js";
+import { base64url, escapeHTML, svgToUrl } from "../src/codec.js";
 
 describe("escapeHTML", () => {
 	const cases = [

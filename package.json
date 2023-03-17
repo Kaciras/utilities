@@ -12,17 +12,17 @@
 		"utils"
 	],
 	"exports": {
-		"./*": "./dist/*.js"
+		"./*": "./lib/*.js"
 	},
 	"type": "module",
 	"files": [
-		"dist"
+		"lib"
 	],
 	"scripts": {
 		"lint": "eslint --fix .",
 		"test": "jest",
 		"test:mutation": "stryker run",
-		"build": "tsc && node build-dist.js"
+		"build": "tsc --build tsconfig-build.json && node build-lib.js"
 	},
 	"devDependencies": {
 		"@jest/globals": "^29.5.0",

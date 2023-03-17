@@ -52,17 +52,17 @@ async function buildPlatform(input, typeOfWindow) {
 		plugins: [
 			resolveBuiltinModule,
 			swcTransform,
-			replace({ 
+			replace({
 				"typeof window": typeOfWindow,
 			}),
 		],
 	});
 
 	await bundle.write({
-		dir: "dist",
+		dir: "lib",
 		chunkFileNames: "[name].js",
 	});
 }
 
-await buildPlatform("lib/node.ts", "'undefined'");
-await buildPlatform("lib/browser.ts", "'object'");
+await buildPlatform("src/node.ts", "'undefined'");
+await buildPlatform("src/browser.ts", "'object'");

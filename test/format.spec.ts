@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { compositor, dataSizeIEC, dataSizeSI, durationConvertor } from "../lib/format.js";
+import { compositor, dataSizeIEC, dataSizeSI, durationConvertor } from "../src/format.js";
 
 describe("n2sDivision", () => {
 	const invalid = [

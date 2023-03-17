@@ -9,7 +9,7 @@ export default {
 	ignorePatterns: [
 		".idea",
 		"/coverage",
-		"/dist",
+		"/lib",
 		"/test/tree-shaking.ts"
 	],
 	tempDirName: "stryker-tmp",

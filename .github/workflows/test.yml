@@ -17,7 +17,7 @@ jobs:
 
       - run: pnpm install
 
-      - run: node build-dist.js
+      - run: node build-lib.js
 
       - run: pnpm test -- --coverage
         env:

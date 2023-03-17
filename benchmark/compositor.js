@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import { PassThrough, Readable } from "stream";
-import { Composite, compositor } from "../dist/node.js";
+import { Composite, compositor } from "../lib/node.js";
 
 const ITERATIONS = 10_000;
 

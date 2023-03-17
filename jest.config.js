@@ -5,7 +5,7 @@ export default {
 	extensionsToTreatAsEsm: [".ts"],
 	clearMocks: true,
 	collectCoverageFrom: [
-		"lib/**/*.ts",
+		"src/**/*.ts",
 	],
 	coverageDirectory: "coverage",
 	coverageProvider: "v8",
