@@ -22,7 +22,7 @@
 		"lint": "eslint --fix .",
 		"test": "jest",
 		"test:mutation": "stryker run",
-		"build": "tsc --build tsconfig-build.json && node build-lib.js"
+		"build": "node build-lib.js"
 	},
 	"devDependencies": {
 		"@jest/globals": "^29.5.0",

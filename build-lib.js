@@ -4,6 +4,35 @@ import { rollup } from "rollup";
 import swc from "@swc/core";
 import replace from "@rollup/plugin-replace";
 import isBuiltin from "is-builtin-module";
+import ts from "typescript";
+import tsConfig from "./tsconfig.json" assert { type: "json" };
+
+/**
+ * Generate type declaration files. This function does not throw any error
+ * if compilation failed, you should check the console for messages.
+ *
+ * @see https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API
+ */
+function compileTypeScript(entries) {
+	const { options } = ts.convertCompilerOptionsFromJson(tsConfig.compilerOptions);
+	const program = ts.createProgram(entries, options);
+
+	const emitResult = program.emit();
+
+	let diagnostics = ts
+		.getPreEmitDiagnostics(program)
+		.concat(emitResult.diagnostics);
+
+	for (const { file, start, messageText } of diagnostics) {
+		const message = ts.flattenDiagnosticMessageText(messageText, "\n");
+		if (!file) {
+			console.error(message);
+		} else {
+			let { line, character } = ts.getLineAndCharacterOfPosition(file, start);
+			console.error(`${file.fileName} (${line + 1},${character + 1}): ${message}`);
+		}
+	}
+}
 
 // Can not use import-assertion because the filename has no extension.
 const swcrc = JSON.parse(readFileSync(".swcrc", "utf8"));
@@ -64,5 +93,6 @@ async function buildPlatform(input, typeOfWindow) {
 	});
 }
 
+compileTypeScript(["src/node.ts", "src/browser.ts"]);
 await buildPlatform("src/node.ts", "'undefined'");
 await buildPlatform("src/browser.ts", "'object'");
