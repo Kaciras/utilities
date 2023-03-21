@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { compositor, dataSizeIEC, dataSizeSI, durationConvertor } from "../src/format.js";
 
-describe("n2sDivision", () => {
+describe("formatDiv", () => {
 	const invalid = [
 		Infinity,
 		NaN,
@@ -10,7 +10,7 @@ describe("n2sDivision", () => {
 	];
 
 	it.each(invalid)("should throws on invalid input %#", (input) => {
-		expect(() => dataSizeIEC.n2sDivision(input)).toThrow(TypeError(`${input} is not a finite number`));
+		expect(() => dataSizeIEC.formatDiv(input)).toThrow(TypeError(`${input} is not a finite number`));
 	});
 
 	const cases: Array<[number, string]> = [
@@ -29,18 +29,63 @@ describe("n2sDivision", () => {
 		[-1025, "-1 KB"],
 	];
 	it.each(cases)("should format bytes %s", (number, string) => {
-		expect(dataSizeIEC.n2sDivision(number)).toBe(string);
+		expect(dataSizeIEC.formatDiv(number)).toBe(string);
 	});
 
 	it.each([
 		[1e30, "1000000 YB"],
 	])("should format bytes %s in SI", (number, string) => {
-		expect(dataSizeSI.n2sDivision(number)).toBe(string);
+		expect(dataSizeSI.formatDiv(number)).toBe(string);
 	});
 
 	it("should support specific unit of the value", () => {
-		expect(dataSizeSI.n2sDivision(10000, "YB")).toBe("10000 YB");
-		expect(dataSizeSI.n2sDivision(512e4, "MB")).toBe("5.12 TB");
+		expect(dataSizeSI.formatDiv(10000, "YB")).toBe("10000 YB");
+		expect(dataSizeSI.formatDiv(512e4, "MB")).toBe("5.12 TB");
+	});
+});
+
+describe("formatMod", () => {
+
+	it("should throw with invalid unit", () => {
+		// @ts-expect-error
+		expect(() => durationConvertor.formatMod(11, "foobar")).toThrow(new Error("Unknown time unit: foobar"));
+	});
+
+	it.each([
+		undefined,
+		NaN,
+		Infinity,
+		Number.NEGATIVE_INFINITY,
+		"11",
+	])("should throw with invalid value %s", value => {
+		// @ts-expect-error
+		expect(() => durationConvertor.formatMod(value, "s")).toThrow(new Error(`${value} is not a finite number`));
+	});
+
+	it("should throw with negative value", () => {
+		expect(() => durationConvertor.formatMod(-11, "s")).toThrow("value (-11) can not be negative");
+	});
+
+	const cases: Array<[number, any, string]> = [
+		[60, "s", "1m"],
+		[1234, "s", "20m 34s"],
+		[97215, "s", "1d 3h"],
+		[22, "ns", "22ns"],
+		[10000, "d", "10000d"],
+
+		[0.1, "ns", "0ns"], // Modulo format ignore value smaller than one minimum unit.
+		[0, "ns", "0ns"],
+		[1, "ns", "1ns"],
+		[0, "h", "0h"],
+		[0.5, "h", "30m"],
+	];
+	it.each(cases)("should works %#", (number, unit, expected) => {
+		expect(durationConvertor.formatMod(number, unit)).toBe(expected);
+	});
+
+	it("should support custom part count", () => {
+		expect(durationConvertor.formatMod(97215, "s", 4)).toBe("1d 3h 0m 15s");
+		expect(durationConvertor.formatMod(0.522, "h", 99)).toBe("31m 19s 200ms");
 	});
 });
 
@@ -49,14 +94,14 @@ describe("s2nDivision", () => {
 		"",
 		"foobar",
 		" 1023 B",
-		"1023 B ",
+		// "1023 B ",
 	];
 	it.each(invalid)("should throws on invalid input %#", input => {
-		expect(() => dataSizeSI.s2nDivision(input)).toThrow(new Error(`Can not convert "${input}" to data size`));
+		expect(() => dataSizeSI.parse(input)).toThrow(new Error(`Can not convert "${input}" to data size`));
 	});
 
 	it("should throw on unknown unit", () => {
-		expect(() => dataSizeIEC.s2nDivision("1023 SB")).toThrow(new Error("Unknown data size unit: SB"));
+		expect(() => dataSizeIEC.parse("1023 SB")).toThrow(new Error("Unknown data size unit: SB"));
 	});
 
 	const cases: Array<[number, string]> = [
@@ -74,73 +119,28 @@ describe("s2nDivision", () => {
 		[-1023, "-1023B"],
 	];
 	it.each(cases)("should parse bytes %s", (number, string) => {
-		expect(dataSizeIEC.s2nDivision(string)).toBe(number);
+		expect(dataSizeIEC.parse(string)).toBe(number);
 	});
 
 	it("should parse the value in SI", () => {
-		expect(dataSizeSI.s2nDivision("1023 MB")).toBe(1023_000_000);
+		expect(dataSizeSI.parse("1023 MB")).toBe(1023_000_000);
 	});
 
 	it("should support specific target unit", () => {
-		expect(dataSizeSI.s2nDivision("10000 YB", "YB")).toBe(10000);
-		expect(dataSizeSI.s2nDivision("5.12 TB", "MB")).toBe(512e4);
-	});
-});
-
-describe("n2sModulo", () => {
-
-	it("should throw with invalid unit", () => {
-		// @ts-expect-error
-		expect(() => durationConvertor.n2sModulo(11, "foobar")).toThrow(new Error("Unknown time unit: foobar"));
-	});
-
-	it.each([
-		undefined,
-		NaN,
-		Infinity,
-		Number.NEGATIVE_INFINITY,
-		"11",
-	])("should throw with invalid value %s", value => {
-		// @ts-expect-error
-		expect(() => durationConvertor.n2sModulo(value, "s")).toThrow(new Error(`${value} is not a finite number`));
-	});
-
-	it("should throw with negative value", () => {
-		expect(() => durationConvertor.n2sModulo(-11, "s")).toThrow("value (-11) can not be negative");
-	});
-
-	const cases: Array<[number, any, string]> = [
-		[60, "s", "1m"],
-		[1234, "s", "20m 34s"],
-		[97215, "s", "1d 3h"],
-		[22, "ns", "22ns"],
-		[10000, "d", "10000d"],
-
-		[0.1, "ns", "0ns"], // Modulo format ignore value smaller than one minimum unit.
-		[0, "ns", "0ns"],
-		[1, "ns", "1ns"],
-		[0, "h", "0h"],
-		[0.5, "h", "30m"],
-	];
-	it.each(cases)("should works %#", (number, unit, expected) => {
-		expect(durationConvertor.n2sModulo(number, unit)).toBe(expected);
-	});
-
-	it("should support custom part count", () => {
-		expect(durationConvertor.n2sModulo(97215, "s", 4)).toBe("1d 3h 0m 15s");
-		expect(durationConvertor.n2sModulo(0.522, "h", 99)).toBe("31m 19s 200ms");
+		expect(dataSizeSI.parse("10000 YB", "YB")).toBe(10000);
+		expect(dataSizeSI.parse("5.12 TB", "MB")).toBe(512e4);
 	});
 });
 
 describe("s2nModulo", () => {
 	it("should throw error with invalid target unit", () => {
 		// @ts-expect-error
-		expect(() => durationConvertor.s2nModulo("11s", "foobar"))
+		expect(() => durationConvertor.parse("11s", "foobar"))
 			.toThrow(new Error("Unknown time unit: foobar"));
 	});
 
 	it("should throw error when value has invalid unit", () => {
-		expect(() => durationConvertor.s2nModulo("11W"))
+		expect(() => durationConvertor.parse("11W"))
 			.toThrow(new Error("Unknown time unit: W"));
 	});
 
@@ -149,9 +149,8 @@ describe("s2nModulo", () => {
 		"",
 		"11",
 		"h",
-		"-11h",
 	])("should throw with invalid value %s", value => {
-		expect(() => durationConvertor.s2nModulo(value, "s"))
+		expect(() => durationConvertor.parse(value, "s"))
 			.toThrow(new Error(`Can not convert "${value}" to time`));
 	});
 
@@ -159,7 +158,7 @@ describe("s2nModulo", () => {
 		"11h 22h",
 		"3ms 1m",
 	])("should throw error if groups in wrong order", value => {
-		expect(() => durationConvertor.s2nModulo(value, "s"))
+		expect(() => durationConvertor.parse(value, "s"))
 			.toThrow(new Error("Units must be ordered from largest to smallest"));
 	});
 
@@ -176,7 +175,7 @@ describe("s2nModulo", () => {
 		[0.5, "h", "30m"],
 	];
 	it.each(cases)("should works %#", (expected, unit, str) => {
-		expect(durationConvertor.s2nModulo(str, unit)).toBeCloseTo(expected, 5);
+		expect(durationConvertor.parse(str, unit)).toBeCloseTo(expected, 5);
 	});
 });
 

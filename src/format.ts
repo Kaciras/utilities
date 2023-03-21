@@ -16,7 +16,7 @@ const TIME_UNITS			= ["ns", "us", "ms", "s",  "m",   "h",   "d"] as const;
 const TIME_FRACTIONS		= [ 1,   1e3,  1e6,  1e9,  6e10, 36e11, 864e11];
 // @formatter:on
 
-const groupRE = /[0-9.]+([a-z]+)\s*/gi;
+const groupRE = /[0-9.]+\s?([a-z]+)\s*/gi;
 
 export class UnitConvertor<T extends readonly string[]> {
 
@@ -66,7 +66,7 @@ export class UnitConvertor<T extends readonly string[]> {
 	 * @param unit Unit ot the value.
 	 * @param precision The number of digits to appear after the decimal point.
 	 */
-	n2sDivision(value: number, unit?: T[number], precision = 2) {
+	formatDiv(value: number, unit?: T[number], precision = 2) {
 		if (!Number.isFinite(value)) {
 			throw new TypeError(`${value} is not a finite number`);
 		}
@@ -97,7 +97,7 @@ export class UnitConvertor<T extends readonly string[]> {
 	 * @param unit Unit ot the value.
 	 * @param parts Maximum number of groups in result.
 	 */
-	n2sModulo(value: number, unit?: T[number], parts = 2) {
+	formatMod(value: number, unit?: T[number], parts = 2) {
 		if (!Number.isFinite(value)) {
 			throw new TypeError(`${value} is not a finite number`);
 		}
