@@ -1,11 +1,10 @@
 import { dirname, resolve } from "path";
 import { existsSync, readFileSync } from "fs";
+import ts from "typescript";
 import { rollup } from "rollup";
 import swc from "@swc/core";
 import replace from "@rollup/plugin-replace";
 import isBuiltin from "is-builtin-module";
-import ts from "typescript";
-import tsConfig from "./tsconfig.json" assert { type: "json" };
 
 /**
  * Generate type declaration files. This function does not throw any error
@@ -14,9 +13,10 @@ import tsConfig from "./tsconfig.json" assert { type: "json" };
  * @see https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API
  */
 function compileTypeScript(entries) {
-	const { options } = ts.convertCompilerOptionsFromJson(tsConfig.compilerOptions);
-	const program = ts.createProgram(entries, options);
+	const { config } = ts.readConfigFile("tsconfig.json", ts.sys.readFile);
+	const { options } = ts.convertCompilerOptionsFromJson(config.compilerOptions, ".");
 
+	const program = ts.createProgram(entries, options);
 	const emitResult = program.emit();
 
 	let diagnostics = ts
@@ -34,7 +34,7 @@ function compileTypeScript(entries) {
 	}
 }
 
-// Can not use import-assertion because the filename has no extension.
+// Cannot use import-assertion because the filename has no extension.
 const swcrc = JSON.parse(readFileSync(".swcrc", "utf8"));
 
 const JS_RE = /\.[mc]?[jt]sx?$/;
