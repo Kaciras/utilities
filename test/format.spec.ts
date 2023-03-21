@@ -89,7 +89,7 @@ describe("formatMod", () => {
 	});
 });
 
-describe("s2nDivision", () => {
+describe("UnitConvertor.parse", () => {
 	const invalid = [
 		"",
 		"foobar",
@@ -102,6 +102,28 @@ describe("s2nDivision", () => {
 
 	it("should throw on unknown unit", () => {
 		expect(() => dataSizeIEC.parse("1023 SB")).toThrow(new Error("Unknown data size unit: SB"));
+	});
+
+	it("should throw error with invalid target unit", () => {
+		// @ts-expect-error
+		expect(() => durationConvertor.parse("11s", "foobar")).toThrow(new Error("Unknown time unit: foobar"));
+	});
+
+	it.each([
+		"1d after the 3h",
+		"",
+		"11",
+		"h",
+	])("should throw with invalid value %s", value => {
+		expect(() => durationConvertor.parse(value, "s")).toThrow(new Error(`Can not convert "${value}" to time`));
+	});
+
+	it.each([
+		"11h 22h",
+		"3ms 1m",
+	])("should throw error if groups in wrong order", value => {
+		expect(() => durationConvertor.parse(value, "s"))
+			.toThrow(new Error("Units must be ordered from largest to smallest"));
 	});
 
 	const cases: Array<[number, string]> = [
@@ -118,51 +140,11 @@ describe("s2nDivision", () => {
 		[-10.1, "-10.1 B"],
 		[-1023, "-1023B"],
 	];
-	it.each(cases)("should parse bytes %s", (number, string) => {
+	it.each(cases)("should parse %s", (number, string) => {
 		expect(dataSizeIEC.parse(string)).toBe(number);
 	});
 
-	it("should parse the value in SI", () => {
-		expect(dataSizeSI.parse("1023 MB")).toBe(1023_000_000);
-	});
-
-	it("should support specific target unit", () => {
-		expect(dataSizeSI.parse("10000 YB", "YB")).toBe(10000);
-		expect(dataSizeSI.parse("5.12 TB", "MB")).toBe(512e4);
-	});
-});
-
-describe("s2nModulo", () => {
-	it("should throw error with invalid target unit", () => {
-		// @ts-expect-error
-		expect(() => durationConvertor.parse("11s", "foobar"))
-			.toThrow(new Error("Unknown time unit: foobar"));
-	});
-
-	it("should throw error when value has invalid unit", () => {
-		expect(() => durationConvertor.parse("11W"))
-			.toThrow(new Error("Unknown time unit: W"));
-	});
-
-	it.each([
-		"1d after the 3h",
-		"",
-		"11",
-		"h",
-	])("should throw with invalid value %s", value => {
-		expect(() => durationConvertor.parse(value, "s"))
-			.toThrow(new Error(`Can not convert "${value}" to time`));
-	});
-
-	it.each([
-		"11h 22h",
-		"3ms 1m",
-	])("should throw error if groups in wrong order", value => {
-		expect(() => durationConvertor.parse(value, "s"))
-			.toThrow(new Error("Units must be ordered from largest to smallest"));
-	});
-
-	const cases: Array<[number, any, string]> = [
+	const unitCases: Array<[number, any, string]> = [
 		[60, "s", "1m"],
 		[1234, "s", "20m 34s"],
 		[97215, "s", "1d 3h 0m 15s"],
@@ -174,8 +156,17 @@ describe("s2nModulo", () => {
 		[0, "h", "0h"],
 		[0.5, "h", "30m"],
 	];
-	it.each(cases)("should works %#", (expected, unit, str) => {
+	it.each(unitCases)("should parse with target unit for %s", (expected, unit, str) => {
 		expect(durationConvertor.parse(str, unit)).toBeCloseTo(expected, 5);
+	});
+
+	it("should parse the value in SI", () => {
+		expect(dataSizeSI.parse("1023 MB")).toBe(1023_000_000);
+	});
+
+	it("should support specific target unit", () => {
+		expect(dataSizeSI.parse("10000 YB", "YB")).toBe(10000);
+		expect(dataSizeSI.parse("5.12 TB", "MB")).toBe(512e4);
 	});
 });
 

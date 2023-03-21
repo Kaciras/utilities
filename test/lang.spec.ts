@@ -30,6 +30,7 @@ describe("silencePromise", () => {
 	it.each([
 		new Promise(() => {}),
 		undefined,
+		8964,
 		null,
 		silencePromise,
 	])("should allow any arguments", arg => {

@@ -146,9 +146,20 @@ describe("FetchClient", () => {
 		expect(check).toHaveBeenCalledTimes(1);
 	});
 
-	it("should support submit FormData", async () => {
+	it("should post Blobs", async () => {
 		const client = new FetchClient({ baseURL: httpServer.url });
+		const ep = await httpServer.forPut("/").thenReply(200);
 
+		const blob = new Blob(["foobar"], { type: "foo/bar" });
+		await client.put("/", blob);
+
+		const [request] = await ep.getSeenRequests();
+		expect(request.headers["content-type"]).toBe("foo/bar");
+		await expect(request.body.getText()).resolves.toBe("foobar");
+	});
+
+	it("should submit FormData", async () => {
+		const client = new FetchClient({ baseURL: httpServer.url });
 		const ep = await httpServer.forPut("/").thenReply(200);
 
 		const form = new FormData();
@@ -157,7 +168,9 @@ describe("FetchClient", () => {
 		await client.put("/", form);
 
 		const [request] = await ep.getSeenRequests();
-		const ff = await request.body.getText();
-		expect(ff).toMatch("Content-Type: application/octet-stream\r\n\r\nBLOB_PART");
+		expect(request.headers["content-type"]).toMatch(/^multipart\/form-data; boundary=/);
+		await expect(request.body.getText())
+			.resolves
+			.toMatch("Content-Type: application/octet-stream\r\n\r\nBLOB_PART");
 	});
 });
