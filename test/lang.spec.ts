@@ -138,7 +138,7 @@ describe("cartesianProductObj", () => {
 	it("should works", () => {
 		const params = cartesianProductObj({
 			a: [0, 1],
-			b: [20, 30, 40],
+			b: new Set([20, 30, 40]),
 		});
 		const expected = expect.arrayContaining([
 			{ a: 0, b: 20 },
@@ -179,7 +179,7 @@ describe("cartesianProductArray", () => {
 	it("should works", () => {
 		const iter = cartesianProductArray([
 			[0, 1],
-			[20, 30, 40],
+			new Set([20, 30, 40]),
 		]);
 		expect(Array.from(iter)).toEqual([
 			[0, 20], [0, 30], [0, 40],
