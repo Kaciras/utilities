@@ -16,8 +16,7 @@ const TIME_UNITS			= ["ns", "us", "ms", "s",  "m",   "h",   "d"] as const;
 const TIME_FRACTIONS		= [ 1,   1e3,  1e6,  1e9,  6e10, 36e11, 864e11];
 // @formatter:on
 
-const divRE = /^([-+0-9.]+)\s*(\w+)$/;
-const groupRE = /\d+([a-z]+)\s*/gi;
+const groupRE = /[0-9.]+([a-z]+)\s*/gi;
 
 export class UnitConvertor<T extends readonly string[]> {
 
@@ -81,27 +80,6 @@ export class UnitConvertor<T extends readonly string[]> {
 	}
 
 	/**
-	 * Convert string to number in specified unit.
-	 *
-	 * @example
-	 * durationConvertor.s2nModulo("10000d", "d");			// 10000
-	 * durationConvertor.s2nModulo("0h", "s");				// 0
-	 * durationConvertor.s2nModulo("0.5m", "s");			// 30
-	 * durationConvertor.s2nModulo("1d 3h 0m 15s", "s");	// 97215
-	 *
-	 * @param value The string to parse.
-	 * @param unit Target unit to converted to.
-	 */
-	s2nDivision(value: string, unit?: T[number]) {
-		const match = divRE.exec(value);
-		if (!match) {
-			throw new Error(`Can not convert "${value}" to ${this.name}`);
-		}
-		const [, v, u] = match;
-		return Number(v) * this.getFraction(u) / this.getFraction(unit);
-	}
-
-	/**
 	 * Formats a value and unit.
 	 *
 	 * The result may lose precision and cannot be converted back.
@@ -159,7 +137,20 @@ export class UnitConvertor<T extends readonly string[]> {
 	 * @param value The string to parse.
 	 * @param unit Target unit to converted to.
 	 */
-	s2nModulo(value: string, unit?: T[number]) {
+
+	/**
+	 * Convert string to number in specified unit.
+	 *
+	 * @example
+	 * durationConvertor.s2nModulo("10000d", "d");			// 10000
+	 * durationConvertor.s2nModulo("0h", "s");				// 0
+	 * durationConvertor.s2nModulo("0.5m", "s");			// 30
+	 * durationConvertor.s2nModulo("1d 3h 0m 15s", "s");	// 97215
+	 *
+	 * @param value The string to parse.
+	 * @param unit Target unit to converted to.
+	 */
+	parse(value: string, unit?: T[number]) {
 		const { name, units, fractions } = this;
 		let k = Infinity;
 		let seen = 0;
@@ -177,6 +168,14 @@ export class UnitConvertor<T extends readonly string[]> {
 
 			seen += matched.length;
 			result += parseFloat(matched) * fractions[i];
+		}
+
+		switch (value.charCodeAt(0)) {
+			case 45: /* - */
+				result = -result;
+			// eslint-disable-next-line no-fallthrough
+			case 43: /* + */
+				seen += 1;
 		}
 
 		if (seen === value.length && seen > 0) {
