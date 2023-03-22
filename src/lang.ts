@@ -1,3 +1,5 @@
+export type ItemOfIterable<T> = T extends Iterable<infer E> ? E : never;
+
 export type Awaitable<T> = T | Promise<T>;
 
 export const noop = () => {};
@@ -73,6 +75,68 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 	}
 }
 
+type ObjectSrc = Record<string, Iterable<any>>;
+
+type CartesianProductObject<T extends ObjectSrc> = {
+	-readonly [K in keyof T]: ItemOfIterable<T[K]>
+}
+
+// **********************************************
+
+type ArraySrc = ReadonlyArray<Iterable<any>>;
+
+type CastArray<T extends ArraySrc> =
+	T extends readonly [infer E, ...infer  REST]
+		? REST extends ArraySrc
+			? [ItemOfIterable<E>, ...CastArray<REST>] : never : T;
+
+type CartesianProductArray<T extends ArraySrc> =
+	T extends readonly [any, ...any[]] ? CastArray<T> : T[number];
+
+
+// type G = CartesianProductArray<[
+// 	[1, 2, 3],
+// 	["O", "p"],
+// ]>;
+//
+// type G2 = CartesianProductArray<[
+// 	Iterable<string>,
+// 	Iterable<number>,
+// ]>;
+//
+// type Ch<T> = T extends [infer E, ...infer REST] ? 1 : 0;
+//
+type G3 = CartesianProductArray<Array<Iterable<string>>>;
+// type G33 = Ch<Array<Iterable<string>>>;
+//
+type G4 = CartesianProductArray<readonly [
+	[1, 2, 3],
+	[4, 5],
+	...string[],
+]>;
+
+const a4: G4;
+const vv = a4[0];
+const vvv = a4[5];
+
+const G55 = cartesianProductArray([
+	[1, 2],
+	[new Array<string>(), "B"],
+] as const);
+
+// type OO2 = CartesianProductObject<Record<string, number[]>>;
+//
+// const OO = cartesianProductObj({
+// 	foo: [1, 2, 3],
+// 	bar: ["O", "p"],
+// });
+//
+// for (const t of OO) {
+// 	t.foo = 1;
+// }
+
+// const OO = cartesianProductObj({});
+
 /**
  * Get the cartesian product generator of objects.
  *
@@ -90,13 +154,11 @@ export class MultiMap<K, V> extends Map<K, V[]> {
  * { a: 1, b: 2, c: 4 }
  * { a: 1, b: 2, c: 5 }
  */
-export function cartesianProductObj<K extends string, V>(src: Record<K, Iterable<V>>) {
-	type Out = Record<K, V>;
+export function cartesianProductObj<const T extends ObjectSrc>(src: T) {
+	const entries = Object.entries(src);
+	const temp = {} as Record<string, unknown>;
 
-	const entries = Object.entries(src) as Array<[K, Iterable<V>]>;
-	const temp = {} as Out;
-
-	function* recursive(index: number): Iterable<Out> {
+	function* recursive(index: number): Iterable<unknown> {
 		if (index === entries.length) {
 			yield { ...temp };
 		} else {
@@ -108,7 +170,7 @@ export function cartesianProductObj<K extends string, V>(src: Record<K, Iterable
 		}
 	}
 
-	return recursive(0);
+	return recursive(0) as Iterable<CartesianProductObject<T>>;
 }
 
 /**
@@ -128,21 +190,21 @@ export function cartesianProductObj<K extends string, V>(src: Record<K, Iterable
  * [1, 2, 4]
  * [1, 2, 5]
  */
-export function cartesianProductArray<T>(entries: Array<Iterable<T>>) {
-	const temp = new Array<T>(entries.length);
+export function cartesianProductArray<const T extends ArraySrc>(src: T) {
+	const temp = new Array<T>(src.length);
 
-	function* recursive(index: number): Iterable<T[]> {
-		if (index === entries.length) {
+	function* recursive(index: number): Iterable<unknown> {
+		if (index === src.length) {
 			yield [...temp];
 		} else {
-			for (const value of entries[index]) {
+			for (const value of src[index]) {
 				temp[index] = value;
 				yield* recursive(index + 1);
 			}
 		}
 	}
 
-	return recursive(0);
+	return recursive(0) as Iterable<CartesianProductArray<T>>;
 }
 
 /**
