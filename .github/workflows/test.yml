@@ -19,8 +19,10 @@ jobs:
 
       - run: node build-lib.js
 
-      - run: pnpm test -- --coverage
+      - run: pnpm run test:unit --coverage
         env:
           NODE_OPTIONS: --experimental-vm-modules
+
+      - run: pnpm run test:types
 
       - uses: codecov/codecov-action@v3
