@@ -6,6 +6,7 @@ import { Awaitable, cartesianProductArray, cartesianProductObj } from "../src/la
 expectAssignable<Awaitable<number>>(11);
 expectAssignable<Awaitable<number>>(Promise.resolve(11));
 
+
 expectType<Iterable<{}>>(cartesianProductObj({}));
 
 expectType<Iterable<{
@@ -23,6 +24,11 @@ expectType<Iterable<{
 	bar: [],
 	foo: new Set<1 | 2>(),
 }));
+
+
+expectType<Iterable<never>>(cartesianProductArray([]));
+
+expectType<Iterable<[never]>>(cartesianProductArray([[]]));
 
 expectType<Iterable<[
 		1 | 2,

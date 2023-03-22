@@ -75,67 +75,11 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 	}
 }
 
-type ObjectSrc = Record<string, Iterable<any>>;
+type ObjectSrc = Record<string, Iterable<unknown>>;
 
 type CartesianProductObject<T extends ObjectSrc> = {
 	-readonly [K in keyof T]: ItemOfIterable<T[K]>
 }
-
-// **********************************************
-
-type ArraySrc = ReadonlyArray<Iterable<any>>;
-
-type CastArray<T extends ArraySrc> =
-	T extends readonly [infer E, ...infer  REST]
-		? REST extends ArraySrc
-			? [ItemOfIterable<E>, ...CastArray<REST>] : never : T;
-
-type CartesianProductArray<T extends ArraySrc> =
-	T extends readonly [any, ...any[]] ? CastArray<T> : T[number];
-
-
-// type G = CartesianProductArray<[
-// 	[1, 2, 3],
-// 	["O", "p"],
-// ]>;
-//
-// type G2 = CartesianProductArray<[
-// 	Iterable<string>,
-// 	Iterable<number>,
-// ]>;
-//
-// type Ch<T> = T extends [infer E, ...infer REST] ? 1 : 0;
-//
-type G3 = CartesianProductArray<Array<Iterable<string>>>;
-// type G33 = Ch<Array<Iterable<string>>>;
-//
-type G4 = CartesianProductArray<readonly [
-	[1, 2, 3],
-	[4, 5],
-	...string[],
-]>;
-
-const a4: G4;
-const vv = a4[0];
-const vvv = a4[5];
-
-const G55 = cartesianProductArray([
-	[1, 2],
-	[new Array<string>(), "B"],
-] as const);
-
-// type OO2 = CartesianProductObject<Record<string, number[]>>;
-//
-// const OO = cartesianProductObj({
-// 	foo: [1, 2, 3],
-// 	bar: ["O", "p"],
-// });
-//
-// for (const t of OO) {
-// 	t.foo = 1;
-// }
-
-// const OO = cartesianProductObj({});
 
 /**
  * Get the cartesian product generator of objects.
@@ -173,6 +117,16 @@ export function cartesianProductObj<const T extends ObjectSrc>(src: T) {
 	return recursive(0) as Iterable<CartesianProductObject<T>>;
 }
 
+type ArraySrc = ReadonlyArray<Iterable<unknown>>;
+
+type CastArray<T extends ArraySrc> =
+	T extends readonly [infer E, ...infer REST]
+		? REST extends ArraySrc
+			? [ItemOfIterable<E>, ...CastArray<REST>] : never : T;
+
+type CartesianProductArray<T extends ArraySrc> =
+	T extends readonly [any, ...any[]] ? CastArray<T> : T[number];
+
 /**
  * Get the cartesian product generator of multiple arrays.
  *
@@ -191,7 +145,7 @@ export function cartesianProductObj<const T extends ObjectSrc>(src: T) {
  * [1, 2, 5]
  */
 export function cartesianProductArray<const T extends ArraySrc>(src: T) {
-	const temp = new Array<T>(src.length);
+	const temp = new Array<unknown>(src.length);
 
 	function* recursive(index: number): Iterable<unknown> {
 		if (index === src.length) {

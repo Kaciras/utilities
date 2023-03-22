@@ -22,12 +22,15 @@ This package is pure ESM, it cannot be `require()`'d from CommonJS.
 pnpm i @kaciras/utilities
 ```
 
-The package has 2 entry points, "./node" for NodeJS and "./browser" for browsers. Most functions work for both, but there are still a few functions that only work in one runtime.
+The package has 2 entry points. Most functions work for both, but there are still some differences:
+
+* `@kaciras/utilities/browser` can be imported from any environment, also have functions work with DOM.
+* `@kaciras/utilities/node` have no browser-specific functions, but add utilities for Node, it can only be used in NodeJS.
 
 ```javascript
-// Import for Node.
+// Use in Node.
 import { /* ... */ } from "@kaciras/utilities/node";
 
-// Import for browser
+// Use in other environment.
 import { /* ... */ } from "@kaciras/utilities/browser";
 ```
