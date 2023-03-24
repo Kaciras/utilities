@@ -26,16 +26,18 @@ export type RPCSend = (message: RequestMessage, transfer?: Transferable[]) => Pr
 export type RPCReceive = (message: RequestMessage, respond: Respond) => void;
 
 export interface RequestMessage {
-	id?: number;
-	args: any[];
-	path: PropertyKey[];
+	a: any[];			// arguments
+	p: PropertyKey[];	// path
+	s?: number;			// session Id
 }
 
-export interface ResponseMessage {
-	id?: number;
-	value: any;
-	isError: boolean;
-}
+export type ResponseMessage = ({
+	v: unknown;			// value
+} | {
+	e: unknown;			// error
+}) & {
+	s?: number;			// session Id
+};
 
 /**
  * Because RPC should keep the signature of the remote function, we cannot add a parameter
@@ -69,17 +71,17 @@ export function transfer<T>(obj: T, transfers: Transferable[]) {
 
 async function callRemote(send: RPCSend, message: RequestMessage) {
 	const transfers: Transferable[] = [];
-	for (const arg of message.args) {
+	for (const arg of message.a) {
 		const ts = transferCache.get(arg);
 		if (ts) {
 			transfers.push(...ts);
 		}
 	}
 	const response = await send(message, transfers);
-	if (response.isError) {
-		throw response.value;
+	if ("e" in response) {
+		throw response.e;
 	} else {
-		return response.value as unknown;
+		return response.v;
 	}
 }
 
@@ -91,16 +93,16 @@ async function callRemote(send: RPCSend, message: RequestMessage) {
  * @param respond The function to send the response message.
  */
 export async function serve(target: any, message: RequestMessage, respond: Respond) {
-	const { id, path, args } = message;
+	const { s, p, a } = message;
 	try {
-		for (let i = path.length - 1; i > 0; i--) {
-			target = target[path[i]];
+		for (let i = p.length - 1; i > 0; i--) {
+			target = target[p[i]];
 		}
-		const value = await target[path[0]](...args);
-		const transfers = transferCache.get(value);
-		respond({ id, value, isError: false }, transfers);
+		const v = await target[p[0]](...a);
+		const transfers = transferCache.get(v);
+		respond({ s, v }, transfers);
 	} catch (e) {
-		respond({ id, value: e, isError: true });
+		respond({ s, e });
 	}
 }
 
@@ -131,7 +133,7 @@ export type Remote<T> = RemoteObject<T> & RemoteCallable<T>;
 class RPCHandler implements ProxyHandler<RPCSend> {
 
 	/**
-	 * Keys for current property in reversed order, e.g.
+	 * Keys for current property in reversed order.
 	 *
 	 * @example
 	 * createRPCClient().foo.bar[0] -> [0, "bar", "foo"]
@@ -143,7 +145,7 @@ class RPCHandler implements ProxyHandler<RPCSend> {
 	}
 
 	apply(send: RPCSend, thisArg: any, args: any[]) {
-		return callRemote(send, { path: this.path, args });
+		return callRemote(send, { p: this.path, a: args });
 	}
 
 	get(send: RPCSend, prop: PropertyKey): any {
@@ -206,27 +208,27 @@ export function pubSub2ReqRes(publish: PostMessage, timeout = 10e3) {
 	}
 
 	function request(message: any) {
-		const id = message.id = uniqueId();
+		const s = message.s = uniqueId();
 		publish(message);
 
 		let timer: ReturnType<typeof setTimeout>;
 		if (timeout > 0) {
-			timer = setTimeout(expire, timeout, id);
+			timer = setTimeout(expire, timeout, s);
 
 			if (typeof window === "undefined")
 				timer.unref();
 		}
 
 		return new Promise((resolve, reject) => {
-			txMap.set(id, { resolve, reject, timer });
+			txMap.set(s, { resolve, reject, timer });
 		});
 	}
 
 	function dispatch(message: any) {
-		const session = txMap.get(message.id);
+		const session = txMap.get(message.s);
 		if (session) {
 			clearTimeout(session.timer);
-			txMap.delete(message.id);
+			txMap.delete(message.s);
 			session.resolve(message);
 		}
 	}

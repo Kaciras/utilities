@@ -31,12 +31,12 @@ describe("pubSub2ReqRes", () => {
 		const { txMap, request } = pubSub2ReqRes(m => received.push(m));
 
 		// noinspection ES6MissingAwait
-		request({ value: 11 });
+		request({ v: 11 });
 		// noinspection ES6MissingAwait
-		request({ value: 33 });
+		request({ v: 33 });
 
 		expect(txMap.size).toBe(2);
-		expect(received).toStrictEqual([{ id: 2, value: 11 }, { id: 3, value: 33 }]);
+		expect(received).toStrictEqual([{ s: 2, v: 11 }, { s: 3, v: 33 }]);
 	});
 
 	it("should ignore messages without id", () => {
@@ -47,7 +47,7 @@ describe("pubSub2ReqRes", () => {
 		const { request, dispatch } = pubSub2ReqRes(noop);
 
 		const promise = request({});
-		dispatch({ id: -11, foo: "bar" });
+		dispatch({ s: -11, foo: "bar" });
 		return expectNotFulfilled(promise);
 	});
 
@@ -58,7 +58,7 @@ describe("pubSub2ReqRes", () => {
 		const p1 = request({});
 		const p2 = request({});
 
-		const response = { id: received[1].id, msg: "foo" };
+		const response = { s: received[1].s, msg: "foo" };
 		dispatch(response);
 		await expect(p2).resolves.toStrictEqual(response);
 
@@ -67,15 +67,15 @@ describe("pubSub2ReqRes", () => {
 	});
 
 	it("should clear the timer after transaction completed", withFakeTimer(() => {
-		let id = -1;
-		const { txMap, request, dispatch } = pubSub2ReqRes(m => id = (m as any).id, 100);
+		let s = -1;
+		const { txMap, request, dispatch } = pubSub2ReqRes(m => s = (m as any).s, 100);
 		request({});
 		request({});
 		expect(jest.getTimerCount()).toBe(2);
 
-		dispatch({ id });
+		dispatch({ s });
 
-		expect(txMap.has(id)).toBe(false);
+		expect(txMap.has(s)).toBe(false);
 		expect(txMap.size).toBe(1);
 		expect(jest.getTimerCount()).toBe(1);
 	}));
@@ -140,7 +140,7 @@ describe("RPC", () => {
 	});
 
 	it("should transfer object to server", async () => {
-		const request = jest.fn<RPCSend>(async () => ({ value: 11, isError: false }));
+		const request = jest.fn<RPCSend>(async () => ({ v: 11, isError: false }));
 		const client = createClient(request);
 
 		const arg0 = new Uint8Array([1, 2]);
@@ -152,8 +152,8 @@ describe("RPC", () => {
 
 		const [message, transfers] = request.mock.calls[0];
 		expect(message).toStrictEqual({
-			path: ["foobar"],
-			args: [arg0, arg1],
+			p: ["foobar"],
+			a: [arg0, arg1],
 		});
 		expect(transfers).toStrictEqual([arg0.buffer, arg1.buffer]);
 	});
@@ -163,15 +163,14 @@ describe("RPC", () => {
 		const arg0 = new Uint8Array([1, 2]);
 
 		const foobar = () => transfer(arg0, [arg0.buffer]);
-		const msg = { path: ["foobar"], args: [] };
+		const msg = { p: ["foobar"], a: [] };
 
 		await serve({ foobar }, msg, respond);
 
 		const [message, transfers] = respond.mock.calls[0];
 		expect(message).toStrictEqual({
-			id: undefined,
-			value: arg0,
-			isError: false,
+			s: undefined,
+			v: arg0,
 		});
 		expect(transfers).toStrictEqual([arg0.buffer]);
 	});
