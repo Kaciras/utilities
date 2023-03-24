@@ -1,3 +1,5 @@
+import { AbortError, uniqueId } from "./misc.js";
+
 type Handler<T extends any[]> = (...args: T) => any;
 
 /**
@@ -105,4 +107,83 @@ export class MultiEventEmitter<T extends EventsMap = Default> {
 		const handlers = this.events[name];
 		for (const handler of handlers ?? []) handler(...args);
 	}
+}
+
+export type PostMessage = (message: object, transfers?: Transferable[]) => void;
+
+export interface PromiseController {
+
+	timer?: ReturnType<typeof setTimeout>;
+
+	resolve(value: unknown): void;
+
+	reject(reason: unknown): void;
+}
+
+export interface RequestResponseWrapper {
+
+	request(message: object): Promise<any>;
+
+	dispatch(message: object): void;
+
+	txMap: Map<number, PromiseController>;
+}
+
+/**
+ * Wrap publish-subscribe functions to request-response model.
+ * The remote service must attach request message id in response message.
+ *
+ * # NOTE
+ * If you disable timeout, there will be a memory leak when response
+ * message can't be received. WeakMap doesn't help in this scenario,
+ * since the key is deserialized from the message.
+ *
+ * @example
+ * const { request, subscribe } = pubSub2ReqRes(window.postMessage);
+ * window.addEventListener("message", e => subscribe(e.data));
+ * const response = await request({ text: "Hello" });
+ *
+ * @param publish The publish message function
+ * @param timeout The number of milliseconds to wait for response,
+ * 				  set to zero or negative value to disable timeout.
+ */
+export function pubSub2ReqRes(publish: PostMessage, timeout = 10e3) {
+	const txMap = new Map<number, PromiseController>();
+
+	function dispatch(message: any) {
+		const session = txMap.get(message.s);
+		if (session) {
+			session.resolve(message);
+			txMap.delete(message.s);
+			clearTimeout(session.timer);
+		}
+	}
+
+	function request(message: any, transfers?: Transferable[]) {
+		const s = message.s = uniqueId();
+		publish(message, transfers);
+
+		let timer: ReturnType<typeof setTimeout>;
+		if (timeout > 0) {
+			timer = setTimeout(expire, timeout, s);
+
+			if (typeof window === "undefined") {
+				timer.unref();
+			}
+		}
+
+		return new Promise((resolve, reject) => {
+			txMap.set(s, { resolve, reject, timer });
+		});
+	}
+
+	function expire(sessionId: number) {
+		const tx = txMap.get(sessionId);
+		if (tx) {
+			txMap.delete(sessionId);
+			tx.reject(new AbortError("Timed out"));
+		}
+	}
+
+	return { txMap, request, dispatch } as RequestResponseWrapper;
 }

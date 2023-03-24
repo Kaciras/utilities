@@ -13,7 +13,7 @@
  *
  * IMO it's overdesign, so we only support function call.
  */
-import { AbortError, uniqueId } from "./misc.js";
+import { PostMessage } from "./event.js";
 
 /* ============================================================================= *\
  *                         Layer 1：Message protocol
@@ -28,6 +28,7 @@ export type RPCReceive = (message: RequestMessage, respond: Respond) => void;
 export interface RequestMessage {
 	a: any[];			// arguments
 	p: PropertyKey[];	// path
+	i?: unknown;		// identifier
 	s?: number;			// session Id
 }
 
@@ -36,6 +37,7 @@ export type ResponseMessage = ({
 } | {
 	e: unknown;			// error
 }) & {
+	i?: unknown;		// identifier
 	s?: number;			// session Id
 };
 
@@ -85,25 +87,35 @@ async function callRemote(send: RPCSend, message: RequestMessage) {
 	}
 }
 
-/**
- * Handle an RPC request, call specific method in the target, and send the response.
- *
- * @param target The service object contains methods that client can use.
- * @param message RPC request message
- * @param respond The function to send the response message.
- */
-export async function serve(target: any, message: RequestMessage, respond: Respond) {
-	const { s, p, a } = message;
-	try {
-		for (let i = p.length - 1; i > 0; i--) {
-			target = target[p[i]];
+export function createServer(target: any, id?: string): RPCReceive {
+
+	/**
+	 * Handle an RPC request, call specific method in the target, and send the response.
+	 *
+	 * @param target The service object contains methods that client can use.
+	 * @param message RPC request message
+	 * @param respond The function to send the response message.
+	 */
+	return async (message, respond) => {
+		const { s, p, a, i } = message;
+
+		if (i !== id) {
+			return; // Not an RPC message.
 		}
-		const v = await target[p[0]](...a);
-		const transfers = transferCache.get(v);
-		respond({ s, v }, transfers);
-	} catch (e) {
-		respond({ s, e });
-	}
+		if (!Array.isArray(p)) {
+			return; // Not a request message.
+		}
+
+		try {
+			for (let i = p.length - 1; i > 0; i--) {
+				target = target[p[i]];
+			}
+			const v = await target[p[0]](...a);
+			respond({ s, v }, transferCache.get(v));
+		} catch (e) {
+			respond({ s, e });
+		}
+	};
 }
 
 /* ============================================================================= *
@@ -132,6 +144,8 @@ export type Remote<T> = RemoteObject<T> & RemoteCallable<T>;
 
 class RPCHandler implements ProxyHandler<RPCSend> {
 
+	private readonly id: unknown;
+
 	/**
 	 * Keys for current property in reversed order.
 	 *
@@ -140,16 +154,19 @@ class RPCHandler implements ProxyHandler<RPCSend> {
 	 */
 	private readonly path: PropertyKey[];
 
-	constructor(path: PropertyKey[]) {
+	constructor(id: unknown, path: PropertyKey[]) {
+		this.id = id;
 		this.path = path;
 	}
 
-	apply(send: RPCSend, thisArg: any, args: any[]) {
-		return callRemote(send, { p: this.path, a: args });
+	apply(send: RPCSend, thisArg: unknown, args: any[]) {
+		const { id: i, path: p } = this;
+		return callRemote(send, { i, p, a: args });
 	}
 
-	get(send: RPCSend, prop: PropertyKey): any {
-		return new Proxy(send, new RPCHandler([prop, ...this.path]));
+	get(send: RPCSend, key: PropertyKey): any {
+		const { id: i, path: p } = this;
+		return new Proxy(send, new RPCHandler(i, [key, ...p]));
 	}
 }
 
@@ -157,89 +174,26 @@ class RPCHandler implements ProxyHandler<RPCSend> {
  *                           Layer 3: Exposed APIs
  * ============================================================================= */
 
-export type PostMessage = (message: object) => void;
-
-export interface PromiseController {
-
-	timer?: ReturnType<typeof setTimeout>;
-
-	resolve(value: unknown): void;
-
-	reject(reason: unknown): void;
+export function createClient<T = any>(post: RPCSend, id?: string) {
+	return new Proxy(post, new RPCHandler(id, [])) as Remote<T>;
 }
 
-export interface ReqResWrapper {
+interface BiRPCOptions {
+	post: PostMessage | RPCSend;
+	on(receive: (msg: any) => unknown): void;
+	session: boolean;
 
-	request(message: object): Promise<any>;
+	id?: string;
 
-	dispatch(message: object): void;
-
-	txMap: Map<number, PromiseController>;
+	serialize?: (data: any) => any;
+	deserialize?: (data: any) => any;
 }
 
-/**
- * Wrap publish-subscribe functions to request-response model.
- * The remote service must attach request message id in response message.
- *
- * # NOTE
- * If you disable timeout, there will be a memory leak when response
- * message can't be received.
- *
- * WeakMap doesn't help in this scenario, since the key is deserialized from the message.
- *
- * @example
- * const { request, subscribe } = pubSub2ReqRes(window.postMessage);
- * window.addEventListener("message", e => subscribe(e.data));
- * const response = await request({ text: "Hello" });
- *
- * @param publish The publish message function
- * @param timeout The number of milliseconds to wait for response,
- * 				  set to zero & negative value to disable timeout.
- */
-export function pubSub2ReqRes(publish: PostMessage, timeout = 10e3) {
-	const txMap = new Map<number, PromiseController>();
-
-	function expire(id: number) {
-		const session = txMap.get(id);
-		if (session) {
-			txMap.delete(id);
-			session.reject(new AbortError("Timed out"));
-		}
+export function createBiRPC<T = any>(options: BiRPCOptions) {
+	if (message.i !== id) {
+		return; // Not an RPC message.
 	}
-
-	function request(message: any) {
-		const s = message.s = uniqueId();
-		publish(message);
-
-		let timer: ReturnType<typeof setTimeout>;
-		if (timeout > 0) {
-			timer = setTimeout(expire, timeout, s);
-
-			if (typeof window === "undefined")
-				timer.unref();
-		}
-
-		return new Promise((resolve, reject) => {
-			txMap.set(s, { resolve, reject, timer });
-		});
+	if ("p" in message) {
+		return; // Request message.
 	}
-
-	function dispatch(message: any) {
-		const session = txMap.get(message.s);
-		if (session) {
-			clearTimeout(session.timer);
-			txMap.delete(message.s);
-			session.resolve(message);
-		}
-	}
-
-	return { txMap, request, dispatch } as ReqResWrapper;
-}
-
-export function createClient<T = any>(connection: RPCSend) {
-	return new Proxy(connection, new RPCHandler([])) as Remote<T>;
-}
-
-export function createServer(controller: object): RPCReceive {
-	return (message, respond) => serve(controller, message, respond);
 }
