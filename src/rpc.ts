@@ -13,7 +13,6 @@
  *
  * IMO it's overdesign, so we only support function call.
  */
-import { PostMessage } from "./event.js";
 
 /* ============================================================================= *\
  *                         Layer 1：Message protocol
@@ -22,8 +21,6 @@ import { PostMessage } from "./event.js";
 export type Respond = (resp: ResponseMessage, transfer?: Transferable[]) => void;
 
 export type RPCSend = (message: RequestMessage, transfer?: Transferable[]) => Promise<ResponseMessage>;
-
-export type RPCReceive = (message: RequestMessage, respond: Respond) => void;
 
 export interface RequestMessage {
 	a: any[];			// arguments
@@ -80,40 +77,42 @@ async function callRemote(send: RPCSend, message: RequestMessage) {
 		}
 	}
 	const response = await send(message, transfers);
-	if ("e" in response) {
-		throw response.e;
-	} else {
-		return response.v;
+	if ("e" in response) throw response.e; else return response.v;
+}
+
+type ServeReturnValue = [ResponseMessage, Transferable[] | undefined];
+
+/**
+ * Handle an RPC request, call specific method in the target, and send the response.
+ *
+ * @param target The service object contains methods that client can use.
+ * @param message RPC request message
+ */
+export async function serve(target: any, message: RequestMessage) {
+	const { s, p, a, i } = message;
+
+	try {
+		for (let k = p.length - 1; k > 0; k--) {
+			target = target[p[k]];
+		}
+		const v = await target[p[0]](...a);
+		return <ServeReturnValue>[
+			{ i, s, v },
+			transferCache.get(v),
+		];
+	} catch (e) {
+		return [{ i, s, e }, undefined] as ServeReturnValue;
 	}
 }
 
-export function createServer(target: any, id?: string): RPCReceive {
-
-	/**
-	 * Handle an RPC request, call specific method in the target, and send the response.
-	 *
-	 * @param target The service object contains methods that client can use.
-	 * @param message RPC request message
-	 * @param respond The function to send the response message.
-	 */
-	return async (message, respond) => {
-		const { s, p, a, i } = message;
-
-		if (i !== id) {
+export function createServer(target: any, respond: Respond, id?: string) {
+	return async (message: RequestMessage) => {
+		if (typeof message !== "object") {
 			return; // Not an RPC message.
 		}
-		if (!Array.isArray(p)) {
-			return; // Not a request message.
-		}
-
-		try {
-			for (let i = p.length - 1; i > 0; i--) {
-				target = target[p[i]];
-			}
-			const v = await target[p[0]](...a);
-			respond({ s, v }, transferCache.get(v));
-		} catch (e) {
-			respond({ s, e });
+		const { p, i } = message;
+		if (i === id && Array.isArray(p)) {
+			respond(...await serve(target, message));
 		}
 	};
 }
@@ -144,7 +143,10 @@ export type Remote<T> = RemoteObject<T> & RemoteCallable<T>;
 
 class RPCHandler implements ProxyHandler<RPCSend> {
 
-	private readonly id: unknown;
+	/**
+	 * ID of the client, used to filter messages.
+	 */
+	private readonly i: unknown;
 
 	/**
 	 * Keys for current property in reversed order.
@@ -152,48 +154,24 @@ class RPCHandler implements ProxyHandler<RPCSend> {
 	 * @example
 	 * createRPCClient().foo.bar[0] -> [0, "bar", "foo"]
 	 */
-	private readonly path: PropertyKey[];
+	private readonly p: PropertyKey[];
 
 	constructor(id: unknown, path: PropertyKey[]) {
-		this.id = id;
-		this.path = path;
+		this.i = id;
+		this.p = path;
 	}
 
 	apply(send: RPCSend, thisArg: unknown, args: any[]) {
-		const { id: i, path: p } = this;
+		const { i, p } = this;
 		return callRemote(send, { i, p, a: args });
 	}
 
 	get(send: RPCSend, key: PropertyKey): any {
-		const { id: i, path: p } = this;
+		const { i, p } = this;
 		return new Proxy(send, new RPCHandler(i, [key, ...p]));
 	}
 }
 
-/* ============================================================================= *
- *                           Layer 3: Exposed APIs
- * ============================================================================= */
-
 export function createClient<T = any>(post: RPCSend, id?: string) {
 	return new Proxy(post, new RPCHandler(id, [])) as Remote<T>;
-}
-
-interface BiRPCOptions {
-	post: PostMessage | RPCSend;
-	on(receive: (msg: any) => unknown): void;
-	session: boolean;
-
-	id?: string;
-
-	serialize?: (data: any) => any;
-	deserialize?: (data: any) => any;
-}
-
-export function createBiRPC<T = any>(options: BiRPCOptions) {
-	if (message.i !== id) {
-		return; // Not an RPC message.
-	}
-	if ("p" in message) {
-		return; // Request message.
-	}
 }
