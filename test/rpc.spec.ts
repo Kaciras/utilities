@@ -1,3 +1,5 @@
+import consumers from "stream/consumers";
+import * as http from "http";
 import { expect, it, jest } from "@jest/globals";
 import { createClient, createServer, Respond, RPCSend, serve, transfer } from "../src/rpc.js";
 
@@ -13,7 +15,7 @@ function createTestRPC<T>(controller: T) {
 }
 
 function alice() {
-	return `Hi I am alice`;
+	return "Hi I am alice";
 }
 
 function bob(name: string) {
@@ -41,6 +43,38 @@ it("should works duplex", async () => {
 	expect(await clientA.bob("world")).toBe("Hello world");
 
 	port1.close();
+});
+
+it("should work with HTTP", async () => {
+	const functions = {
+		hello: (name: string) => `Hello ${name}!`,
+	};
+
+	const server = http.createServer((req, res) => {
+		consumers.json(req)
+			.then((msg: any) => serve(functions, msg))
+			.then(d => res.end(JSON.stringify(d[0])));
+	});
+
+	server.listen(9789);
+
+	// ↑ server side. =================== client side ↓.
+
+	const client = createClient(async message => {
+		const response = await fetch("http://localhost:9789", {
+			method: "POST",
+			body: JSON.stringify(message),
+		});
+		if (response.ok) {
+			return response.json();
+		} else {
+			throw new Error("fetch failed: " + response.status);
+		}
+	});
+
+	expect(await client.hello("world")).toBe("Hello world!");
+
+	server.close();
 });
 
 it("should transfer object to server", async () => {
@@ -103,15 +137,13 @@ it("should forward rejections", () => {
 });
 
 it("should support array index", () => {
-	const client = createTestRPC({
-		foo: [null, () => "hello"] as const,
-	});
-	return expect(client.foo[1]()).resolves.toBe("hello");
+	const client = createTestRPC([null, () => "hello"] as const);
+	return expect(client[1]()).resolves.toBe("hello");
 });
 
 it("should support nested objects", () => {
 	const client = createTestRPC({
-		foo: { bar: { baz: () => "hello" } },
+		foo: { bar: [() => "hello"] },
 	});
-	return expect(client.foo.bar.baz()).resolves.toBe("hello");
+	return expect(client.foo.bar[0]()).resolves.toBe("hello");
 });

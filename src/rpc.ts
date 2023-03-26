@@ -81,7 +81,7 @@ async function callRemote(send: RPCSend, message: RequestMessage) {
 	if ("e" in response) throw response.e; else return response.v;
 }
 
-type ServeReturnValue = [ResponseMessage, Transferable[]];
+type ServeResultTuple = [ResponseMessage, Transferable[]];
 
 /**
  * Handle an RPC request, call specific method in the target, and send the response.
@@ -97,12 +97,12 @@ export async function serve(target: any, message: RequestMessage) {
 			target = target[p[k]];
 		}
 		const v = await target[p[0]](...a);
-		return <ServeReturnValue>[
+		return <ServeResultTuple>[
 			{ i, s, v },
 			transferCache.get(v) ?? [],
 		];
 	} catch (e) {
-		return [{ i, s, e }, []] as ServeReturnValue;
+		return [{ i, s, e }, []] as ServeResultTuple;
 	}
 }
 
@@ -130,17 +130,17 @@ export function createServer(target: any, respond: Respond, id?: string) {
  */
 type Promisify<T> = T extends Promise<unknown> ? T : Promise<T>;
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-type RemoteProperty<T> = T extends Function ? Remote<T> : T;
+type RemoteProperty<T> =
+	// eslint-disable-next-line @typescript-eslint/ban-types
+	T extends Function ? RemoteCallable<T>
+		: T extends object ? Remote<T> : T ;
 
-export type RemoteObject<T> = {
+export type Remote<T> = {
 	[P in keyof T]: RemoteProperty<T[P]>;
 };
 
-type RemoteCallable<T> = T extends (...args: infer Args) => infer R
-	? (...args: { [I in keyof Args]: Args[I] }) => Promisify<Awaited<R>> : unknown;
-
-export type Remote<T> = RemoteObject<T> & RemoteCallable<T>;
+type RemoteCallable<T> = T extends (...args: infer A) => infer R
+	? (...args: A) => Promisify<Awaited<R>> : unknown;
 
 class RPCHandler implements ProxyHandler<RPCSend> {
 
@@ -167,7 +167,7 @@ class RPCHandler implements ProxyHandler<RPCSend> {
 
 type Listen = (callback: (message: ResponseMessage) => void) => void;
 
-export function createClient<T = any>(post: PostMessage, id: string, listen: Listen): Remote<T>;
+export function createClient<T = any>(post: PostMessage<RequestMessage>, id: string, listen: Listen): Remote<T>;
 
 export function createClient<T = any>(send: RPCSend): Remote<T>;
 
