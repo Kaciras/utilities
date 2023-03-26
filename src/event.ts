@@ -109,7 +109,7 @@ export class MultiEventEmitter<T extends EventsMap = Default> {
 	}
 }
 
-export type PostMessage = (message: object, transfers?: Transferable[]) => void;
+export type PostMessage = (message: unknown, transfers: Transferable[]) => void;
 
 export interface PromiseController {
 
@@ -144,13 +144,20 @@ export interface RequestResponseWrapper {
  * const response = await request({ text: "Hello" });
  *
  * @param publish The publish message function
+ * @param id
  * @param timeout The number of milliseconds to wait for response,
  * 				  set to zero or negative value to disable timeout.
  */
-export function pubSub2ReqRes(publish: PostMessage, timeout = 10e3) {
+export function pubSub2ReqRes(publish: PostMessage, id?: string, timeout = 10e3) {
 	const txMap = new Map<number, PromiseController>();
 
 	function dispatch(message: any) {
+		if (typeof message !== "object") {
+			return;
+		}
+		if (message.i !== id) {
+			return;
+		}
 		const session = txMap.get(message.s);
 		if (session) {
 			session.resolve(message);
@@ -159,8 +166,9 @@ export function pubSub2ReqRes(publish: PostMessage, timeout = 10e3) {
 		}
 	}
 
-	function request(message: any, transfers?: Transferable[]) {
+	function request(message: any, transfers: Transferable[] = []) {
 		const s = message.s = uniqueId();
+		message.i = id;
 		publish(message, transfers);
 
 		let timer: ReturnType<typeof setTimeout>;

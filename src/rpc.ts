@@ -13,14 +13,15 @@
  *
  * IMO it's overdesign, so we only support function call.
  */
+import { PostMessage, pubSub2ReqRes } from "./event.js";
 
 /* ============================================================================= *\
  *                         Layer 1：Message protocol
 \* ============================================================================= */
 
-export type Respond = (resp: ResponseMessage, transfer?: Transferable[]) => void;
+export type Respond = (resp: ResponseMessage, transfer: Transferable[]) => void;
 
-export type RPCSend = (message: RequestMessage, transfer?: Transferable[]) => Promise<ResponseMessage>;
+export type RPCSend = (message: RequestMessage, transfer: Transferable[]) => Promise<ResponseMessage>;
 
 export interface RequestMessage {
 	a: any[];			// arguments
@@ -80,7 +81,7 @@ async function callRemote(send: RPCSend, message: RequestMessage) {
 	if ("e" in response) throw response.e; else return response.v;
 }
 
-type ServeReturnValue = [ResponseMessage, Transferable[] | undefined];
+type ServeReturnValue = [ResponseMessage, Transferable[]];
 
 /**
  * Handle an RPC request, call specific method in the target, and send the response.
@@ -98,10 +99,10 @@ export async function serve(target: any, message: RequestMessage) {
 		const v = await target[p[0]](...a);
 		return <ServeReturnValue>[
 			{ i, s, v },
-			transferCache.get(v),
+			transferCache.get(v) ?? [],
 		];
 	} catch (e) {
-		return [{ i, s, e }, undefined] as ServeReturnValue;
+		return [{ i, s, e }, []] as ServeReturnValue;
 	}
 }
 
@@ -144,34 +145,37 @@ export type Remote<T> = RemoteObject<T> & RemoteCallable<T>;
 class RPCHandler implements ProxyHandler<RPCSend> {
 
 	/**
-	 * ID of the client, used to filter messages.
-	 */
-	private readonly i: unknown;
-
-	/**
 	 * Keys for current property in reversed order.
 	 *
 	 * @example
 	 * createRPCClient().foo.bar[0] -> [0, "bar", "foo"]
 	 */
-	private readonly p: PropertyKey[];
+	private readonly path: PropertyKey[];
 
-	constructor(id: unknown, path: PropertyKey[]) {
-		this.i = id;
-		this.p = path;
+	constructor(path: PropertyKey[]) {
+		this.path = path;
 	}
 
 	apply(send: RPCSend, thisArg: unknown, args: any[]) {
-		const { i, p } = this;
-		return callRemote(send, { i, p, a: args });
+		return callRemote(send, { p: this.path, a: args });
 	}
 
 	get(send: RPCSend, key: PropertyKey): any {
-		const { i, p } = this;
-		return new Proxy(send, new RPCHandler(i, [key, ...p]));
+		return new Proxy(send, new RPCHandler([key, ...this.path]));
 	}
 }
 
-export function createClient<T = any>(post: RPCSend, id?: string) {
-	return new Proxy(post, new RPCHandler(id, [])) as Remote<T>;
+type Listen = (callback: (message: ResponseMessage) => void) => void;
+
+export function createClient<T = any>(post: PostMessage, id: string, listen: Listen): Remote<T>;
+
+export function createClient<T = any>(send: RPCSend): Remote<T>;
+
+export function createClient<T = any>(send: any, id?: string, addListener?: any) {
+	if (id) {
+		const { request, dispatch } = pubSub2ReqRes(send, id);
+		send = request;
+		addListener(dispatch);
+	}
+	return new Proxy(send, new RPCHandler([])) as Remote<T>;
 }
