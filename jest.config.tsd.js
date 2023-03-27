@@ -1,4 +1,4 @@
 export default {
 	runner: "jest-runner-tsd",
-	testMatch: ["<rootDir>/test/*.test-d.ts"],
+	testMatch: ["<rootDir>/test/type/*.test-d.ts"],
 };

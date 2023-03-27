@@ -11,7 +11,7 @@ export default {
 	coverageProvider: "v8",
 	testMatch: [
 		"<rootDir>/test/**/*.spec.ts",
-		"<rootDir>/test/tree-shaking.ts",
+		"<rootDir>/test/integration/*.ts",
 	],
 	// https://github.com/kulshekhar/ts-jest/issues/1057
 	moduleNameMapper: {

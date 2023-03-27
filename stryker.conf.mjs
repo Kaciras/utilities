@@ -10,7 +10,7 @@ export default {
 		".idea",
 		"/coverage",
 		"/lib",
-		"/test/tree-shaking.ts"
+		"/test/integration"
 	],
 	tempDirName: "stryker-tmp",
 	coverageAnalysis: "perTest",

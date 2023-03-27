@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 import { expectAssignable, expectType } from "tsd-lite";
-import { Awaitable, cartesianProductArray, cartesianProductObj } from "../src/lang.js";
-import { createClient } from "../src/rpc.js";
+import { Awaitable, cartesianProductArray, cartesianProductObj } from "../../src/lang.js";
 
 expectAssignable<Awaitable<number>>(11);
 expectAssignable<Awaitable<number>>(Promise.resolve(11));
@@ -42,17 +41,3 @@ expectType<Iterable<[
 expectType<Iterable<string[]>>(
 	cartesianProductArray(new Array<string[]>),
 );
-
-const ignore = undefined as any;
-
-{
-	const f = { foo: { bar: async () => {} } };
-	const client = createClient<typeof f>(ignore);
-	expectType<() => Promise<void>>(client.foo.bar);
-}
-
-{
-	const f = [0, 1, (_: 1) => "foo" as const] as const;
-	const client = createClient<typeof f>(ignore);
-	expectType<(i: 1) => Promise<"foo">>(client[2]);
-}
