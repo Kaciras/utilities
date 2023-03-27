@@ -14,10 +14,10 @@ export const NeverAbort: AbortSignal = {
 	removeEventListener() {},
 };
 
-let uniqueIdCounter = 1;
+let uniqueIdCounter = 0;
 
 /**
- * Generate a unique number, each call returns a different value.
+ * Generate a unique positive number, each call returns a different value.
  *
  * This function more efficient than `Math.random()`.
  */

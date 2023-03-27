@@ -19,10 +19,6 @@ import { PostMessage, pubSub2ReqRes } from "./event.js";
  *                         Layer 1：Message protocol
 \* ============================================================================= */
 
-export type Respond = (resp: ResponseMessage, transfer: Transferable[]) => void;
-
-export type RPCSend = (message: RequestMessage, transfer: Transferable[]) => Promise<ResponseMessage>;
-
 export interface RequestMessage {
 	a: any[];			// arguments
 	p: PropertyKey[];	// path
@@ -69,6 +65,8 @@ export function transfer<T>(obj: T, transfers: Transferable[]) {
 	return obj;
 }
 
+export type RPCSend = (message: RequestMessage, transfer: Transferable[]) => Promise<ResponseMessage>;
+
 async function callRemote(send: RPCSend, message: RequestMessage) {
 	const transfers: Transferable[] = [];
 	for (const arg of message.a) {
@@ -78,16 +76,39 @@ async function callRemote(send: RPCSend, message: RequestMessage) {
 		}
 	}
 	const response = await send(message, transfers);
-	if ("e" in response) throw response.e; else return response.v;
+	if ("e" in response) {
+		throw response.e;
+	} else {
+		return response.v;
+	}
 }
 
 type ServeResultTuple = [ResponseMessage, Transferable[]];
 
 /**
- * Handle an RPC request, call specific method in the target, and send the response.
+ * Handle an RPC request, call specific method in the target.
+ *
+ * This function can be used for request-response model.
+ *
+ * @example
+ * // Create RPC server on http://localhost:9789
+ * import consumers from "stream/consumers";
+ * import { RPC } from "@kaciras/utilities/browser";
+ *
+ * const functions = {
+ * 		hello: (name: string) => `Hello ${name}!`,
+ * 	};
+ *
+ * 	const server = http.createServer((req, res) => {
+ * 		consumers.json(req)
+ * 			.then(msg => RPC.serve(functions, msg))
+ * 			.then(d => res.end(JSON.stringify(d[0])));
+ * 	});
+ *
+ * 	server.listen(9789);
  *
  * @param target The service object contains methods that client can use.
- * @param message RPC request message
+ * @param message RPC request message.
  */
 export async function serve(target: any, message: RequestMessage) {
 	const { s, p, a, i } = message;
@@ -106,7 +127,9 @@ export async function serve(target: any, message: RequestMessage) {
 	}
 }
 
-export function createServer(target: any, respond: Respond, id?: string) {
+export type Respond = (resp: ResponseMessage, transfer: Transferable[]) => void;
+
+export function createServer(id: string, target: any, respond: Respond) {
 	return async (message: RequestMessage) => {
 		if (typeof message !== "object") {
 			return; // Not an RPC message.
@@ -131,9 +154,9 @@ export function createServer(target: any, respond: Respond, id?: string) {
 type Promisify<T> = T extends Promise<unknown> ? T : Promise<T>;
 
 type RemoteProperty<T> =
-	// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/ban-types
 	T extends Function ? RemoteCallable<T>
-		: T extends object ? Remote<T> : T ;
+		: T extends object ? Remote<T> : T;
 
 export type Remote<T> = {
 	[P in keyof T]: RemoteProperty<T[P]>;
@@ -167,8 +190,38 @@ class RPCHandler implements ProxyHandler<RPCSend> {
 
 type Listen = (callback: (message: ResponseMessage) => void) => void;
 
-export function createClient<T = any>(post: PostMessage<RequestMessage>, id: string, listen: Listen): Remote<T>;
+/**
+ * Create an RPC client with publish-subscribe channel.
+ *
+ * @param post Function to post request message.
+ * @param id
+ * @param listen Listener to receive response message.
+ */
+export function createClient<T = any>(post: PostMessage, id: string, listen: Listen): Remote<T>;
 
+/**
+ * Create an RPC client with request-response channel.
+ *
+ * @example
+ * // Call remote function `hello` with HTTP protocol.
+ * import { RPC } from "@kaciras/utilities/browser";
+ *
+ * const client = RPC.createClient(async message => {
+ *     const response = await fetch("http://localhost:9789", {
+ *         method: "POST",
+ *         body: JSON.stringify(message),
+ *     });
+ *     if (response.ok) {
+ *         return response.json();
+ *     } else {
+ *         throw new Error("fetch failed: " + response.status);
+ *     }
+ * });
+ *
+ * expect(await client.hello("world")).toBe("Hello world!");
+ *
+ * @param send Function to post request message and receive response message.
+ */
 export function createClient<T = any>(send: RPCSend): Remote<T>;
 
 export function createClient<T = any>(send: any, id?: string, addListener?: any) {

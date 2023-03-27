@@ -3,15 +3,15 @@ import * as http from "http";
 import { expect, it, jest } from "@jest/globals";
 import { createClient, createServer, Respond, RPCSend, serve, transfer } from "../src/rpc.js";
 
-function createTestRPC<T>(controller: T) {
+function createTestRPC<T>(controller: T, id = "Test") {
 	let respond: Respond;
 
 	function respondLazyInit(message: any, ts: Transferable[]) {
 		respond(message, ts);
 	}
 
-	const serve = createServer(controller, respondLazyInit, "e");
-	return createClient<T>(serve, "e", c => respond = c);
+	const serve = createServer(id, controller, respondLazyInit);
+	return createClient<T>(serve, id, c => respond = c);
 }
 
 function alice() {
@@ -30,13 +30,13 @@ it("should works duplex", async () => {
 	const clientA = createClient(post1, "Test", callback => {
 		port1.addEventListener("message", e => callback(e.data));
 	});
-	const serverA = createServer({ alice }, post1, "Test");
+	const serverA = createServer("Test",{ alice }, post1);
 	port1.addEventListener("message", e => serverA(e.data));
 
 	const clientB = createClient(post2, "Test", callback => {
 		port2.addEventListener("message", e => callback(e.data));
 	});
-	const serverB = createServer({ bob }, post2, "Test");
+	const serverB = createServer("Test",{ bob }, post2);
 	port2.addEventListener("message", e => serverB(e.data));
 
 	expect(await clientB.alice()).toBe("Hi I am alice");

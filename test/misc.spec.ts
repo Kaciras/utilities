@@ -25,6 +25,7 @@ describe("uniqueId", () => {
 		const a = uniqueId();
 		const b = uniqueId();
 
+		expect(a).toBeTruthy();
 		expect(a).not.toBe(b);
 		expect(a).not.toBe(uniqueId());
 	});

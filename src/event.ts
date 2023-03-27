@@ -109,7 +109,7 @@ export class MultiEventEmitter<T extends EventsMap = Default> {
 	}
 }
 
-export type PostMessage = (message: unknown, transfers: Transferable[]) => void;
+export type PostMessage = (message: any, transfers: Transferable[]) => void;
 
 export interface PromiseController {
 
@@ -148,7 +148,7 @@ export interface RequestResponseWrapper {
  * @param timeout The number of milliseconds to wait for response,
  * 				  set to zero or negative value to disable timeout.
  */
-export function pubSub2ReqRes(id: string, publish: PostMessage<any>, timeout = 10e3) {
+export function pubSub2ReqRes(id: string, publish: PostMessage, timeout = 10e3) {
 	const txMap = new Map<number, PromiseController>();
 
 	function dispatch(message: any) {

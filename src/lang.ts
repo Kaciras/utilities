@@ -88,7 +88,7 @@ type CartesianProductObject<T extends ObjectSrc> = {
  * cartesianProductObj({
  *     a: [0, 1],
  *     b: [2],
- *     c: [3, 4, 5]
+ *     c: new Set([3, 4, 5]),
  * });
  * // Returns an iterable of:
  * { a: 0, b: 2, c: 3 }
@@ -130,11 +130,15 @@ type CartesianProductArray<T extends ArraySrc> =
 /**
  * Get the cartesian product generator of multiple arrays.
  *
+ * For Iterable inputs, just convert it to an array. The recursive function will be
+ * called multiple times at each index, we still need an array to hold the elements.
+ * e.g. `cartesianProductArray(Array.from(iterable))`.
+ *
  * @example
  * cartesianProductArray([
  *     [0, 1],
  *     [2],
- *     [3, 4, 5]
+ *     new Set([3, 4, 5]),
  * ]);
  * // Returns an iterable of:
  * [0, 2, 3]

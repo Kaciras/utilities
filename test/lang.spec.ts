@@ -155,9 +155,9 @@ describe("cartesianProductObj", () => {
 	it("should isolate each product", () => {
 		const [first, second] = cartesianProductObj({
 			a: [0],
-			b: [20, 30],
+			b: [20, 30, 40],
 		});
-		first.a = 8964;
+		first.b = 40;
 		expect(second).toStrictEqual({ a: 0, b: 30 });
 	});
 });
@@ -191,9 +191,9 @@ describe("cartesianProductArray", () => {
 	it("should isolate each product", () => {
 		const [first, second] = cartesianProductArray([
 			[0],
-			[20, 30],
+			[20, 30, 40],
 		]);
-		first[0] = 8964;
+		first[1] = 40;
 		expect(second).toStrictEqual([0, 30]);
 	});
 });

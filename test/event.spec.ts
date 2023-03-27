@@ -213,7 +213,7 @@ function withFakeTimer(fn: any) {
 describe("pubSub2ReqRes", () => {
 	it("should publish messages", async () => {
 		const received: any[] = [];
-		const { txMap, request } = pubSub2ReqRes("Test", m => received.push(m));
+		const { txMap, request } = pubSub2ReqRes("s", m => received.push(m));
 
 		// noinspection ES6MissingAwait
 		request({ value: 11 });
@@ -221,7 +221,10 @@ describe("pubSub2ReqRes", () => {
 		request({ value: 33 });
 
 		expect(txMap.size).toBe(2);
-		expect(received).toStrictEqual([{ s: 2, value: 11 }, { s: 3, value: 33 }]);
+		expect(received).toStrictEqual([
+			{ i: "s", s: 1, value: 11 },
+			{ i: "s", s: 2, value: 33 },
+		]);
 	});
 
 	it("should ignore messages without id", () => {
@@ -229,7 +232,7 @@ describe("pubSub2ReqRes", () => {
 	});
 
 	it("should ignore messages with unknown id", () => {
-		const { request, dispatch } = pubSub2ReqRes("Test", noop);
+		const { request, dispatch } = pubSub2ReqRes("s", noop);
 
 		const promise = request({});
 		dispatch({ s: -11, foo: "bar" });
@@ -238,12 +241,12 @@ describe("pubSub2ReqRes", () => {
 
 	it("should receive response", async () => {
 		const received: any[] = [];
-		const { txMap, request, dispatch } = pubSub2ReqRes("Test", m => received.push(m));
+		const { txMap, request, dispatch } = pubSub2ReqRes("s", m => received.push(m));
 
 		const p1 = request({});
 		const p2 = request({});
 
-		const response = { s: received[1].s, msg: "foo" };
+		const response = { i: "s", s: received[1].s, msg: "foo" };
 		dispatch(response);
 		await expect(p2).resolves.toStrictEqual(response);
 
@@ -253,12 +256,12 @@ describe("pubSub2ReqRes", () => {
 
 	it("should clear the timer after transaction completed", withFakeTimer(() => {
 		let s = -1;
-		const { txMap, request, dispatch } = pubSub2ReqRes("Test", m => s = (m as any).s, 100);
+		const { txMap, request, dispatch } = pubSub2ReqRes("s", m => s = (m as any).s, 100);
 		request({});
 		request({});
 		expect(jest.getTimerCount()).toBe(2);
 
-		dispatch({ s });
+		dispatch({ i: "s", s });
 
 		expect(txMap.has(s)).toBe(false);
 		expect(txMap.size).toBe(1);
@@ -266,7 +269,7 @@ describe("pubSub2ReqRes", () => {
 	}));
 
 	it("should support disable timeout", withFakeTimer(() => {
-		const { txMap, request } = pubSub2ReqRes("Test", noop, 0);
+		const { txMap, request } = pubSub2ReqRes("s", noop, 0);
 		request({});
 		request({});
 
@@ -275,7 +278,7 @@ describe("pubSub2ReqRes", () => {
 	}));
 
 	it("should support remove session from outside", withFakeTimer(async () => {
-		const { txMap, request } = pubSub2ReqRes("Test", noop, 100);
+		const { txMap, request } = pubSub2ReqRes("s", noop, 100);
 		const promise = request({});
 
 		txMap.clear();
@@ -286,7 +289,7 @@ describe("pubSub2ReqRes", () => {
 	}));
 
 	it("should clear expired sessions", withFakeTimer(async () => {
-		const { txMap, request } = pubSub2ReqRes("Test", noop, 100);
+		const { txMap, request } = pubSub2ReqRes("s", noop, 100);
 		const promise = request({});
 
 		jest.advanceTimersByTime(101);
