@@ -213,7 +213,7 @@ function withFakeTimer(fn: any) {
 describe("pubSub2ReqRes", () => {
 	it("should publish messages", async () => {
 		const received: any[] = [];
-		const { txMap, request } = pubSub2ReqRes(m => received.push(m));
+		const { txMap, request } = pubSub2ReqRes("Test", m => received.push(m));
 
 		// noinspection ES6MissingAwait
 		request({ value: 11 });
@@ -225,11 +225,11 @@ describe("pubSub2ReqRes", () => {
 	});
 
 	it("should ignore messages without id", () => {
-		pubSub2ReqRes(noop).dispatch({ foo: "bar" });
+		pubSub2ReqRes("Test", noop).dispatch({ foo: "bar" });
 	});
 
 	it("should ignore messages with unknown id", () => {
-		const { request, dispatch } = pubSub2ReqRes(noop);
+		const { request, dispatch } = pubSub2ReqRes("Test", noop);
 
 		const promise = request({});
 		dispatch({ s: -11, foo: "bar" });
@@ -238,7 +238,7 @@ describe("pubSub2ReqRes", () => {
 
 	it("should receive response", async () => {
 		const received: any[] = [];
-		const { txMap, request, dispatch } = pubSub2ReqRes(m => received.push(m));
+		const { txMap, request, dispatch } = pubSub2ReqRes("Test", m => received.push(m));
 
 		const p1 = request({});
 		const p2 = request({});
@@ -253,7 +253,7 @@ describe("pubSub2ReqRes", () => {
 
 	it("should clear the timer after transaction completed", withFakeTimer(() => {
 		let s = -1;
-		const { txMap, request, dispatch } = pubSub2ReqRes(m => s = (m as any).s, 100);
+		const { txMap, request, dispatch } = pubSub2ReqRes("Test", m => s = (m as any).s, 100);
 		request({});
 		request({});
 		expect(jest.getTimerCount()).toBe(2);
@@ -266,7 +266,7 @@ describe("pubSub2ReqRes", () => {
 	}));
 
 	it("should support disable timeout", withFakeTimer(() => {
-		const { txMap, request } = pubSub2ReqRes(noop, 0);
+		const { txMap, request } = pubSub2ReqRes("Test", noop, 0);
 		request({});
 		request({});
 
@@ -275,7 +275,7 @@ describe("pubSub2ReqRes", () => {
 	}));
 
 	it("should support remove session from outside", withFakeTimer(async () => {
-		const { txMap, request } = pubSub2ReqRes(noop, 100);
+		const { txMap, request } = pubSub2ReqRes("Test", noop, 100);
 		const promise = request({});
 
 		txMap.clear();
@@ -286,7 +286,7 @@ describe("pubSub2ReqRes", () => {
 	}));
 
 	it("should clear expired sessions", withFakeTimer(async () => {
-		const { txMap, request } = pubSub2ReqRes(noop, 100);
+		const { txMap, request } = pubSub2ReqRes("Test", noop, 100);
 		const promise = request({});
 
 		jest.advanceTimersByTime(101);

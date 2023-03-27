@@ -173,7 +173,7 @@ export function createClient<T = any>(send: RPCSend): Remote<T>;
 
 export function createClient<T = any>(send: any, id?: string, addListener?: any) {
 	if (id) {
-		const { request, dispatch } = pubSub2ReqRes(send, id);
+		const { request, dispatch } = pubSub2ReqRes(id, send);
 		send = request;
 		addListener(dispatch);
 	}

@@ -131,7 +131,7 @@ export interface RequestResponseWrapper {
 
 /**
  * Wrap publish-subscribe functions to request-response model.
- * The remote service must attach request message id in response message.
+ * The remote service must attach the id in response message.
  *
  * # NOTE
  * If you disable timeout, there will be a memory leak when response
@@ -139,16 +139,16 @@ export interface RequestResponseWrapper {
  * since the key is deserialized from the message.
  *
  * @example
- * const { request, subscribe } = pubSub2ReqRes(window.postMessage);
+ * const { request, subscribe } = pubSub2ReqRes("DEMO", window.postMessage);
  * window.addEventListener("message", e => subscribe(e.data));
  * const response = await request({ text: "Hello" });
  *
- * @param publish The publish message function
  * @param id
+ * @param publish The publish message function
  * @param timeout The number of milliseconds to wait for response,
  * 				  set to zero or negative value to disable timeout.
  */
-export function pubSub2ReqRes(publish: PostMessage, id?: string, timeout = 10e3) {
+export function pubSub2ReqRes(id: string, publish: PostMessage<any>, timeout = 10e3) {
 	const txMap = new Map<number, PromiseController>();
 
 	function dispatch(message: any) {
