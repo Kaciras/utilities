@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { compositor, dataSizeIEC, dataSizeSI, durationConvertor } from "../src/format.js";
+import { compositor, dataSizeIEC, dataSizeSI, durationFmt } from "../src/format.js";
 
 describe("formatDiv", () => {
 	const invalid = [
@@ -48,7 +48,7 @@ describe("formatMod", () => {
 
 	it("should throw with invalid unit", () => {
 		// @ts-expect-error
-		expect(() => durationConvertor.formatMod(11, "foobar")).toThrow(new Error("Unknown time unit: foobar"));
+		expect(() => durationFmt.formatMod(11, "foobar")).toThrow(new Error("Unknown time unit: foobar"));
 	});
 
 	it.each([
@@ -59,11 +59,11 @@ describe("formatMod", () => {
 		"11",
 	])("should throw with invalid value %s", value => {
 		// @ts-expect-error
-		expect(() => durationConvertor.formatMod(value, "s")).toThrow(new Error(`${value} is not a finite number`));
+		expect(() => durationFmt.formatMod(value, "s")).toThrow(new Error(`${value} is not a finite number`));
 	});
 
 	it("should throw with negative value", () => {
-		expect(() => durationConvertor.formatMod(-11, "s")).toThrow("value (-11) can not be negative");
+		expect(() => durationFmt.formatMod(-11, "s")).toThrow("value (-11) can not be negative");
 	});
 
 	const cases: Array<[number, any, string]> = [
@@ -80,12 +80,12 @@ describe("formatMod", () => {
 		[0.5, "h", "30m"],
 	];
 	it.each(cases)("should works %#", (number, unit, expected) => {
-		expect(durationConvertor.formatMod(number, unit)).toBe(expected);
+		expect(durationFmt.formatMod(number, unit)).toBe(expected);
 	});
 
 	it("should support custom part count", () => {
-		expect(durationConvertor.formatMod(97215, "s", 4)).toBe("1d 3h 0m 15s");
-		expect(durationConvertor.formatMod(0.522, "h", 99)).toBe("31m 19s 200ms");
+		expect(durationFmt.formatMod(97215, "s", 4)).toBe("1d 3h 0m 15s");
+		expect(durationFmt.formatMod(0.522, "h", 99)).toBe("31m 19s 200ms");
 	});
 });
 
@@ -106,7 +106,7 @@ describe("UnitConvertor.parse", () => {
 
 	it("should throw error with invalid target unit", () => {
 		// @ts-expect-error
-		expect(() => durationConvertor.parse("11s", "foobar")).toThrow(new Error("Unknown time unit: foobar"));
+		expect(() => durationFmt.parse("11s", "foobar")).toThrow(new Error("Unknown time unit: foobar"));
 	});
 
 	it.each([
@@ -115,14 +115,14 @@ describe("UnitConvertor.parse", () => {
 		"11",
 		"h",
 	])("should throw with invalid value %s", value => {
-		expect(() => durationConvertor.parse(value, "s")).toThrow(new Error(`Can not convert "${value}" to time`));
+		expect(() => durationFmt.parse(value, "s")).toThrow(new Error(`Can not convert "${value}" to time`));
 	});
 
 	it.each([
 		"11h 22h",
 		"3ms 1m",
 	])("should throw error if groups in wrong order", value => {
-		expect(() => durationConvertor.parse(value, "s"))
+		expect(() => durationFmt.parse(value, "s"))
 			.toThrow(new Error("Units must be ordered from largest to smallest"));
 	});
 
@@ -157,7 +157,7 @@ describe("UnitConvertor.parse", () => {
 		[0.5, "h", "30m"],
 	];
 	it.each(unitCases)("should parse with target unit for %s", (expected, unit, str) => {
-		expect(durationConvertor.parse(str, unit)).toBeCloseTo(expected, 5);
+		expect(durationFmt.parse(str, unit)).toBeCloseTo(expected, 5);
 	});
 
 	it("should parse the value in SI", () => {

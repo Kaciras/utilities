@@ -189,7 +189,7 @@ export class UnitConvertor<T extends readonly string[]> {
  * Convert between duration and human-readable string.
  * Support units from nanoseconds to days.
  */
-export const durationConvertor = new UnitConvertor("time", TIME_UNITS, TIME_FRACTIONS);
+export const durationFmt = new UnitConvertor("time", TIME_UNITS, TIME_FRACTIONS);
 
 /**
  * Convert between bytes and human-readable string using SI prefixes.
