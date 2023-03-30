@@ -1,3 +1,5 @@
+import { OnFulfilled, OnRejected } from "./lang.js";
+
 /**
  * Fetch the resource into a File object, detect name and last modified from response.
  *
@@ -56,9 +58,6 @@ async function checkStatus(fetching: Promise<Response>) {
 	}
 	throw new FetchClientError(response);
 }
-
-type OnFulfilled<T, R> = ((value: T) => R | PromiseLike<R>) | null;
-type OnRejected<R> = ((reason: any) => R | PromiseLike<R>) | null;
 
 /**
  * Wrapper for Promise<Response>, provide status checking and useful method alias.

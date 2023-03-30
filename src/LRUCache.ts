@@ -66,12 +66,11 @@ export default class LRUCache<K, T> {
 	 */
 	get(key: K) {
 		const e = this.map.get(key);
-		if (!e) {
-			return;
+		if (e) {
+			this.updateOrder(key, e);
+			this.refreshTimeout(key, e);
+			return e.value;
 		}
-		this.updateOrder(key, e);
-		this.refreshTimeout(key, e);
-		return e.value;
 	}
 
 	set(key: K, value: T) {

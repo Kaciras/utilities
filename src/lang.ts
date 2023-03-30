@@ -2,7 +2,11 @@ export type ItemOfIterable<T> = T extends Iterable<infer E> ? E : never;
 
 export type Awaitable<T> = T | Promise<T>;
 
+export type OnFulfilled<T, R> = ((value: T) => R | PromiseLike<R>) | null;
+export type OnRejected<R> = ((reason: any) => R | PromiseLike<R>) | null;
+
 export const noop = () => {};
+
 export const identity = <T>(v: T) => v;
 
 // https://stackoverflow.com/a/38642922/7065321

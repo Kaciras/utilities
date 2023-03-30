@@ -3,8 +3,6 @@
  * For example.
  * - Division conversion: "90s" to "1.5m".
  * - Modulo conversion:   "90s" to "1m 30s".
- *
- * The n2s and s2n means "number to string" and "string to number".
  */
 
 //@formatter:off
@@ -60,7 +58,12 @@ export class UnitConvertor<T extends readonly string[]> {
 	}
 
 	/**
+	 * Scale the number to the most appropriate unit and round.
+	 *
 	 * The result may lose precision and cannot be converted back.
+	 *
+	 * @example
+	 * dataSizeIEC.formatDiv(number)
 	 *
 	 * @param value Numeric value to use.
 	 * @param unit Unit ot the value.
@@ -80,18 +83,18 @@ export class UnitConvertor<T extends readonly string[]> {
 	}
 
 	/**
-	 * Formats a value and unit.
+	 * Formats a value with unit into multiple groups.
 	 *
 	 * The result may lose precision and cannot be converted back.
 	 *
 	 * @example
-	 * durationConvertor.n2sModulo(0.1, "ns");			// "0ns"
-	 * durationConvertor.n2sModulo(0, "s");				// "0s"
-	 * durationConvertor.n2sModulo(10000, "d");			// "10000d"
-	 * durationConvertor.n2sModulo(97215, "s", 4);		// "1d 3h 0m 15s"
-	 * durationConvertor.n2sModulo(0.522, "h");			// "31m 19s"
-	 * durationConvertor.n2sModulo(0.522, "h", 1);		// "31m"
-	 * durationConvertor.n2sModulo(0.522, "h", 999);	// "31m 19s 200ms"
+	 * durationFmt.formatMod(0.1, "ns");			// "0ns"
+	 * durationFmt.formatMod(0, "s");				// "0s"
+	 * durationFmt.formatMod(10000, "d");			// "10000d"
+	 * durationFmt.formatMod(97215, "s", 4);		// "1d 3h 0m 15s"
+	 * durationFmt.formatMod(0.522, "h");			// "31m 19s"
+	 * durationFmt.formatMod(0.522, "h", 1);		// "31m"
+	 * durationFmt.formatMod(0.522, "h", 999);		// "31m 19s 200ms"
 	 *
 	 * @param value Numeric value to use.
 	 * @param unit Unit ot the value.
@@ -129,23 +132,12 @@ export class UnitConvertor<T extends readonly string[]> {
 	 * Convert string to number in specified unit.
 	 *
 	 * @example
-	 * durationConvertor.s2nModulo("10000d", "d");			// 10000
-	 * durationConvertor.s2nModulo("0h", "s");				// 0
-	 * durationConvertor.s2nModulo("0.5m", "s");			// 30
-	 * durationConvertor.s2nModulo("1d 3h 0m 15s", "s");	// 97215
-	 *
-	 * @param value The string to parse.
-	 * @param unit Target unit to converted to.
-	 */
-
-	/**
-	 * Convert string to number in specified unit.
-	 *
-	 * @example
-	 * durationConvertor.s2nModulo("10000d", "d");			// 10000
-	 * durationConvertor.s2nModulo("0h", "s");				// 0
-	 * durationConvertor.s2nModulo("0.5m", "s");			// 30
-	 * durationConvertor.s2nModulo("1d 3h 0m 15s", "s");	// 97215
+	 * durationFmt.parse("10000d", "d");		// 10000
+	 * durationFmt.parse("0h", "s");			// 0
+	 * durationFmt.parse("0.5m", "s");			// 30
+	 * durationFmt.parse("1d 3h 0m 15s", "s");	// 97215
+	 * durationFmt.parse("+1d 3h 0m 15s", "s");	// 97215
+	 * durationFmt.parse("-1d 3h 0m 15s", "s");	// -97215
 	 *
 	 * @param value The string to parse.
 	 * @param unit Target unit to converted to.
@@ -212,7 +204,7 @@ type Placeholders = Record<string, string | RegExp>;
  * [mustache.js](https://github.com/janl/mustache.js)
  *
  * @example
- * const template = "<html>...</html>";
+ * const template = <HTML text>;
  * const newComposite = compositor(template, {
  * 		metadata: "<!--ssr-metadata-->",
  * 		bodyAttrs: /(?<=<body.*?)(?=>)/s,
@@ -240,6 +232,7 @@ export function compositor<T extends Placeholders>(
 		let startPos: number;
 		let endPos: number;
 
+		// noinspection SuspiciousTypeOfGuard (IDEA bug)
 		if (typeof pattern === "string") {
 			startPos = template.indexOf(pattern);
 			if (startPos === -1) {
