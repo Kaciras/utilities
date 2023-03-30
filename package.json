@@ -12,7 +12,8 @@
 		"utils"
 	],
 	"exports": {
-		"./*": "./lib/*.js"
+		"./browser": "./lib/browser.js",
+		"./node": "./lib/node.js"
 	},
 	"type": "module",
 	"files": [
