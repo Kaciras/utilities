@@ -42,16 +42,23 @@ describe("FetchClient", () => {
 	afterAll(() => httpServer.stop());
 
 	it("should works", async () => {
-		const client = new FetchClient({ baseURL: httpServer.url });
+		const client = new FetchClient();
 		await httpServer.forGet("/").thenReply(200, "OKOK!");
 
-		const response = await client.get("/");
+		const response = await client.get(httpServer.url);
+		expect(response.status).toBe(200);
 		await expect(response.text()).resolves.toBe("OKOK!");
+	});
+
+	it("should prepend url with baseURL", async () => {
+		const client = new FetchClient({ baseURL: httpServer.url });
+		await httpServer.forGet("/posts/1").thenReply(200);
+
+		expect((await client.get("/posts/1")).status).toBe(200);
 	});
 
 	it("should merge headers", async () => {
 		const client = new FetchClient({
-			baseURL: httpServer.url,
 			init: {
 				headers: {
 					foo: "bar",
@@ -69,40 +76,35 @@ describe("FetchClient", () => {
 			.withJsonBody(json)
 			.thenReply(200, "OKOK!");
 
-		const response = await client.post("/", json);
+		const response = await client.post(httpServer.url, json);
 		await expect(response.text()).resolves.toBe("OKOK!");
 	});
 
 	it("should not modify the base request", async () => {
-		const baseRequest = {
-			method: "POST",
-			headers: { foo: "bar" },
-		};
-		const client = new FetchClient({
-			baseURL: httpServer.url,
-			init: baseRequest,
-		});
+		const init = { method: "POST", headers: { foo: "bar" } };
+		const client = new FetchClient({ init });
 		await httpServer.forGet("/").thenReply(200, "OKOK!");
 
-		const response = await client.get("/");
+		const response = await client.get(httpServer.url);
 		await expect(response.text()).resolves.toBe("OKOK!");
-		expect(baseRequest.method).toBe("POST");
-		expect(baseRequest.headers).toStrictEqual({ foo: "bar" });
+		expect(init.method).toBe("POST");
+		expect(init.headers).toStrictEqual({ foo: "bar" });
 	});
 
 	it("should get the location", async () => {
-		const client = new FetchClient({ baseURL: httpServer.url });
-		await httpServer.forGet("/").thenReply(200, "OKOK!", { location: "/abc" });
-		await expect(client.get("/").location).resolves.toBe("/abc");
+		const client = new FetchClient();
+		await httpServer.forGet()
+			.thenReply(200, "OKOK!", { location: "/abc" });
+		await expect(client.get(httpServer.url).location).resolves.toBe("/abc");
 	});
 
 	it("should serialize parameters", async () => {
-		const client = new FetchClient({ baseURL: httpServer.url });
+		const client = new FetchClient();
 		await httpServer.forHead("/")
 			.withExactQuery("?start=0&count=11")
 			.thenReply(201);
 
-		const response = await client.head("/", {
+		const response = await client.head(httpServer.url, {
 			start: 0,
 			count: 11,
 			baz: undefined,
@@ -126,24 +128,25 @@ describe("FetchClient", () => {
 	});
 
 	it("should work with custom fetch function", async () => {
-		const mockFetch = jest.fn<typeof fetch>();
+		const stubResponse = new Response();
+		const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(stubResponse);
 		const client = new FetchClient({ baseURL: "ftp://a.com", fetch: mockFetch });
 
-		const stubResponse = new Response();
-		mockFetch.mockResolvedValue(stubResponse);
-
 		await expect(client.delete("/s.txt")).resolves.toBe(stubResponse);
-		expect((mockFetch.mock.calls[0][0] as Request).url).toBe("ftp://a.com/s.txt");
+
+		const request = mockFetch.mock.calls[0][0] as Request;
+		expect(request.credentials).toBe("include");
+		expect(request.url).toBe("ftp://a.com/s.txt");
 	});
 
 	it("should return the JSON body", async () => {
-		const client = new FetchClient({ baseURL: httpServer.url });
+		const client = new FetchClient();
 		const json = { foo: 11, bar: 22 };
 
 		await httpServer.forPatch("/")
 			.thenReply(200, JSON.stringify(json));
 
-		const actual = await client.patch("/").json();
+		const actual = await client.patch(httpServer.url).json();
 		expect(actual).toEqual(json);
 	});
 
@@ -151,19 +154,30 @@ describe("FetchClient", () => {
 		const check = jest.fn(identity);
 		await httpServer.forGet("/").thenReply(503);
 
-		const client = new FetchClient({ baseURL: httpServer.url, check });
-		const response = await client.get("/");
+		const client = new FetchClient({ check });
+		const response = await client.get(httpServer.url);
 
 		expect(response.status).toBe(503);
 		expect(check).toHaveBeenCalledTimes(1);
 	});
 
+	it("should post primitives as string", async () => {
+		const client = new FetchClient();
+		const ep = await httpServer.forPut("/").thenReply(200);
+
+		await client.put(httpServer.url, 123);
+
+		const [request] = await ep.getSeenRequests();
+		await expect(request.body.getText()).resolves.toBe("123");
+		expect(request.headers["content-type"]).toBe("text/plain;charset=UTF-8");
+	});
+
 	it("should post Blobs", async () => {
-		const client = new FetchClient({ baseURL: httpServer.url });
+		const client = new FetchClient();
 		const ep = await httpServer.forPut("/").thenReply(200);
 
 		const blob = new Blob(["foobar"], { type: "foo/bar" });
-		await client.put("/", blob);
+		await client.put(httpServer.url, blob);
 
 		const [request] = await ep.getSeenRequests();
 		expect(request.headers["content-type"]).toBe("foo/bar");
@@ -171,13 +185,13 @@ describe("FetchClient", () => {
 	});
 
 	it("should submit FormData", async () => {
-		const client = new FetchClient({ baseURL: httpServer.url });
+		const client = new FetchClient();
 		const ep = await httpServer.forPut("/").thenReply(200);
 
 		const form = new FormData();
 		form.set("foo", new Blob(["BLOB_PART"]));
 
-		await client.put("/", form);
+		await client.put(httpServer.url, form);
 
 		const [request] = await ep.getSeenRequests();
 		expect(request.headers["content-type"]).toMatch(/^multipart\/form-data; boundary=/);
