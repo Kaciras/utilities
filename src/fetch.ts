@@ -157,10 +157,11 @@ export interface FetchClientOptions {
  */
 export class FetchClient {
 
-	private readonly init: RequestInit;
-	private readonly baseURL: string;
-	private readonly check: Check;
-	private readonly doFetch: FetchFn;
+	// Allow extending FetchClient with inheritance.
+	protected readonly init: RequestInit;
+	protected readonly baseURL: string;
+	protected readonly check: Check;
+	protected readonly doFetch: FetchFn;
 
 	constructor(options: FetchClientOptions = {}) {
 		this.init = options.init ?? defaultRequest;
