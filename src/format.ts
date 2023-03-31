@@ -104,28 +104,25 @@ export class UnitConvertor<T extends readonly string[]> {
 		if (!Number.isFinite(value)) {
 			throw new TypeError(`${value} is not a finite number`);
 		}
-		if (value < 0) {
-			throw new Error(`value (${value}) can not be negative`);
-		}
 		const { units, fractions } = this;
-		value *= this.getFraction(unit);
+		let v = Math.abs(value) * this.getFraction(unit);
 
 		const groups: string[] = [];
-		let i = this.largest(value);
 
 		// Backtrace to calculate each group.
-		for (; i >= 0 && parts > 0; i--, parts -= 1) {
+		for (let i = this.largest(v); i >= 0 && parts > 0; i--, parts -= 1) {
 			const f = fractions[i];
 
 			// Avoid tailing zeros.
-			if (value * f < 1) break;
+			if (v * f < 1) break;
 
-			const t = Math.floor(value / f);
-			value %= f;
+			const t = Math.floor(v / f);
+			v %= f;
 			groups.push(`${t}${units[i]}`);
 		}
 
-		return groups.length ? groups.join(" ") : `0${unit}`;
+		const sign = value < 0 ? "-" : "";
+		return groups.length ? sign + groups.join(" ") : `0${unit}`;
 	}
 
 	/**

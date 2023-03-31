@@ -45,12 +45,6 @@ describe("formatDiv", () => {
 });
 
 describe("formatMod", () => {
-
-	it("should throw with invalid unit", () => {
-		// @ts-expect-error
-		expect(() => durationFmt.formatMod(11, "foobar")).toThrow(new Error("Unknown time unit: foobar"));
-	});
-
 	it.each([
 		undefined,
 		NaN,
@@ -62,8 +56,9 @@ describe("formatMod", () => {
 		expect(() => durationFmt.formatMod(value, "s")).toThrow(new Error(`${value} is not a finite number`));
 	});
 
-	it("should throw with negative value", () => {
-		expect(() => durationFmt.formatMod(-11, "s")).toThrow("value (-11) can not be negative");
+	it("should throw with invalid unit", () => {
+		// @ts-expect-error
+		expect(() => durationFmt.formatMod(11, "foobar")).toThrow(new Error("Unknown time unit: foobar"));
 	});
 
 	const cases: Array<[number, any, string]> = [
@@ -78,6 +73,10 @@ describe("formatMod", () => {
 		[1, "ns", "1ns"],
 		[0, "h", "0h"],
 		[0.5, "h", "30m"],
+
+		[-97215, "s", "-1d 3h"],
+		[0, "s", "0s"],
+		[-0, "s", "0s"],
 	];
 	it.each(cases)("should works %#", (number, unit, expected) => {
 		expect(durationFmt.formatMod(number, unit)).toBe(expected);
@@ -114,6 +113,7 @@ describe("UnitConvertor.parse", () => {
 		"",
 		"11",
 		"h",
+		"20m -34s",
 	])("should throw with invalid value %s", value => {
 		expect(() => durationFmt.parse(value, "s")).toThrow(new Error(`Can not convert "${value}" to time`));
 	});
