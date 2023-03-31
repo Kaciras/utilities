@@ -33,8 +33,8 @@ export class FetchClientError extends Error {
 	 */
 	name = "FetchClientError";
 
-	private readonly response: Response;
-	private readonly code: number;
+	readonly response: Response;
+	readonly code: number;
 
 	constructor(response: Response, msg?: string) {
 		super(msg ?? `Fetch failed. (${response.status})`);
@@ -125,7 +125,7 @@ type FetchFn = (request: Request, init: RequestInit) => Promise<Response>;
 export interface FetchClientOptions {
 
 	/**
-	 * `baseURL` will be prepended to `url` unless `url` is absolute.
+	 * `baseURL` will be prepended to `url` if present.
 	 */
 	baseURL?: string;
 

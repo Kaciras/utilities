@@ -121,6 +121,7 @@ describe("FetchClient", () => {
 		const error = await response.catch(identity);
 		expect(error).toBeInstanceOf(FetchClientError);
 		expect(error.name).toBe("FetchClientError");
+		expect(error.code).toBe(451);
 		expect(error.message).toBe("Fetch failed. (451)");
 	});
 
