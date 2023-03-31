@@ -124,6 +124,17 @@ describe("FetchClient", () => {
 		expect(error.message).toBe("Fetch failed. (451)");
 	});
 
+	it("should work with custom fetch function", async () => {
+		const mockFetch = jest.fn<typeof fetch>();
+		const client = new FetchClient({ baseURL: "ftp://a.com", fetch: mockFetch });
+
+		const stubResponse = new Response();
+		mockFetch.mockResolvedValue(stubResponse);
+
+		await expect(client.delete("/s.txt")).resolves.toBe(stubResponse);
+		expect((mockFetch.mock.calls[0][0] as Request).url).toBe("ftp://a.com/s.txt");
+	});
+
 	it("should return the JSON body", async () => {
 		const client = new FetchClient({ baseURL: httpServer.url });
 		const json = { foo: 11, bar: 22 };

@@ -119,9 +119,30 @@ export class ResponseFacade implements Promise<Response> {
 	}
 }
 
+// The overload of `fetch` used in FetchClient.
+type FetchFn = (request: Request, init: RequestInit) => Promise<Response>;
+
 export interface FetchClientOptions {
+
+	/**
+	 * `baseURL` will be prepended to `url` unless `url` is absolute.
+	 */
 	baseURL?: string;
+
+	/**
+	 * Check response status before retrieving data.
+	 * By default, it rejects the promise if status is not 2xx.
+	 */
 	check?: Check;
+
+	/**
+	 * Use custom implementation instead of `global.fetch`.
+	 */
+	fetch?: FetchFn;
+
+	/**
+	 * Custom settings that you want to apply to each request.
+	 */
 	init?: RequestInit;
 }
 
@@ -139,15 +160,17 @@ export class FetchClient {
 	private readonly init: RequestInit;
 	private readonly baseURL: string;
 	private readonly check: Check;
+	private readonly doFetch: FetchFn;
 
 	constructor(options: FetchClientOptions = {}) {
 		this.init = options.init ?? defaultRequest;
 		this.baseURL = options.baseURL ?? "";
 		this.check = options.check ?? checkStatus;
+		this.doFetch = options.fetch ?? fetch;
 	}
 
-	fetch(url: string, method?: string, body?: any, params?: Params) {
-		const { baseURL, init, check } = this;
+	request(url: string, method?: string, body?: any, params?: Params) {
+		const { baseURL, init, check, doFetch } = this;
 		const headers = new Headers(init.headers);
 
 		/*
@@ -177,31 +200,30 @@ export class FetchClient {
 
 		const custom: RequestInit = { method, headers, body };
 		const request = new Request(baseURL + url, init);
-
-		return new ResponseFacade(fetch(request, custom), check);
+		return new ResponseFacade(doFetch(request, custom), check);
 	}
 
 	head(url: string, params?: Params) {
-		return this.fetch(url, "HEAD", null, params);
+		return this.request(url, "HEAD", null, params);
 	}
 
 	get(url: string, params?: Params) {
-		return this.fetch(url, "GET", null, params);
+		return this.request(url, "GET", null, params);
 	}
 
 	delete(url: string, params?: Params) {
-		return this.fetch(url, "DELETE", null, params);
+		return this.request(url, "DELETE", null, params);
 	}
 
 	post(url: string, data?: any, params?: Params) {
-		return this.fetch(url, "POST", data, params);
+		return this.request(url, "POST", data, params);
 	}
 
 	put(url: string, data?: any, params?: Params) {
-		return this.fetch(url, "PUT", data, params);
+		return this.request(url, "PUT", data, params);
 	}
 
 	patch(url: string, data?: any, params?: Params) {
-		return this.fetch(url, "PATCH", data, params);
+		return this.request(url, "PATCH", data, params);
 	}
 }
