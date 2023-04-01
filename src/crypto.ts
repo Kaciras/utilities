@@ -25,11 +25,15 @@ function toBuf(value: BufferOrString) {
 interface AESOptions {
 
 	/**
+	 * AES key size, can be 128, 192, or 256.
+	 *
 	 * @default 128
 	 */
-	length?: 128 | 256;
+	length?: 128 | 192 | 256;
 
 	/**
+	 * GCM initialization vector.
+	 *
 	 * @default AESHelper.DEFAULT_IV
 	 */
 	iv?: BufferSource;
@@ -40,26 +44,35 @@ interface AESOptions {
 	salt?: BufferOrString;
 
 	/**
+	 * Number of iterations used for PBKDF2.
+	 *
 	 * @default 240537
 	 */
 	iterations?: number;
 }
 
 /**
+ * A simple WebCrypto wrapper for symmetric encryption with sensible defaults.
  *
- * Currently WebCrypto does not support streams. Further reading:
+ * Currently, WebCrypto does not support streams. Further reading:
  * https://github.com/w3c/webcrypto/issues/73
  *
  * On browser, this class is available only in secure contexts (HTTPS).
  * https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto
+ *
+ * @example
+ * const aes = await AESHelper.withPassword("foobar");
+ * const encrypted = await aes.encrypt("123456");
+ * const plain = await aes.decryptText(encrypted); // "123456"
  */
 export class AESHelper {
+
+	// Default salt and IV are randomly generated.
 
 	private static DEFAULT_SALT = new Uint32Array([
 		0xaf9a9c5c, 0x8200982d, 0x90f46814, 0xf7008542,
 		0xe7fb5613, 0xc6b73dc1, 0x00008be5, 0x1eeb367d,
 	]);
-
 	private static DEFAULT_IV = new Uint32Array([
 		0x7f110357, 0xaf05541a, 0x36463f73, 0x0df21a80,
 		0xfd1b00fb, 0x6e99d1c4, 0xac27a23f, 0x2aef0aeb,
@@ -109,6 +122,9 @@ export class AESHelper {
 		return crypto.subtle.decrypt(this.algorithm, this.key, input);
 	}
 
+	/**
+	 * Decrypt data and convert it to string using utf8 encoding.
+	 */
 	async decryptText(input: BufferSource) {
 		return this.decrypt(input).then(b => new TextDecoder().decode(b));
 	}
