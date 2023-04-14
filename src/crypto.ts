@@ -69,11 +69,11 @@ export class AESHelper {
 
 	// Default salt and IV are randomly generated.
 
-	private static DEFAULT_SALT = new Uint32Array([
+	static readonly DEFAULT_SALT = new Uint32Array([
 		0xaf9a9c5c, 0x8200982d, 0x90f46814, 0xf7008542,
 		0xe7fb5613, 0xc6b73dc1, 0x00008be5, 0x1eeb367d,
 	]);
-	private static DEFAULT_IV = new Uint32Array([
+	static readonly DEFAULT_IV = new Uint32Array([
 		0x7f110357, 0xaf05541a, 0x36463f73, 0x0df21a80,
 		0xfd1b00fb, 0x6e99d1c4, 0xac27a23f, 0x2aef0aeb,
 	]);
