@@ -11,14 +11,18 @@ export async function fetchFile(request: RequestInfo, init?: RequestInit) {
 
 	const response = await fetch(request, init);
 	if (!response.ok) {
-		throw new Error(`Failed to fetch (${response.status}) ${url}`);
+		throw new Error(`Failed to fetch ${url} (${response.status})`);
 	}
 
 	const blob = await response.blob();
 	const timeHeader = response.headers.get("last-modified");
 	const lastModified = timeHeader ? new Date(timeHeader).getTime() : undefined;
 
-	const name = new URL(url).pathname.split("/").at(-1) || "download";
+	// A dummy origin is needed to build URL object with a partial url.
+	const name = new URL(url, "a://b")
+		.pathname
+		.split("/").at(-1) || "downloaded";
+
 	return new File([blob], name, { type: blob.type, lastModified });
 }
 

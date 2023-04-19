@@ -1,7 +1,47 @@
 import { afterAll, beforeAll, describe, expect, it, jest } from "@jest/globals";
 import { getLocal } from "mockttp";
 import { identity } from "../src/lang.js";
-import { FetchClient, FetchClientError, ResponseFacade } from "../src/fetch.js";
+import { FetchClient, FetchClientError, fetchFile, ResponseFacade } from "../src/fetch.js";
+
+describe("fetchFile", () => {
+	const fetchStub = jest.spyOn(globalThis, "fetch");
+
+	afterAll(() => void fetchStub.mockReset());
+
+	it("should throw error if status is not 2xx", () => {
+		fetchStub.mockResolvedValue(new Response("", { status: 429 }));
+		return expect(fetchFile("/foo.json"))
+			.rejects
+			.toThrow(new Error("Failed to fetch /foo.json (429)"));
+	});
+
+	it("should works", async () => {
+		fetchStub.mockResolvedValue(new Response("bar", {
+			headers: {
+				"content-type": "application/json",
+				"last-modified": "Sat, 03 Dec 2022 01:55:19 GMT",
+			},
+		}));
+		const file = await fetchFile("/foo.json");
+
+		expect(file.type).toBe("application/json");
+		expect(file.size).toBe(3);
+		expect(file.name).toBe("foo.json");
+		expect(file.lastModified).toBe(1670032519000);
+		await expect(file.text()).resolves.toBe("bar");
+	});
+
+	it("should have default values properties", async () => {
+		fetchStub.mockResolvedValue(new Response("bar"));
+		const now = new Date().getTime();
+
+		const file = await fetchFile("https://example.com");
+
+		expect(file.name).toBe("downloaded");
+		expect(file.type).toBe("text/plain;charset=utf-8");
+		expect(file.lastModified).toBeGreaterThanOrEqual(now);
+	});
+});
 
 describe("ResponseFacade", () => {
 	it("should implement Promise.then", async () => {
