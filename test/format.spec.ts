@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { compositor, dataSizeIEC, dataSizeSI, durationFmt } from "../src/format.js";
+import { compositor, dataSizeIEC, dataSizeSI, durationFmt, ellipsis } from "../src/format.js";
 
 describe("formatDiv", () => {
 	const invalid = [
@@ -167,6 +167,31 @@ describe("UnitConvertor.parse", () => {
 	it("should support specific target unit", () => {
 		expect(dataSizeSI.parse("10000 YB", "YB")).toBe(10000);
 		expect(dataSizeSI.parse("5.12 TB", "MB")).toBe(512e4);
+	});
+});
+
+describe("ellipsis", () => {
+	it("should throw error if position is invalid", () => {
+		// @ts-expect-error
+		expect(() => ellipsis("0123456789", 2, "foobar"))
+			.toThrow(new TypeError("Invalid position: foobar. supported (start|mid|end)"));
+	});
+
+	it.each([
+		["0123456789", 8964, "begin", "0123456789"],
+		["0123456789", 3, "begin", "…89"],
+		["0123456789", 4, "begin", "…789"],
+
+		["0123456789", 8964, "mid", "0123456789"],
+		["0123456789", 3, "mid", "0…9"],
+		["0123456789", 4, "mid", "01…9"],
+		["0123456789", 5, "mid", "01…89"],
+
+		["0123456789", 8964, "end", "0123456789"],
+		["0123456789", 3, "end", "01…"],
+		["0123456789", 4, "end", "012…"],
+	])("should works", (value, length, position, expected) => {
+		expect(ellipsis(value, length, position as any)).toBe(expected);
 	});
 });
 

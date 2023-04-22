@@ -190,6 +190,35 @@ export const dataSizeSI = new UnitConvertor("data size", SIZE_UNITS, SIZE_FRACTI
  */
 export const dataSizeIEC = new UnitConvertor("data size", SIZE_UNITS, SIZE_FRACTIONS_IEC);
 
+type EllipsisPos = "begin" | "mid" | "end";
+
+/**
+ * Truncates a string, insert or append an ellipsis at any desired position
+ * of the truncated result.
+ *
+ * @param value The long string to truncate.
+ * @param length The length of the truncated result, must greater than 1.
+ * @param position The position of the ellipsis mark inserted to.
+ */
+export function ellipsis(value: string, length: number, position: EllipsisPos = "mid") {
+	if (value.length < length) {
+		return value;
+	}
+	let n = length - 1;
+
+	switch (position.charCodeAt(0)) {
+		case 101: /* e */
+			return value.slice(0, n) + "…";
+		case 98:  /* b */
+			return "…" + value.slice(-n);
+		case 109: /* m */
+			n = Math.ceil(n / 2);
+			return `${value.slice(0, n)}…${value.slice(-length + n + 1)}`;
+	}
+
+	throw new TypeError(`Invalid position: ${position}. supported (start|mid|end)`);
+}
+
 type Placeholders = Record<string, string | RegExp>;
 
 /**
