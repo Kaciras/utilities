@@ -49,9 +49,9 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 	}
 }
 
-type ObjectSrc = Record<string, Iterable<unknown>>;
+export type CPSrcObject = Record<string, Iterable<unknown>>;
 
-type CartesianProductRowObject<T extends ObjectSrc> = {
+export type CPRowObject<T extends CPSrcObject> = {
 	-readonly [K in keyof T]: ItemOfIterable<T[K]>
 }
 
@@ -72,7 +72,7 @@ type CartesianProductRowObject<T extends ObjectSrc> = {
  * { a: 1, b: 2, c: 4 }
  * { a: 1, b: 2, c: 5 }
  */
-export function cartesianProductObj<const T extends ObjectSrc>(src: T) {
+export function cartesianProductObj<const T extends CPSrcObject>(src: T) {
 	const entries = Object.entries(src);
 	const temp = {} as Record<string, unknown>;
 
@@ -88,17 +88,17 @@ export function cartesianProductObj<const T extends ObjectSrc>(src: T) {
 		}
 	}
 
-	return recursive(0) as Iterable<CartesianProductRowObject<T>>;
+	return recursive(0) as Iterable<CPRowObject<T>>;
 }
 
-type ArraySrc = ReadonlyArray<Iterable<unknown>>;
+export type CPSrcArray = ReadonlyArray<Iterable<unknown>>;
 
-type CastArray<T extends ArraySrc> =
+type CastArray<T extends CPSrcArray> =
 	T extends readonly [infer E, ...infer REST]
-		? REST extends ArraySrc
+		? REST extends CPSrcArray
 			? [ItemOfIterable<E>, ...CastArray<REST>] : never : T;
 
-type CartesianProductRowArray<T extends ArraySrc> =
+export type CPRowArray<T extends CPSrcArray> =
 	T extends readonly [any, ...any[]] ? CastArray<T> : T[number];
 
 /**
@@ -122,7 +122,7 @@ type CartesianProductRowArray<T extends ArraySrc> =
  * [1, 2, 4]
  * [1, 2, 5]
  */
-export function cartesianProductArray<const T extends ArraySrc>(src: T) {
+export function cartesianProductArray<const T extends CPSrcArray>(src: T) {
 	const temp = new Array<unknown>(src.length);
 
 	function* recursive(index: number): Iterable<unknown> {
@@ -136,5 +136,5 @@ export function cartesianProductArray<const T extends ArraySrc>(src: T) {
 		}
 	}
 
-	return recursive(0) as Iterable<CartesianProductRowArray<T>>;
+	return recursive(0) as Iterable<CPRowArray<T>>;
 }
