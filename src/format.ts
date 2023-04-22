@@ -206,7 +206,7 @@ type EllipsisPos = "begin" | "mid" | "end";
 export function ellipsis(value: string, length: number, position: EllipsisPos = "mid") {
 	value = value.trim();
 
-	if (value.length < length) {
+	if (value.length <= length) {
 		return value;
 	}
 	let n = length - 1;

@@ -15,6 +15,18 @@ describe("fetchFile", () => {
 			.toThrow(new Error("Failed to fetch /foo.json (429)"));
 	});
 
+	it("should pass arguments to fetch function", async () => {
+		fetchStub.mockResolvedValue(new Response("bar"));
+
+		await fetchFile(new Request("http://example.com"), {
+			method: "POST",
+		});
+
+		const [request, init] = fetchStub.mock.calls[0];
+		expect(init!.method).toBe("POST");
+		expect((request as Request).url).toBe("http://example.com/");
+	});
+
 	it("should works", async () => {
 		fetchStub.mockResolvedValue(new Response("bar", {
 			headers: {
@@ -22,7 +34,7 @@ describe("fetchFile", () => {
 				"last-modified": "Sat, 03 Dec 2022 01:55:19 GMT",
 			},
 		}));
-		const file = await fetchFile("/foo.json");
+		const file = await fetchFile("/bar/foo.json");
 
 		expect(file.type).toBe("application/json");
 		expect(file.size).toBe(3);
