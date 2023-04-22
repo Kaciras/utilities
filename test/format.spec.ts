@@ -177,6 +177,10 @@ describe("ellipsis", () => {
 			.toThrow(new TypeError("Invalid position: foobar. supported (start|mid|end)"));
 	});
 
+	it("should trim whitespaces", () => {
+		expect(ellipsis(" 0123 4\t\t", 5)).toBe("01… 4");
+	});
+
 	it.each([
 		["0123456789", 8964, "begin", "0123456789"],
 		["0123456789", 3, "begin", "…89"],

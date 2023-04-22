@@ -196,11 +196,16 @@ type EllipsisPos = "begin" | "mid" | "end";
  * Truncates a string, insert or append an ellipsis at any desired position
  * of the truncated result.
  *
+ * # Alternatives
+ * [smart-truncate](https://github.com/millerized/smart-truncate)
+ *
  * @param value The long string to truncate.
  * @param length The length of the truncated result, must greater than 1.
  * @param position The position of the ellipsis mark inserted to.
  */
 export function ellipsis(value: string, length: number, position: EllipsisPos = "mid") {
+	value = value.trim();
+
 	if (value.length < length) {
 		return value;
 	}
