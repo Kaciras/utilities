@@ -44,7 +44,7 @@ export type ResponseMessage = ({
  *
  * This has the potential for memory leaks, so use WeakMap instead of Map.
  */
-const transferCache = /*#__PURE__*/ new WeakMap<any, Transferable[]>();
+const transferCache = new WeakMap<any, Transferable[]>();
 
 /**
  * By default, every function parameter, return value and object property value is copied,
