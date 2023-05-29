@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { cartesianProductArray, cartesianProductObj, MultiMap } from "../src/collection.js";
+import { cartesianArray, cartesianObject, MultiMap } from "../src/collection.js";
 
 describe("MultiMap", () => {
 	it("should calc correct count", () => {
@@ -78,9 +78,9 @@ describe("MultiMap", () => {
 	});
 });
 
-describe("cartesianProductObj", () => {
+describe("cartesianObject", () => {
 	it("should support empty fields", () => {
-		const params = Array.from(cartesianProductObj({
+		const params = Array.from(cartesianObject({
 			a: [0, 1],
 			b: [],
 			c: [2, 3, 4],
@@ -89,14 +89,14 @@ describe("cartesianProductObj", () => {
 	});
 
 	it("should support empty object", () => {
-		const params = Array.from(cartesianProductObj({}));
+		const params = Array.from(cartesianObject({}));
 
 		expect(params).toHaveLength(1);
 		expect(Object.keys(params[0])).toHaveLength(0);
 	});
 
 	it("should works", () => {
-		const params = cartesianProductObj({
+		const params = cartesianObject({
 			a: [0, 1],
 			b: new Set([20, 30, 40]),
 		});
@@ -112,7 +112,7 @@ describe("cartesianProductObj", () => {
 	});
 
 	it("should isolate each product", () => {
-		const [first, second] = cartesianProductObj({
+		const [first, second] = cartesianObject({
 			a: [0],
 			b: [20, 30, 40],
 		});
@@ -121,9 +121,9 @@ describe("cartesianProductObj", () => {
 	});
 });
 
-describe("cartesianProductArray", () => {
+describe("cartesianArray", () => {
 	it("should support empty fields", () => {
-		const iter = cartesianProductArray([
+		const iter = cartesianArray([
 			[0, 1],
 			[],
 			[2, 3, 4],
@@ -132,12 +132,12 @@ describe("cartesianProductArray", () => {
 	});
 
 	it("should support empty array", () => {
-		const params = Array.from(cartesianProductArray([]));
+		const params = Array.from(cartesianArray([]));
 		expect(params).toEqual([[]]);
 	});
 
 	it("should works", () => {
-		const iter = cartesianProductArray([
+		const iter = cartesianArray([
 			[0, 1],
 			new Set([20, 30, 40]),
 		]);
@@ -148,7 +148,7 @@ describe("cartesianProductArray", () => {
 	});
 
 	it("should isolate each product", () => {
-		const [first, second] = cartesianProductArray([
+		const [first, second] = cartesianArray([
 			[0],
 			[20, 30, 40],
 		]);

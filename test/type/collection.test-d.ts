@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { describe } from "@jest/globals";
 import { expectType } from "tsd-lite";
-import { cartesianProductArray, cartesianProductObj } from "../../src/collection.js";
+import { cartesianArray, cartesianObject } from "../../src/collection.js";
 
-describe("cartesianProductObj", () => {
+describe("cartesianObject", () => {
 	expectType<Iterable<{
 		foo: 1 | 2;
 		bar: string[] | "B";
-	}>>(cartesianProductObj({
+	}>>(cartesianObject({
 		foo: [1, 2],
 		bar: [new Array<string>(), "B"],
 	}));
@@ -15,28 +15,26 @@ describe("cartesianProductObj", () => {
 	expectType<Iterable<{
 		foo: 1 | 2;
 		bar: never;
-	}>>(cartesianProductObj({
+	}>>(cartesianObject({
 		bar: [],
 		foo: new Set<1 | 2>(),
 	}));
 
-	expectType<Iterable<{}>>(cartesianProductObj({}));
+	expectType<Iterable<{}>>(cartesianObject({}));
 });
 
-describe("cartesianProductArray", () => {
-	expectType<Iterable<never>>(cartesianProductArray([]));
+describe("cartesianArray", () => {
+	expectType<Iterable<never>>(cartesianArray([]));
 
-	expectType<Iterable<[never]>>(cartesianProductArray([[]]));
+	expectType<Iterable<[never]>>(cartesianArray([[]]));
 
 	expectType<Iterable<[
 			1 | 2,
 			string[] | "B",
-	]>>(cartesianProductArray([
+	]>>(cartesianArray([
 		[1, 2],
 		[new Array<string>(), "B"],
 	]));
 
-	expectType<Iterable<string[]>>(
-		cartesianProductArray(new Array<string[]>),
-	);
+	expectType<Iterable<string[]>>(cartesianArray(new Array<string[]>));
 });

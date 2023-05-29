@@ -59,7 +59,7 @@ export type CPRowObject<T extends CPSrcObject> = {
  * Get the cartesian product generator of objects.
  *
  * @example
- * cartesianProductObj({
+ * cartesianObject({
  *     a: [0, 1],
  *     b: [2],
  *     c: new Set([3, 4, 5]),
@@ -72,7 +72,7 @@ export type CPRowObject<T extends CPSrcObject> = {
  * { a: 1, b: 2, c: 4 }
  * { a: 1, b: 2, c: 5 }
  */
-export function cartesianProductObj<const T extends CPSrcObject>(src: T) {
+export function cartesianObject<const T extends CPSrcObject>(src: T) {
 	const entries = Object.entries(src);
 	const temp = {} as Record<string, unknown>;
 
@@ -106,10 +106,10 @@ export type CPRowArray<T extends CPSrcArray> =
  *
  * For Iterable inputs, just convert it to an array. The recursive function will be
  * called multiple times at each index, we still need an array to hold the elements.
- * e.g. `cartesianProductArray(Array.from(iterable))`.
+ * e.g. `cartesianArray(Array.from(iterable))`.
  *
  * @example
- * cartesianProductArray([
+ * cartesianArray([
  *     [0, 1],
  *     [2],
  *     new Set([3, 4, 5]),
@@ -122,7 +122,7 @@ export type CPRowArray<T extends CPSrcArray> =
  * [1, 2, 4]
  * [1, 2, 5]
  */
-export function cartesianProductArray<const T extends CPSrcArray>(src: T) {
+export function cartesianArray<const T extends CPSrcArray>(src: T) {
 	const temp = new Array<unknown>(src.length);
 
 	function* recursive(index: number): Iterable<unknown> {
