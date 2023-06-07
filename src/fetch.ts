@@ -3,13 +3,13 @@ import { OnFulfilled, OnRejected } from "./lang.js";
 /**
  * Fetch the resource into a File object, detect name and last modified from response.
  *
- * @param request This defines the resource that you wish to fetch.
+ * @param input This defines the resource that you wish to fetch.
  * @param init An object containing any custom settings that you want to apply to the request.
  */
-export async function fetchFile(request: RequestInfo, init?: RequestInit) {
-	const url = typeof request === "string" ? request : request.url;
+export async function fetchFile(input: RequestInfo, init?: RequestInit) {
+	const url = typeof input === "string" ? input : input.url;
 
-	const response = await fetch(request, init);
+	const response = await fetch(input, init);
 	if (!response.ok) {
 		throw new Error(`Failed to fetch ${url} (${response.status})`);
 	}

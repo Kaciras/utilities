@@ -15,6 +15,13 @@ describe("fetchFile", () => {
 			.toThrow(new Error("Failed to fetch /foo.json (429)"));
 	});
 
+	it("should get url from Request object", () => {
+		fetchStub.mockResolvedValue(new Response("", { status: 429 }));
+		return expect(fetchFile(new Request("/foo.json")))
+			.rejects
+			.toThrow(new Error("Failed to fetch /foo.json (429)"));
+	});
+
 	it("should pass arguments to fetch function", async () => {
 		fetchStub.mockResolvedValue(new Response("bar"));
 
