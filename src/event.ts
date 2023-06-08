@@ -1,4 +1,5 @@
 import { AbortError, uniqueId } from "./misc.js";
+import { Awaitable } from "./lang.js";
 
 type Handler<T extends any[]> = (...args: T) => any;
 
@@ -109,7 +110,7 @@ export class MultiEventEmitter<T extends EventsMap = Default> {
 	}
 }
 
-export type PostMessage = (message: any, transfers: Transferable[]) => void;
+export type PostMessage = (message: any, transfers: Transferable[]) => Awaitable<void>;
 
 export interface PromiseController {
 
@@ -143,19 +144,15 @@ export interface RequestResponseWrapper {
  * window.addEventListener("message", e => subscribe(e.data));
  * const response = await request({ text: "Hello" });
  *
- * @param id
  * @param publish The publish message function
  * @param timeout The number of milliseconds to wait for response,
  * 				  set to zero or negative value to disable timeout.
  */
-export function pubSub2ReqRes(id: string, publish: PostMessage, timeout = 10e3) {
+export function pubSub2ReqRes(publish: PostMessage, timeout = 10e3) {
 	const txMap = new Map<number, PromiseController>();
 
 	function dispatch(message: any) {
 		if (typeof message !== "object") {
-			return;
-		}
-		if (message.i !== id) {
 			return;
 		}
 		const session = txMap.get(message.s);
@@ -168,7 +165,6 @@ export function pubSub2ReqRes(id: string, publish: PostMessage, timeout = 10e3) 
 
 	function request(message: any, transfers: Transferable[] = []) {
 		const s = message.s = uniqueId();
-		message.i = id;
 		publish(message, transfers);
 
 		let timer: ReturnType<typeof setTimeout>;

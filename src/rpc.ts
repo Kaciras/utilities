@@ -53,7 +53,6 @@ export function transfer<T>(obj: T, transfers: Transferable[]) {
 export interface RequestMessage {
 	a: any[];			// arguments
 	p: PropertyKey[];	// path
-	i?: unknown;		// identifier
 	s?: number;			// session Id
 }
 
@@ -62,7 +61,6 @@ export type ResponseMessage = ({
 } | {
 	e: unknown;			// error
 }) & {
-	i?: unknown;		// identifier
 	s?: number;			// session Id
 };
 
@@ -112,7 +110,7 @@ type ServeResultTuple = [ResponseMessage, Transferable[]];
  * @param message RPC request message.
  */
 export async function serve(target: any, message: RequestMessage) {
-	const { s, p, a, i } = message;
+	const { s, p, a } = message;
 
 	try {
 		for (let k = p.length - 1; k > 0; k--) {
@@ -120,23 +118,22 @@ export async function serve(target: any, message: RequestMessage) {
 		}
 		const v = await target[p[0]](...a);
 		return <ServeResultTuple>[
-			{ i, s, v },
+			{ s, v },
 			transferCache.get(v) ?? [],
 		];
 	} catch (e) {
-		return [{ i, s, e }, []] as ServeResultTuple;
+		return [{ s, e }, []] as ServeResultTuple;
 	}
 }
 
 export type Respond = (resp: ResponseMessage, transfer: Transferable[]) => void;
 
-export function createServer(id: string, target: any, respond: Respond = noop) {
+export function createServer(target: any, respond: Respond = noop) {
 	return async (message: RequestMessage) => {
 		if (typeof message !== "object") {
 			return; // Not an RPC message.
 		}
-		const { p, i } = message;
-		if (i === id && Array.isArray(p)) {
+		if (Array.isArray(message.p)) {
 			respond(...await serve(target, message));
 		}
 	};
@@ -207,7 +204,7 @@ class RPCHandler implements ProxyHandler<Invoker> {
 
 type Listen = (callback: (message: ResponseMessage) => void) => void;
 
-export function createEmitter<T = any>(post: PostMessage, id?: string) {
+export function createEmitter<T = any>(post: PostMessage) {
 	const invoke = invoker(post as any, false);
 	return new Proxy(invoke, new RPCHandler([])) as unknown as VoidRemote<T>;
 }
@@ -216,10 +213,9 @@ export function createEmitter<T = any>(post: PostMessage, id?: string) {
  * Create an RPC client with publish-subscribe channel.
  *
  * @param post Function to post request message.
- * @param id
  * @param listen Listener to receive response message.
  */
-export function createClient<T = any>(post: PostMessage, id: string, listen: Listen): Remote<T>;
+export function createClient<T = any>(post: PostMessage, listen: Listen): Remote<T>;
 
 /**
  * Create an RPC client with request-response channel.
@@ -246,11 +242,11 @@ export function createClient<T = any>(post: PostMessage, id: string, listen: Lis
  */
 export function createClient<T = any>(send: RPCSend): Remote<T>;
 
-export function createClient<T = any>(send: any, id?: string, addListener?: any) {
-	if (id) {
-		const { request, dispatch } = pubSub2ReqRes(id, send);
+export function createClient<T = any>(send: any, listen?: any) {
+	if (listen) {
+		const { request, dispatch } = pubSub2ReqRes(send);
 		send = request;
-		addListener(dispatch);
+		listen(dispatch);
 	}
 	const invoke = invoker(send, true);
 	return new Proxy(invoke, new RPCHandler([])) as unknown as Remote<T>;

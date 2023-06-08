@@ -3,15 +3,15 @@ import * as http from "http";
 import { describe, expect, it, jest } from "@jest/globals";
 import { createClient, createEmitter, createServer, Respond, RPCSend, serve, transfer } from "../src/rpc.js";
 
-function createTestRPC<T>(controller: T, id = "Test") {
+function createTestRPC<T>(controller: T) {
 	let respond: Respond;
 
 	function respondLazyInit(message: any, ts: Transferable[]) {
 		respond(message, ts);
 	}
 
-	const serve = createServer(id, controller, respondLazyInit);
-	return createClient<T>(serve, id, c => respond = c);
+	const serve = createServer(controller, respondLazyInit);
+	return createClient<T>(serve, c => respond = c);
 }
 
 function alice() {
@@ -27,16 +27,16 @@ it("should works duplex", async () => {
 	const post1 = port1.postMessage.bind(port1);
 	const post2 = port2.postMessage.bind(port2);
 
-	const clientA = createClient(post1, "Test", callback => {
+	const clientA = createClient(post1, callback => {
 		port1.addEventListener("message", e => callback(e.data));
 	});
-	const serverA = createServer("Test", { alice }, post1);
+	const serverA = createServer({ alice }, post1);
 	port1.addEventListener("message", e => serverA(e.data));
 
-	const clientB = createClient(post2, "Test", callback => {
+	const clientB = createClient(post2, callback => {
 		port2.addEventListener("message", e => callback(e.data));
 	});
-	const serverB = createServer("Test", { bob }, post2);
+	const serverB = createServer({ bob }, post2);
 	port2.addEventListener("message", e => serverB(e.data));
 
 	expect(await clientB.alice()).toBe("Hi I am alice");
@@ -149,9 +149,9 @@ it("should support nested objects", () => {
 });
 
 describe("createEmitter", () => {
-	it("should support one-way communication",  async () => {
+	it("should support one-way communication", async () => {
 		const hello = jest.fn();
-		const server = createServer("Test", { hello });
+		const server = createServer({ hello });
 		const client = createEmitter(server);
 
 		await client.hello(11);
@@ -160,21 +160,21 @@ describe("createEmitter", () => {
 	});
 
 	it("should not care whatever method exists", () => {
-		const server = createServer("Test", {});
+		const server = createServer({});
 		const client = createEmitter(server);
 		return expect(client.hello()).resolves.toBeUndefined();
 	});
 
 	it("should not care of remote errors", () => {
-		const server = createServer("Test", {
-			hello() {throw new Error()},
+		const server = createServer({
+			hello() {throw new Error();},
 		});
 		const client = createEmitter(server);
 		return expect(client.hello()).resolves.toBeUndefined();
 	});
 
 	it("should not care of remote result", () => {
-		const server = createServer("Test", {
+		const server = createServer({
 			hello: () => 11,
 		});
 		const client = createEmitter(server);
