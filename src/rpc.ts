@@ -64,23 +64,23 @@ export type ResponseMessage = ({
 	s?: number;			// session Id
 };
 
-export function invoker(send: RPCSend, handleReturn: boolean) {
-	return async (path: PropertyKey[], args: any[]) => {
-		const transfers: Transferable[] = [];
-		for (const arg of args) {
-			const ts = transferCache.get(arg);
-			if (ts) {
-				transfers.push(...ts);
-			}
-		}
-		const resp = await send({ p: path, a: args }, transfers);
-		if (handleReturn) {
-			if ("e" in resp) throw resp.e; else return resp.v;
-		}
-	};
-}
+export type Communicate = (message: RequestMessage, transfer: Transferable[]) => Promise<ResponseMessage>;
 
-type Invoker = ReturnType<typeof invoker>;
+type SendFn = Communicate | PostMessage;
+
+async function invoke(send: SendFn, path: PropertyKey[], args: any[]) {
+	const transfers: Transferable[] = [];
+	for (const arg of args) {
+		const ts = transferCache.get(arg);
+		if (ts) {
+			transfers.push(...ts);
+		}
+	}
+	const response = await send({ p: path, a: args }, transfers);
+	if (response) {
+		if ("e" in response) throw response.e; else return response.v;
+	}
+}
 
 type ServeResultTuple = [ResponseMessage, Transferable[]];
 
@@ -163,7 +163,7 @@ export type Remote<T> = {
 type RemoteCallable<T> = T extends (...args: infer A) => infer R
 	? (...args: A) => Promisify<Awaited<R>> : unknown;
 
-// --------------- Remote for one-way communication -------------
+// --------------- Remote for one-direction communication -------------
 
 export type VoidRemote<T> = {
 	[P in keyof T]: VoidRemoteProperty<T[P]>;
@@ -177,9 +177,8 @@ type VoidRemoteProperty<T> =
 type VoidCallable<T> = T extends (...args: infer A) => any
 	? (...args: A) => Promise<void> : unknown;
 
-export type RPCSend = (message: RequestMessage, transfer: Transferable[]) => Promise<ResponseMessage>;
 
-class RPCHandler implements ProxyHandler<Invoker> {
+class RPCHandler implements ProxyHandler<SendFn> {
 
 	/**
 	 * Keys for current property in reversed order.
@@ -193,21 +192,16 @@ class RPCHandler implements ProxyHandler<Invoker> {
 		this.path = path;
 	}
 
-	async apply(invoke: Invoker, _: unknown, args: any[]) {
-		return invoke(this.path, args);
+	async apply(send: SendFn, _: unknown, args: any[]) {
+		return invoke(send, this.path, args);
 	}
 
-	get(invoke: Invoker, key: PropertyKey): any {
-		return new Proxy(invoke, new RPCHandler([key, ...this.path]));
+	get(send: SendFn, key: PropertyKey): any {
+		return new Proxy(send, new RPCHandler([key, ...this.path]));
 	}
 }
 
 type Listen = (callback: (message: ResponseMessage) => void) => void;
-
-export function createEmitter<T = any>(post: PostMessage) {
-	const invoke = invoker(post as any, false);
-	return new Proxy(invoke, new RPCHandler([])) as unknown as VoidRemote<T>;
-}
 
 /**
  * Create an RPC client with publish-subscribe channel.
@@ -240,7 +234,13 @@ export function createClient<T = any>(post: PostMessage, listen: Listen): Remote
  *
  * @param send Function to post request message and receive response message.
  */
-export function createClient<T = any>(send: RPCSend): Remote<T>;
+export function createClient<T = any>(send: Communicate): Remote<T>;
+
+/**
+ * Create an RPC client with one-direction message sender.
+ *
+ */
+export function createClient<T = any>(post: PostMessage): VoidRemote<T>;
 
 export function createClient<T = any>(send: any, listen?: any) {
 	if (listen) {
@@ -248,6 +248,5 @@ export function createClient<T = any>(send: any, listen?: any) {
 		send = request;
 		listen(dispatch);
 	}
-	const invoke = invoker(send, true);
-	return new Proxy(invoke, new RPCHandler([])) as unknown as Remote<T>;
+	return new Proxy(send, new RPCHandler([])) as unknown as Remote<T>;
 }

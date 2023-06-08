@@ -1,7 +1,7 @@
 import consumers from "stream/consumers";
 import * as http from "http";
 import { describe, expect, it, jest } from "@jest/globals";
-import { createClient, createEmitter, createServer, Respond, RPCSend, serve, transfer } from "../src/rpc.js";
+import { Communicate, createClient, createServer, Respond, serve, transfer } from "../src/rpc.js";
 
 function createTestRPC<T>(controller: T) {
 	let respond: Respond;
@@ -78,7 +78,7 @@ it("should work with HTTP", async () => {
 });
 
 it("should transfer object to server", async () => {
-	const request = jest.fn<RPCSend>(async () => ({ v: 11 }));
+	const request = jest.fn<Communicate>(async () => ({ v: 11 }));
 	const client = createClient(request);
 
 	const arg0 = new Uint8Array([1, 2]);
@@ -104,7 +104,7 @@ it("should transfer object to client", async () => {
 
 	const [message, transfers] = await serve({ foobar }, msg);
 
-	expect(message).toStrictEqual({ s: undefined, i: undefined, v: arg0 });
+	expect(message).toStrictEqual({ s: undefined, v: arg0 });
 	expect(transfers).toStrictEqual([arg0.buffer]);
 });
 
@@ -152,7 +152,7 @@ describe("createEmitter", () => {
 	it("should support one-way communication", async () => {
 		const hello = jest.fn();
 		const server = createServer({ hello });
-		const client = createEmitter(server);
+		const client = createClient(server);
 
 		await client.hello(11);
 		expect(hello).toHaveBeenCalledTimes(1);
@@ -161,7 +161,7 @@ describe("createEmitter", () => {
 
 	it("should not care whatever method exists", () => {
 		const server = createServer({});
-		const client = createEmitter(server);
+		const client = createClient(server);
 		return expect(client.hello()).resolves.toBeUndefined();
 	});
 
@@ -169,7 +169,7 @@ describe("createEmitter", () => {
 		const server = createServer({
 			hello() {throw new Error();},
 		});
-		const client = createEmitter(server);
+		const client = createClient(server);
 		return expect(client.hello()).resolves.toBeUndefined();
 	});
 
@@ -177,7 +177,7 @@ describe("createEmitter", () => {
 		const server = createServer({
 			hello: () => 11,
 		});
-		const client = createEmitter(server);
+		const client = createClient(server);
 		return expect(client.hello()).resolves.toBeUndefined();
 	});
 });
