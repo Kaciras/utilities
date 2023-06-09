@@ -109,7 +109,7 @@ export class MultiEventEmitter<T extends EventsMap = Default> {
 	}
 }
 
-export type PostMessage = (message: any, transfers: Transferable[]) => void;
+export type PostMessage<T = any> = (message: T, transfers: Transferable[]) => void;
 
 export interface PromiseController {
 

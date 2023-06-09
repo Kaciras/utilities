@@ -66,7 +66,7 @@ export type ResponseMessage = ({
 
 export type Communicate = (message: RequestMessage, transfer: Transferable[]) => Promise<ResponseMessage>;
 
-type SendFn = Communicate | PostMessage;
+type SendFn = Communicate | PostMessage<RequestMessage>;
 
 async function invoke(send: SendFn, path: PropertyKey[], args: any[]) {
 	const transfers: Transferable[] = [];
@@ -96,15 +96,15 @@ type ServeResultTuple = [ResponseMessage, Transferable[]];
  *
  * const functions = {
  * 		hello: (name: string) => `Hello ${name}!`,
- * 	};
+ * };
  *
- * 	const server = http.createServer((req, res) => {
+ * const server = http.createServer((req, res) => {
  * 		consumers.json(req)
  * 			.then(msg => RPC.serve(functions, msg))
  * 			.then(d => res.end(JSON.stringify(d[0])));
- * 	});
+ * });
  *
- * 	server.listen(9789);
+ * server.listen(9789);
  *
  * @param target The service object contains methods that client can use.
  * @param message RPC request message.
@@ -128,6 +128,23 @@ export async function serve(target: any, message: RequestMessage) {
 
 export type Respond = (resp: ResponseMessage, transfer: Transferable[]) => void;
 
+/**
+ * A simple wrapper for `RPC.serve`, used to serve requests with
+ * publish-subscribe channel.
+ *
+ * @example
+ * // Serve RPC requests in web worker.
+ * import { RPC } from "@kaciras/utilities/browser";
+ *
+ * const functions = {
+ * 	hello: (name: string) => `Hello ${name}!`,
+ * };
+ *
+ * const handle = RPC.createServer(functions, (msg, transfer) => {
+ * 	self.postMessage(msg, { transfer });
+ * });
+ * self.addEventListener("message", msg => handle(msg.data));
+ */
 export function createServer(target: any, respond: Respond = noop) {
 	return async (message: RequestMessage) => {
 		if (typeof message !== "object") {
@@ -203,13 +220,33 @@ class RPCHandler implements ProxyHandler<SendFn> {
 
 type Listen = (callback: (message: ResponseMessage) => void) => void;
 
+/*
+ * Whether RPC runs in two-way or one-way messaging model is just depends on
+ * the sender waits for the return result or not.
+ *
+ * At the high level, we only use the return type of the sender to distinguish
+ * which model the client uses. (`void` for one-way and `ResponseMessage` for two-way)
+ *
+ * You can choose them dynamically, but in this case type hint will not work.
+ */
+
 /**
  * Create an RPC client with publish-subscribe channel.
+ *
+ * @example
+ * // create RPC client with a web worker.
+ * import { RPC } from "@kaciras/utilities/browser";
+ *
+ * const worker = new Worker("/worker.js");
+ * const post = worker.postMessage.bind(worker);
+ * const client = RPC.createClient(post, callback => {
+ * 	worker.onmessage = e => callback(e.data);
+ * });
  *
  * @param post Function to post request message.
  * @param listen Listener to receive response message.
  */
-export function createClient<T = any>(post: PostMessage, listen: Listen): Remote<T>;
+export function createClient<T = any>(post: PostMessage<RequestMessage>, listen: Listen): Remote<T>;
 
 /**
  * Create an RPC client with request-response channel.
@@ -239,14 +276,18 @@ export function createClient<T = any>(send: Communicate): Remote<T>;
 /**
  * Create an RPC client with one-direction message sender.
  *
+ * In this case the client cannot receive results of remote functions, returned
+ * promise of methods are resolved on message sent.
+ *
+ *
  */
-export function createClient<T = any>(post: PostMessage): VoidRemote<T>;
+export function createClient<T = any>(post: PostMessage<RequestMessage>): VoidRemote<T>;
 
-export function createClient<T = any>(send: any, listen?: any) {
+export function createClient<T = any>(sender: SendFn, listen?: Listen) {
 	if (listen) {
-		const { request, dispatch } = pubSub2ReqRes(send);
-		send = request;
+		const { request, dispatch } = pubSub2ReqRes(sender);
+		sender = request;
 		listen(dispatch);
 	}
-	return new Proxy(send, new RPCHandler([])) as unknown as Remote<T>;
+	return new Proxy(sender, new RPCHandler([])) as unknown as Remote<T>;
 }
