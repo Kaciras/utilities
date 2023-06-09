@@ -1,15 +1,30 @@
 import { describe } from "@jest/globals";
 import { expectType } from "tsd-lite";
-import { createClient } from "../../src/rpc.js";
+import { createClient, ResponseMessage } from "../../src/rpc.js";
+import { noop } from "../../src/lang.js";
 
-const ignore = undefined as any;
+const sender = 0 as unknown as () => ResponseMessage;
 
 describe("createClient", () => {
 	const a = { foo: { bar: async () => {} } };
-	const clientA = createClient<typeof a>(ignore);
+	const clientA = createClient<typeof a>(sender);
 	expectType<() => Promise<void>>(clientA.foo.bar);
 
 	const b = [0, 1, (_: 1) => "foo" as const] as const;
-	const clientB = createClient<typeof b>(ignore);
+	const clientB = createClient<typeof b>(sender);
 	expectType<(i: 1) => Promise<"foo">>(clientB[2]);
+});
+
+describe("One-way client type", () => {
+	const functions = { foo: () => "bar" };
+	const clientA = createClient<typeof functions>(noop);
+
+	expectType<Promise<void>>(clientA.foo());
+});
+
+describe("Two-way client type", () => {
+	const functions = { foo: () => "bar" };
+	const clientA = createClient<typeof functions>(sender);
+
+	expectType<Promise<string>>(clientA.foo());
 });

@@ -1,5 +1,6 @@
 import consumers from "stream/consumers";
 import * as http from "http";
+import { EventEmitter } from "events";
 import { describe, expect, it, jest } from "@jest/globals";
 import { Communicate, createClient, createServer, Respond, serve, transfer } from "../src/rpc.js";
 
@@ -106,6 +107,21 @@ it("should transfer object to client", async () => {
 
 	expect(message).toStrictEqual({ s: undefined, v: arg0 });
 	expect(transfers).toStrictEqual([arg0.buffer]);
+});
+
+it("should have no conflict between request & response message", async () => {
+	const emitter = new EventEmitter();
+	const post = emitter.emit.bind(emitter, "message");
+	const hello = jest.fn(() => "world");
+
+	const client = createClient(post, callback => {
+		emitter.on("message", callback);
+	});
+	emitter.on("message", createServer({ hello }, post));
+
+	expect(await client.hello("foobar")).toBe("world");
+	expect(hello).toHaveBeenCalledTimes(1);
+	expect(hello).toHaveBeenCalledWith("foobar");
 });
 
 it("should fail if function not found", () => {

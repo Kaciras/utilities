@@ -14,7 +14,7 @@
  * IMO it's overdesign, so we only support function call.
  */
 import { PostMessage, pubSub2ReqRes } from "./event.js";
-import { noop } from "./lang.js";
+import { Awaitable, noop } from "./lang.js";
 
 /* ============================================================================= *\
  *                             Layer 1：Messaging
@@ -64,7 +64,7 @@ export type ResponseMessage = ({
 	s?: number;			// session Id
 };
 
-export type Communicate = (message: RequestMessage, transfer: Transferable[]) => Promise<ResponseMessage>;
+export type Communicate = (message: RequestMessage, transfer: Transferable[]) => Awaitable<ResponseMessage>;
 
 type SendFn = Communicate | PostMessage<RequestMessage>;
 
@@ -147,9 +147,6 @@ export type Respond = (resp: ResponseMessage, transfer: Transferable[]) => void;
  */
 export function createServer(target: any, respond: Respond = noop) {
 	return async (message: RequestMessage) => {
-		if (typeof message !== "object") {
-			return; // Not an RPC message.
-		}
 		if (Array.isArray(message.p)) {
 			respond(...await serve(target, message));
 		}
