@@ -1,5 +1,4 @@
 import { AbortError, uniqueId } from "./misc.js";
-import { Awaitable } from "./lang.js";
 
 type Handler<T extends any[]> = (...args: T) => any;
 
@@ -110,7 +109,7 @@ export class MultiEventEmitter<T extends EventsMap = Default> {
 	}
 }
 
-export type PostMessage = (message: any, transfers: Transferable[]) => Awaitable<void>;
+export type PostMessage = (message: any, transfers: Transferable[]) => void;
 
 export interface PromiseController {
 

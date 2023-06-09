@@ -27,7 +27,7 @@ export function uniqueId() {
 
 export class AbortError extends Error {
 
-	constructor(...args: any[]) {
+	constructor(...args: Parameters<ErrorConstructor>) {
 		super(...args);
 		this.name = "AbortError";
 	}

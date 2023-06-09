@@ -25,7 +25,7 @@ export { default as LRUCache } from "./LRUCache.js";
  *
  * @param listener listener function
  */
-export function onExit(listener: (signal: Signals) => any) {
+export function onExit(listener: (signal: Signals) => unknown) {
 	let exiting = false;
 
 	function handle(signal: Signals) {

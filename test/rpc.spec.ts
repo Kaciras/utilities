@@ -22,7 +22,7 @@ function bob(name: string) {
 	return `Hello ${name}`;
 }
 
-it("should works duplex", async () => {
+it("demo - duplex MessageChannel", async () => {
 	const { port1, port2 } = new MessageChannel();
 	const post1 = port1.postMessage.bind(port1);
 	const post2 = port2.postMessage.bind(port2);
@@ -45,7 +45,7 @@ it("should works duplex", async () => {
 	port1.close();
 });
 
-it("should work with HTTP", async () => {
+it("demo - HTTP", async () => {
 	const functions = {
 		hello: (name: string) => `Hello ${name}!`,
 	};
@@ -148,8 +148,8 @@ it("should support nested objects", () => {
 	return expect(client.foo.bar[0]()).resolves.toBe("hello");
 });
 
-describe("createEmitter", () => {
-	it("should support one-way communication", async () => {
+describe("One-direction messaging", () => {
+	it("should works", async () => {
 		const hello = jest.fn();
 		const server = createServer({ hello });
 		const client = createClient(server);
