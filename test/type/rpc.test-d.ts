@@ -1,9 +1,19 @@
 import { describe } from "@jest/globals";
 import { expectType } from "tsd-lite";
-import { createClient, ResponseMessage } from "../../src/rpc.js";
+import { createClient, ResponseMessage, SendFn } from "../../src/rpc.js";
 import { noop } from "../../src/lang.js";
 
 const sender = 0 as unknown as () => ResponseMessage;
+
+describe("SendFn", () => {
+	const syncResp: SendFn = (_, __) => ({} as ResponseMessage);
+	const asyncResp: SendFn = async (_, __) => ({} as ResponseMessage);
+
+	const syncVoid: SendFn = (_, __) => {};
+	const asyncVoid: SendFn = async (_, __) => {};
+
+	noop(syncResp, asyncResp, syncVoid, asyncVoid);
+});
 
 describe("createClient", () => {
 	const a = { foo: { bar: async () => {} } };

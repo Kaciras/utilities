@@ -66,7 +66,7 @@ export type ResponseMessage = ({
 
 export type Communicate = (message: RequestMessage, transfer: Transferable[]) => Awaitable<ResponseMessage>;
 
-type SendFn = Communicate | PostMessage<RequestMessage>;
+export type SendFn = Communicate | PostMessage<RequestMessage>;
 
 async function invoke(send: SendFn, path: PropertyKey[], args: any[]) {
 	const transfers: Transferable[] = [];
@@ -215,7 +215,7 @@ class RPCHandler implements ProxyHandler<SendFn> {
 	}
 }
 
-type Listen = (callback: (message: ResponseMessage) => void) => void;
+export type Listen = (callback: (message: ResponseMessage) => void) => void;
 
 /*
  * Whether RPC runs in two-way or one-way messaging model is just depends on
