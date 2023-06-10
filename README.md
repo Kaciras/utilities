@@ -12,7 +12,7 @@ Goals:
 * High performance & less code.
 * Write with latest ECMAScript.
 * Tree-shakeable.
-* Not duplicated with FP libraries (lodash, underscore, etc.)
+* No duplicated with FP libraries (lodash, underscore, etc.)
 
 ## Install
 
@@ -33,4 +33,19 @@ import { /* ... */ } from "@kaciras/utilities/node";
 
 // Use in other environment.
 import { /* ... */ } from "@kaciras/utilities/browser";
+```
+
+# Develop
+
+Build the project:
+
+```
+pnpm build
+```
+
+Run tests. Some tests are for generated bundle, you should build first.
+
+```
+pnpm run test:unit
+pnpm run test:types
 ```

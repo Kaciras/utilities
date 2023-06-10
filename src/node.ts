@@ -1,3 +1,4 @@
+// The entry point of @kaciras/utilities/node
 import process from "process";
 import Signals = NodeJS.Signals;
 

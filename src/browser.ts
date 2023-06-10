@@ -1,3 +1,4 @@
+// The entry point of @kaciras/utilities/browser
 export * from "./lang.js";
 export * from "./collection.js";
 export * from "./codec.js";
