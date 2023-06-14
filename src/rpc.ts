@@ -64,9 +64,13 @@ export type ResponseMessage = ({
 	s?: number;			// session Id
 };
 
+export type Publish = PostMessage<RequestMessage>;
+
+export type Respond = PostMessage<ResponseMessage>;
+
 export type Communicate = (message: RequestMessage, transfer: Transferable[]) => Awaitable<ResponseMessage>;
 
-export type SendFn = Communicate | PostMessage<RequestMessage>;
+export type SendFn = Publish | Communicate;
 
 async function invoke(send: SendFn, path: PropertyKey[], args: any[]) {
 	const transfers: Transferable[] = [];
@@ -125,8 +129,6 @@ export async function serve(target: any, message: RequestMessage) {
 		return [{ s, e }, []] as ServeResultTuple;
 	}
 }
-
-export type Respond = (resp: ResponseMessage, transfer: Transferable[]) => void;
 
 /**
  * A simple wrapper for `RPC.serve`, used to serve requests with
