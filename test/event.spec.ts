@@ -213,7 +213,9 @@ function withFakeTimer(fn: any) {
 describe("pubSub2ReqRes", () => {
 	it("should publish messages", async () => {
 		const received: any[] = [];
-		const { txMap, request } = pubSub2ReqRes(m => received.push(m));
+		const { txMap, request } = pubSub2ReqRes(m => {
+			received.push(m);
+		});
 
 		// noinspection ES6MissingAwait
 		request({ value: 11 });
@@ -241,12 +243,14 @@ describe("pubSub2ReqRes", () => {
 
 	it("should receive response", async () => {
 		const received: any[] = [];
-		const { txMap, request, dispatch } = pubSub2ReqRes(m => received.push(m));
+		const { txMap, request, dispatch } = pubSub2ReqRes(m => {
+			received.push(m);
+		});
 
 		const p1 = request({});
 		const p2 = request({});
 
-		const response = { s: received[1].s, msg: "foo" };
+		const response = { r: received[1].s, msg: "foo" };
 		dispatch(response);
 		await expect(p2).resolves.toStrictEqual(response);
 
@@ -261,7 +265,7 @@ describe("pubSub2ReqRes", () => {
 		request({});
 		expect(jest.getTimerCount()).toBe(2);
 
-		dispatch({ s });
+		dispatch({ r: s });
 
 		expect(txMap.has(s)).toBe(false);
 		expect(txMap.size).toBe(1);

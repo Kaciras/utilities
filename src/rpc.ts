@@ -61,7 +61,7 @@ export type ResponseMessage = ({
 } | {
 	e: unknown;			// error
 }) & {
-	s?: number;			// session Id
+	r?: number;			// session Id
 };
 
 export type Publish = PostMessage<RequestMessage>;
@@ -122,11 +122,11 @@ export async function serve(target: any, message: RequestMessage) {
 		}
 		const v = await target[p[0]](...a);
 		return <ServeResultTuple>[
-			{ s, v },
+			{ r: s, v },
 			transferCache.get(v) ?? [],
 		];
 	} catch (e) {
-		return [{ s, e }, []] as ServeResultTuple;
+		return [{ r: s, e }, []] as ServeResultTuple;
 	}
 }
 

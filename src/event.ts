@@ -154,10 +154,10 @@ export function pubSub2ReqRes(publish: PostMessage, timeout = 10e3) {
 		if (typeof message !== "object") {
 			return;
 		}
-		const session = txMap.get(message.s);
+		const session = txMap.get(message.r);
 		if (session) {
 			session.resolve(message);
-			txMap.delete(message.s);
+			txMap.delete(message.r);
 			clearTimeout(session.timer);
 		}
 	}
