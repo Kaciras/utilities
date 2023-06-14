@@ -53,7 +53,7 @@ export function transfer<T>(obj: T, transfers: Transferable[]) {
 export interface RequestMessage {
 	a: any[];			// arguments
 	p: PropertyKey[];	// path
-	s?: number;			// session Id
+	s?: number;			// session id
 }
 
 export type ResponseMessage = ({
@@ -61,7 +61,7 @@ export type ResponseMessage = ({
 } | {
 	e: unknown;			// error
 }) & {
-	r?: number;			// session Id
+	r?: number;			// session id
 };
 
 export type Publish = PostMessage<RequestMessage>;
@@ -220,32 +220,9 @@ class RPCHandler implements ProxyHandler<SendFn> {
 export type Listen = (callback: (message: ResponseMessage) => void) => void;
 
 /*
- * Whether RPC runs in two-way or one-way messaging model is just depends on
- * the sender waits for the return result or not.
- *
- * At the high level, we only use the return type of the sender to distinguish
- * which model the client uses. (`void` for one-way and `ResponseMessage` for two-way)
- *
- * You can choose them dynamically, but in this case type hint will not work.
+ * You can choose the client to receive the return value of the server,
+ * or just send the call request, depending on the implementation of the send function.
  */
-
-/**
- * Create an RPC client with publish-subscribe channel.
- *
- * @example
- * // create RPC client with a web worker.
- * import { RPC } from "@kaciras/utilities/browser";
- *
- * const worker = new Worker("/worker.js");
- * const post = worker.postMessage.bind(worker);
- * const client = RPC.createClient(post, callback => {
- * 	worker.onmessage = e => callback(e.data);
- * });
- *
- * @param post Function to post request message.
- * @param listen Listener to receive response message.
- */
-export function createClient<T = any>(post: PostMessage<RequestMessage>, listen: Listen): Remote<T>;
 
 /**
  * Create an RPC client with request-response channel.
@@ -273,14 +250,37 @@ export function createClient<T = any>(post: PostMessage<RequestMessage>, listen:
 export function createClient<T = any>(send: Communicate): Remote<T>;
 
 /**
- * Create an RPC client with one-direction message sender.
+ * Create an RPC client with publish-subscribe channel.
+ *
+ * @example
+ * // create RPC client with a web worker.
+ * import { RPC } from "@kaciras/utilities/browser";
+ *
+ * const worker = new Worker("/worker.js");
+ * const post = worker.postMessage.bind(worker);
+ * const client = RPC.createClient(post, callback => {
+ * 	worker.onmessage = e => callback(e.data);
+ * });
+ *
+ * @param send Function to post request message.
+ * @param listen Listener to receive response message.
+ */
+export function createClient<T = any>(send: Publish, listen: Listen): Remote<T>;
+
+/**
+ * Create an RPC client with one-way message sender.
  *
  * In this case the client cannot receive results of remote functions, returned
- * promise of methods are resolved on message sent.
+ * promise of methods are resolved after message sent.
  *
+ * @example
+ * import { RPC } from "@kaciras/utilities/browser";
+ * const client = RPC.createClient(process.send);
  *
+ * // call remote function, but not care the result.
+ * await client.hello("world");
  */
-export function createClient<T = any>(post: PostMessage<RequestMessage>): VoidRemote<T>;
+export function createClient<T = any>(send: Publish): VoidRemote<T>;
 
 export function createClient<T = any>(sender: SendFn, listen?: Listen) {
 	if (listen) {

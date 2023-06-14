@@ -2,6 +2,7 @@ import consumers from "stream/consumers";
 import * as http from "http";
 import { EventEmitter } from "events";
 import { describe, expect, it, jest } from "@jest/globals";
+import { Stubs } from "./global.js";
 import { Communicate, createClient, createServer, Respond, serve, transfer } from "../src/rpc.js";
 
 function createTestRPC<T>(controller: T) {
@@ -105,7 +106,7 @@ it("should transfer object to client", async () => {
 
 	const [message, transfers] = await serve({ foobar }, msg);
 
-	expect(message).toStrictEqual({ s: undefined, v: arg0 });
+	expect(message).toStrictEqual({ r: undefined, v: arg0 });
 	expect(transfers).toStrictEqual([arg0.buffer]);
 });
 
@@ -133,30 +134,28 @@ it("should fail if function not found", () => {
 it("should forward errors", () => {
 	const client = createTestRPC({
 		hello() {
-			throw new TypeError("Test error");
+			throw Stubs.error;
 		},
 	});
 	return expect(client.hello())
 		.rejects
-		.toThrow(new TypeError("Test error"));
+		.toThrow(Stubs.error);
 });
 
 it("should forward rejections", () => {
 	const client = createTestRPC({
 		hello() {
-			return Promise.reject(new TypeError("Test error"));
+			return Promise.reject(Stubs.error);
 		},
 	});
-	return expect(client.hello())
-		.rejects
-		.toThrow(new TypeError("Test error"));
+	return expect(client.hello()).rejects.toThrow(Stubs.error);
 });
 
-it('should throw if respond failed', () => {
-	const respond = jest.fn().mockRejectedValue(new Error("Test"));
+it("should throw if respond failed", () => {
+	const respond = jest.fn().mockRejectedValue(Stubs.error);
 
 	const serve = createServer({}, respond);
-	return expect(serve({ p: [0], a: [] })).rejects.toThrow("Test");
+	return expect(serve({ p: [0], a: [] })).rejects.toThrow(Stubs.error);
 });
 
 it("should support array index", () => {

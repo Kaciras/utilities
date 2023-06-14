@@ -2,6 +2,7 @@ import { describe, expect, it, jest } from "@jest/globals";
 import { noop } from "../src/lang.js";
 import { AbortError } from "../src/misc.js";
 import { MultiEventEmitter, pubSub2ReqRes, SingleEventEmitter } from "../src/event.js";
+import { Stubs } from "./global.js";
 
 describe("SingleEventEmitter", () => {
 	const handler1 = jest.fn();
@@ -242,10 +243,10 @@ describe("pubSub2ReqRes", () => {
 	});
 
 	it("should forward errors from publish function", async () => {
-		const post = jest.fn().mockRejectedValue(new Error("Test"));
+		const post = jest.fn().mockRejectedValue(Stubs.error);
 		const { txMap, request } = pubSub2ReqRes(post);
 
-		await expect(request({})).rejects.toThrow("Test");
+		await expect(request({})).rejects.toThrow(Stubs.error);
 		expect(txMap.size).toBe(0);
 	});
 

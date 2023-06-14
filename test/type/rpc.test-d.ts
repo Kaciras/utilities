@@ -25,9 +25,16 @@ describe("createClient", () => {
 	expectType<(i: 1) => Promise<"foo">>(clientB[2]);
 });
 
-describe("One-way client type", () => {
+describe("Emit mode sync", () => {
 	const functions = { foo: () => "bar" };
 	const clientA = createClient<typeof functions>(noop);
+
+	expectType<Promise<void>>(clientA.foo());
+});
+
+describe("Emit mode async", () => {
+	const functions = { foo: () => "bar" };
+	const clientA = createClient<typeof functions>(async () => {});
 
 	expectType<Promise<void>>(clientA.foo());
 });
