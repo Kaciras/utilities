@@ -109,6 +109,9 @@ export class MultiEventEmitter<T extends EventsMap = Default> {
 	}
 }
 
+/**
+ * Sends a message. If the function return a Promise, it should be awaited.
+ */
 export type PostMessage<T = any> = (message: T, transfer: Transferable[]) => void;
 
 export interface PromiseController {
@@ -122,7 +125,7 @@ export interface PromiseController {
 
 export interface RequestResponseWrapper {
 
-	request(message: object): Promise<any>;
+	request(message: object, transfer?: Transferable[]): Promise<any>;
 
 	dispatch(message: object): void;
 
@@ -162,9 +165,8 @@ export function pubSub2ReqRes(publish: PostMessage, timeout = 10e3) {
 		}
 	}
 
-	function request(message: any, transfers: Transferable[] = []) {
+	async function request(message: any, transfer: Transferable[] = []) {
 		const s = message.s = uniqueId();
-		publish(message, transfers);
 
 		let timer: ReturnType<typeof setTimeout>;
 		if (timeout > 0) {
@@ -175,9 +177,18 @@ export function pubSub2ReqRes(publish: PostMessage, timeout = 10e3) {
 			}
 		}
 
-		return new Promise((resolve, reject) => {
+		const response = new Promise((resolve, reject) => {
 			txMap.set(s, { resolve, reject, timer });
 		});
+
+		try {
+			await publish(message, transfer);
+			return response;
+		} catch (publishError) {
+			txMap.delete(s);
+			clearTimeout(timer!);
+			throw publishError;
+		}
 	}
 
 	function expire(sessionId: number) {

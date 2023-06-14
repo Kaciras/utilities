@@ -241,6 +241,14 @@ describe("pubSub2ReqRes", () => {
 		return expectNotFulfilled(promise);
 	});
 
+	it("should forward errors from publish function", async () => {
+		const post = jest.fn().mockRejectedValue(new Error("Test"));
+		const { txMap, request } = pubSub2ReqRes(post);
+
+		await expect(request({})).rejects.toThrow("Test");
+		expect(txMap.size).toBe(0);
+	});
+
 	it("should receive response", async () => {
 		const received: any[] = [];
 		const { txMap, request, dispatch } = pubSub2ReqRes(m => {
@@ -256,6 +264,13 @@ describe("pubSub2ReqRes", () => {
 
 		expect(txMap.size).toBe(1);
 		await expectNotFulfilled(p1);
+	});
+
+	it("should be able to handle response synchronous", async () => {
+		const { request, dispatch } = pubSub2ReqRes(({ s }) => {
+			dispatch({ r: s, foo: "bar" });
+		});
+		return expect((await request({})).foo).toBe("bar");
 	});
 
 	it("should clear the timer after transaction completed", withFakeTimer(() => {
