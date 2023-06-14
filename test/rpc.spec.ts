@@ -152,6 +152,13 @@ it("should forward rejections", () => {
 		.toThrow(new TypeError("Test error"));
 });
 
+it('should throw if respond failed', () => {
+	const respond = jest.fn().mockRejectedValue(new Error("Test"));
+
+	const serve = createServer({}, respond);
+	return expect(serve({ p: [0], a: [] })).rejects.toThrow("Test");
+});
+
 it("should support array index", () => {
 	const client = createTestRPC([null, () => "hello"] as const);
 	return expect(client[1]()).resolves.toBe("hello");

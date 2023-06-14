@@ -150,7 +150,7 @@ export async function serve(target: any, message: RequestMessage) {
 export function createServer(target: any, respond: Respond = noop) {
 	return async (message: RequestMessage) => {
 		if (Array.isArray(message.p)) {
-			respond(...await serve(target, message));
+			await respond(...await serve(target, message));
 		}
 	};
 }
