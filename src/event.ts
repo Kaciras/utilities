@@ -127,7 +127,7 @@ export interface RequestResponseWrapper<T, R> {
 
 	txMap: Map<number, PromiseController<R>>;
 
-	dispatch(message: R): void;
+	receive(message: R): void;
 
 	request(message: T, transfer?: Transferable[]): Promise<R>;
 }
@@ -140,7 +140,6 @@ type ResIdMixin = object & { r?: number };
 
 /**
  * Wrap publish-subscribe functions to request-response model.
- * The remote service must attach the id in response message.
  *
  * # NOTE
  * If you disable timeout, there will be a memory leak when response
@@ -163,9 +162,6 @@ export function pubSub2ReqRes<
 	const txMap = new Map<number, PromiseController>();
 
 	function dispatch(message: R) {
-		if (typeof message !== "object") {
-			return;
-		}
 		const session = txMap.get(message.r!);
 		if (session) {
 			session.resolve(message);
@@ -208,5 +204,5 @@ export function pubSub2ReqRes<
 		}
 	}
 
-	return { txMap, request, dispatch } as RequestResponseWrapper<T, R>;
+	return { txMap, request, receive: dispatch } as RequestResponseWrapper<T, R>;
 }

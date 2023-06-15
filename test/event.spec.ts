@@ -231,14 +231,14 @@ describe("pubSub2ReqRes", () => {
 	});
 
 	it("should ignore messages without id", () => {
-		pubSub2ReqRes(noop).dispatch({ foo: "bar" });
+		pubSub2ReqRes(noop).receive({ foo: "bar" });
 	});
 
 	it("should ignore messages with unknown id", () => {
-		const { request, dispatch } = pubSub2ReqRes(noop);
+		const { request, receive } = pubSub2ReqRes(noop);
 
 		const promise = request({});
-		dispatch({ s: -11, foo: "bar" });
+		receive({ s: -11, foo: "bar" });
 		return expectNotFulfilled(promise);
 	});
 
@@ -252,7 +252,7 @@ describe("pubSub2ReqRes", () => {
 
 	it("should receive response", async () => {
 		const received: any[] = [];
-		const { txMap, request, dispatch } = pubSub2ReqRes(m => {
+		const { txMap, request, receive } = pubSub2ReqRes(m => {
 			received.push(m);
 		});
 
@@ -260,7 +260,7 @@ describe("pubSub2ReqRes", () => {
 		const p2 = request({});
 
 		const response = { r: received[1].s, msg: "foo" };
-		dispatch(response);
+		receive(response);
 		await expect(p2).resolves.toStrictEqual(response);
 
 		expect(txMap.size).toBe(1);
@@ -268,20 +268,20 @@ describe("pubSub2ReqRes", () => {
 	});
 
 	it("should be able to handle response synchronous", async () => {
-		const { request, dispatch } = pubSub2ReqRes(({ s }) => {
-			dispatch({ r: s, foo: "bar" });
+		const { request, receive } = pubSub2ReqRes(({ s }) => {
+			receive({ r: s, foo: "bar" });
 		});
 		return expect((await request({})).foo).toBe("bar");
 	});
 
 	it("should clear the timer after transaction completed", withFakeTimer(() => {
 		let s = -1;
-		const { txMap, request, dispatch } = pubSub2ReqRes(m => s = (m as any).s, 100);
+		const { txMap, request, receive } = pubSub2ReqRes(m => s = (m as any).s, 100);
 		request({});
 		request({});
 		expect(jest.getTimerCount()).toBe(2);
 
-		dispatch({ r: s });
+		receive({ r: s });
 
 		expect(txMap.has(s)).toBe(false);
 		expect(txMap.size).toBe(1);

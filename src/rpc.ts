@@ -284,9 +284,9 @@ export function createClient<T = any>(send: Publish): VoidRemote<T>;
 
 export function createClient<T = any>(sender: SendFn, listen?: Listen) {
 	if (listen) {
-		const { request, dispatch } = pubSub2ReqRes(sender);
+		const { request, receive } = pubSub2ReqRes(sender);
 		sender = request;
-		listen(dispatch);
+		listen(receive);
 	}
 	return new Proxy(sender, new RPCHandler([])) as unknown as Remote<T>;
 }
