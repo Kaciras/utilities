@@ -111,7 +111,7 @@ export class ResponseFacade implements Promise<Response> {
 		return this.check(this.raw).catch(onRejected);
 	}
 
-	finally(onFinally?: any): Promise<Response> {
+	finally(onFinally?: (() => void) | null): Promise<Response> {
 		return this.check(this.raw).finally(onFinally);
 	}
 

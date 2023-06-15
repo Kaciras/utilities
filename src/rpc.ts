@@ -51,7 +51,7 @@ export function transfer<T>(obj: T, transfers: Transferable[]) {
 }
 
 export interface RequestMessage {
-	a: any[];			// arguments
+	a: unknown[];		// arguments
 	p: PropertyKey[];	// path
 	s?: number;			// session id
 }
@@ -72,7 +72,7 @@ export type Communicate = (message: RequestMessage, transfer: Transferable[]) =>
 
 export type SendFn = Publish | Communicate;
 
-async function invoke(send: SendFn, path: PropertyKey[], args: any[]) {
+async function invoke(send: SendFn, path: PropertyKey[], args: unknown[]) {
 	const transfers: Transferable[] = [];
 	for (const arg of args) {
 		const ts = transferCache.get(arg);

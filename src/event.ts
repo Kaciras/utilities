@@ -114,23 +114,29 @@ export class MultiEventEmitter<T extends EventsMap = Default> {
  */
 export type PostMessage<T = any> = (message: T, transfer: Transferable[]) => void;
 
-export interface PromiseController {
+export interface PromiseController<T = unknown> {
 
 	timer?: ReturnType<typeof setTimeout>;
 
-	resolve(value: unknown): void;
+	resolve(value: T): void;
 
 	reject(reason: unknown): void;
 }
 
-export interface RequestResponseWrapper {
+export interface RequestResponseWrapper<T, R> {
 
-	request(message: object, transfer?: Transferable[]): Promise<any>;
+	txMap: Map<number, PromiseController<R>>;
 
-	dispatch(message: object): void;
+	dispatch(message: R): void;
 
-	txMap: Map<number, PromiseController>;
+	request(message: T, transfer?: Transferable[]): Promise<R>;
 }
+
+// Session id will be set as the `s` property in requests.
+type ReqIdMixin = object & { s?: number };
+
+// Server must pass the id back via the `r` property.
+type ResIdMixin = object & { r?: number };
 
 /**
  * Wrap publish-subscribe functions to request-response model.
@@ -142,7 +148,7 @@ export interface RequestResponseWrapper {
  * since the key is deserialized from the message.
  *
  * @example
- * const { request, subscribe } = pubSub2ReqRes("DEMO", window.postMessage);
+ * const { request, subscribe } = pubSub2ReqRes(window.postMessage);
  * window.addEventListener("message", e => subscribe(e.data));
  * const response = await request({ text: "Hello" });
  *
@@ -150,22 +156,25 @@ export interface RequestResponseWrapper {
  * @param timeout The number of milliseconds to wait for response,
  * 				  set to zero or negative value to disable timeout.
  */
-export function pubSub2ReqRes(publish: PostMessage, timeout = 10e3) {
+export function pubSub2ReqRes<
+	T extends ReqIdMixin = any,
+	R extends ResIdMixin = any,
+>(publish: PostMessage<T>, timeout = 10e3) {
 	const txMap = new Map<number, PromiseController>();
 
-	function dispatch(message: any) {
+	function dispatch(message: R) {
 		if (typeof message !== "object") {
 			return;
 		}
-		const session = txMap.get(message.r);
+		const session = txMap.get(message.r!);
 		if (session) {
 			session.resolve(message);
-			txMap.delete(message.r);
+			txMap.delete(message.r!);
 			clearTimeout(session.timer);
 		}
 	}
 
-	async function request(message: any, transfer: Transferable[] = []) {
+	async function request(message: T, transfer: Transferable[] = []) {
 		const s = message.s = uniqueId();
 
 		let timer: ReturnType<typeof setTimeout>;
@@ -199,5 +208,5 @@ export function pubSub2ReqRes(publish: PostMessage, timeout = 10e3) {
 		}
 	}
 
-	return { txMap, request, dispatch } as RequestResponseWrapper;
+	return { txMap, request, dispatch } as RequestResponseWrapper<T, R>;
 }
