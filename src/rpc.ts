@@ -17,7 +17,7 @@ import { PostMessage, pubSub2ReqRes } from "./event.js";
 import { Awaitable, noop } from "./lang.js";
 
 /* ============================================================================= *\
- *                             Layer 1：Messaging
+ *                              Message Processing
 \* ============================================================================= */
 
 /**
@@ -156,7 +156,7 @@ export function createServer(target: any, respond: Respond = noop) {
 }
 
 /* ============================================================================= *
- *                         Layer 2: High level API
+ *                                High level API
  * ============================================================================= */
 
 /**
@@ -282,11 +282,56 @@ export function createClient<T = any>(send: Publish, listen: Listen): Remote<T>;
  */
 export function createClient<T = any>(send: Publish): VoidRemote<T>;
 
-export function createClient<T = any>(sender: SendFn, listen?: Listen) {
+export function createClient(sender: SendFn, listen?: Listen) {
 	if (listen) {
 		const { request, receive } = pubSub2ReqRes(sender);
 		sender = request;
 		listen(receive);
 	}
-	return new Proxy(sender, new RPCHandler([])) as unknown as Remote<T>;
+	return new Proxy(sender, new RPCHandler([]));
+}
+
+/* ============================================================================= *
+ *                              Helper Functions
+ * ============================================================================= */
+
+function probeSend(obj: any): PostMessage<unknown> {
+	if ("send" in obj) {
+		return message => obj.send(message);
+	} else if ("postMessage" in obj) {
+		return obj.postMessage.bind(obj);
+	} else if ("emit" in obj) {
+		return obj.emit.bind(obj, "message");
+	} else {
+		throw new TypeError("Can't find send method");
+	}
+}
+
+function probeReceive(obj: any, callback: any) {
+	if ("addEventListener" in obj) {
+		obj.addEventListener("message", (e: any) => callback(e.data));
+	} else if ("on" in obj) {
+		obj.on("message", callback);
+	} else {
+		throw new TypeError("Can't find response listener");
+	}
+}
+
+export function domServer(target: any, obj: any) {
+	const publish = probeSend(obj);
+	probeReceive(obj, createServer(target, publish));
+}
+
+export function domClient<T = any>(sender: object, receiver?: object): Remote<T>;
+
+export function domClient<T = any>(sender: object, receiver: false): VoidRemote<T>;
+
+export function domClient<T = any>(sender: any, receiver = sender) {
+	const publish = probeSend(sender);
+	if (receiver === false) {
+		return createClient<T>(publish);
+	}
+	const { request, receive } = pubSub2ReqRes(publish);
+	probeReceive(receiver, receive);
+	return createClient<T>(request) as unknown as Remote<T>;
 }
