@@ -317,16 +317,33 @@ function probeReceive(obj: any, callback: any) {
 	}
 }
 
-export function domServer(target: any, obj: any) {
+/**
+ * Serve RPC requests, the post & receive methods are auto-detected
+ * from the object.
+ *
+ * @param target The service object contains methods that client can use.
+ * @param obj The object contains post & receive method.
+ */
+export function probeServer(target: any, obj: any) {
 	const publish = probeSend(obj);
 	probeReceive(obj, createServer(target, publish));
 }
 
-export function domClient<T = any>(sender: object, receiver?: object): Remote<T>;
+/**
+ * Create a RPC client, the post & receive methods are auto-detected
+ * from the sender & receiver.
+ *
+ * @param sender The object provides the post method.
+ * @param receiver The object provides the receive method, default is same as the sender.
+ */
+export function probeClient<T = any>(sender: object, receiver?: object): Remote<T>;
 
-export function domClient<T = any>(sender: object, receiver: false): VoidRemote<T>;
+/**
+ * When receiver is set to false, the client runs in one-way mode.
+ */
+export function probeClient<T = any>(sender: object, receiver: false): VoidRemote<T>;
 
-export function domClient<T = any>(sender: any, receiver = sender) {
+export function probeClient<T = any>(sender: unknown, receiver = sender) {
 	const publish = probeSend(sender);
 	if (receiver === false) {
 		return createClient<T>(publish);

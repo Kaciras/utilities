@@ -3,7 +3,16 @@ import * as http from "http";
 import { EventEmitter } from "events";
 import { describe, expect, it, jest } from "@jest/globals";
 import { Stubs } from "./global.js";
-import { Communicate, createClient, createServer, domClient, domServer, Respond, serve, transfer } from "../src/rpc.js";
+import {
+	Communicate,
+	createClient,
+	createServer,
+	probeClient,
+	probeServer,
+	Respond,
+	serve,
+	transfer
+} from "../src/rpc.js";
 
 function createTestRPC<T>(controller: T) {
 	let respond: Respond;
@@ -27,11 +36,11 @@ function bob(name: string) {
 it("demo - duplex MessageChannel", async () => {
 	const { port1, port2 } = new MessageChannel();
 
-	const clientA = domClient(port1);
-	domServer({ alice }, port1);
+	const clientA = probeClient(port1);
+	probeServer({ alice }, port1);
 
-	const clientB = domClient(port2);
-	domServer({ bob }, port2);
+	const clientB = probeClient(port2);
+	probeServer({ bob }, port2);
 
 	expect(await clientB.alice()).toBe("Hi I am alice");
 	expect(await clientA.bob("world")).toBe("Hello world");
@@ -197,9 +206,9 @@ describe("One-direction messaging", () => {
 });
 
 it('should throw error if no send method', () => {
-	expect(() => domClient({})).toThrow(new TypeError("Can't find send method"));
+	expect(() => probeClient({})).toThrow(new TypeError("Can't find send method"));
 });
 
 it('should throw error if no listen method', () => {
-	expect(() => domClient({ send() {} })).toThrow(new TypeError("Can't find response listener"));
+	expect(() => probeClient({ send() {} })).toThrow(new TypeError("Can't find response listener"));
 });

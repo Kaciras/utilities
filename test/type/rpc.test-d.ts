@@ -1,7 +1,7 @@
 import { describe } from "@jest/globals";
 import { expectType } from "tsd-lite";
-import { createClient, ResponseMessage, SendFn } from "../../src/rpc.js";
 import { noop } from "../../src/lang.js";
+import { createClient, probeClient, Remote, ResponseMessage, SendFn, VoidRemote } from "../../src/rpc.js";
 
 const sender = 0 as unknown as () => ResponseMessage;
 
@@ -44,4 +44,10 @@ describe("Two-way client type", () => {
 	const clientA = createClient<typeof functions>(sender);
 
 	expectType<Promise<string>>(clientA.foo());
+});
+
+describe("probeClient", () => {
+	expectType<Remote<any>>(probeClient({}, {}));
+	expectType<Remote<any>>(probeClient({}));
+	expectType<VoidRemote<any>>(probeClient({}, false));
 });
