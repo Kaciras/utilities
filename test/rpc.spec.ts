@@ -11,7 +11,7 @@ import {
 	probeServer,
 	Respond,
 	serve,
-	transfer
+	transfer,
 } from "../src/rpc.js";
 
 function createTestRPC<T>(controller: T) {
@@ -205,10 +205,28 @@ describe("One-direction messaging", () => {
 	});
 });
 
-it('should throw error if no send method', () => {
-	expect(() => probeClient({})).toThrow(new TypeError("Can't find send method"));
-});
+describe("probeClient & probeServer", () => {
+	it("should throw error if no send method found", () => {
+		expect(() => probeClient({})).toThrow(new TypeError("Can't find send method"));
+	});
 
-it('should throw error if no listen method', () => {
-	expect(() => probeClient({ send() {} })).toThrow(new TypeError("Can't find response listener"));
+	it("should throw error if no listen method found", () => {
+		expect(() => probeClient({ send() {} })).toThrow(new TypeError("Can't find response listener"));
+	});
+
+	it("should work with single EventTarget", () => {
+		const emitter = new EventTarget();
+		const client = probeClient(emitter);
+		probeServer({ alice }, emitter);
+
+		return expect(client.alice()).resolves.toBe("Hi I am alice");
+	});
+
+	it('should run in one-way mode if the receiver is false', () => {
+		const emitter = new EventTarget();
+		const client = probeClient(emitter, false);
+		probeServer({ alice }, emitter);
+
+		return expect(client.alice()).resolves.toBeUndefined();
+	});
 });

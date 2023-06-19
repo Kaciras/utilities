@@ -301,7 +301,9 @@ function probeSend(obj: any): PostMessage<unknown> {
 	} else if ("postMessage" in obj) {
 		return obj.postMessage.bind(obj);
 	} else if ("emit" in obj) {
-		return obj.emit.bind(obj, "message");
+		return message => { obj.emit("message", message); };
+	} else if ("dispatchEvent" in obj) {
+		return data => { obj.dispatchEvent(new MessageEvent("message", { data })); };
 	} else {
 		throw new TypeError("Can't find send method");
 	}

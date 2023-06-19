@@ -213,10 +213,8 @@ function withFakeTimer(fn: any) {
 
 describe("pubSub2ReqRes", () => {
 	it("should publish messages", async () => {
-		const received: any[] = [];
-		const { txMap, request } = pubSub2ReqRes(m => {
-			received.push(m);
-		});
+		const mockPublish = jest.fn();
+		const { txMap, request } = pubSub2ReqRes<any, any>(mockPublish);
 
 		// noinspection ES6MissingAwait
 		request({ value: 11 });
@@ -224,9 +222,9 @@ describe("pubSub2ReqRes", () => {
 		request({ value: 33 });
 
 		expect(txMap.size).toBe(2);
-		expect(received).toStrictEqual([
-			{ s: 1, value: 11 },
-			{ s: 2, value: 33 },
+		expect(mockPublish.mock.calls).toStrictEqual([
+			[{ s: 1, value: 11 }, []],
+			[{ s: 2, value: 33 }, []],
 		]);
 	});
 
@@ -296,6 +294,14 @@ describe("pubSub2ReqRes", () => {
 		expect(txMap.size).toBe(2);
 		expect(jest.getTimerCount()).toBe(0);
 	}));
+
+	it("should not prevent Node from exit", () => {
+		const { txMap, request } = pubSub2ReqRes(noop);
+		request({});
+
+		const { value } = txMap.values().next();
+		expect(value.timer.hasRef()).toBe(false);
+	});
 
 	it("should support remove session from outside", withFakeTimer(async () => {
 		const { txMap, request } = pubSub2ReqRes(noop, 100);
