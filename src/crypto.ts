@@ -1,25 +1,20 @@
-import { BinaryLike, createHash } from "crypto";
+import { BinaryLike } from "crypto";
 import { base64url } from "./codec.js";
-
-/**
- * A convenient hash function using sha256.
- *
- * @param data the data to be digested.
- * @return Url-safe base64 encoded digest string.
- */
-export async function sha256(data: BufferSource | BinaryLike) {
-	if (typeof window === "undefined") {
-		return createHash("sha256")
-			.update(data as BinaryLike)
-			.digest("base64url");
-	}
-	return base64url(await crypto.subtle.digest("SHA-256", data as BufferSource));
-}
 
 type BufferOrString = BufferSource | string;
 
 function toBuf(value: BufferOrString) {
 	return typeof value === "string" ? new TextEncoder().encode(value) : value;
+}
+
+/**
+ * A convenient hash function using SHA-256.
+ *
+ * @param data the data to be digested.
+ * @return Url-safe base64 encoded digest string.
+ */
+export function sha256(data: BufferSource | BinaryLike) {
+	return crypto.subtle.digest("SHA-256", toBuf(data)).then(base64url);
 }
 
 interface AESOptions {
