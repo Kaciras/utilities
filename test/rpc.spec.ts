@@ -214,15 +214,33 @@ describe("probeClient & probeServer", () => {
 		expect(() => probeClient({ send() {} })).toThrow(new TypeError("Can't find response listener"));
 	});
 
-	it("should work with single EventTarget", () => {
+	it("should work with single EventTarget", async () => {
 		const emitter = new EventTarget();
+		const counter = jest.fn();
+		emitter.addEventListener("message", counter);
+
 		const client = probeClient(emitter);
 		probeServer({ alice }, emitter);
+		const response = await client.alice();
 
-		return expect(client.alice()).resolves.toBe("Hi I am alice");
+		expect(response).toBe("Hi I am alice");
+		expect(counter).toHaveBeenCalledTimes(2);
 	});
 
-	it('should run in one-way mode if the receiver is false', () => {
+	it('should run in one-way mode if sender of the server is false', async () => {
+		const emitter = new EventTarget();
+		const counter = jest.fn();
+		emitter.addEventListener("message", counter);
+
+		const client = probeClient(emitter, false);
+		probeServer({ alice }, emitter, false);
+
+		await client.alice();
+
+		expect(counter).toHaveBeenCalledTimes(1);
+	});
+
+	it('should run in one-way mode if receiver of the client is false', () => {
 		const emitter = new EventTarget();
 		const client = probeClient(emitter, false);
 		probeServer({ alice }, emitter);

@@ -156,7 +156,7 @@ export function createServer(target: any, respond: Respond = noop) {
 }
 
 /* ============================================================================= *
- *                                High level API
+ *                             Client Implementation
  * ============================================================================= */
 
 /**
@@ -324,11 +324,15 @@ function probeReceive(obj: any, callback: any) {
  * from the object.
  *
  * @param target The service object contains methods that client can use.
- * @param obj The object contains post & receive method.
+ * @param sender The object contains receive method.
+ * @param receiver The object contains post method,
+ * 				   set to false prevents the server to send response.
  */
-export function probeServer(target: any, obj: any) {
-	const publish = probeSend(obj);
-	probeReceive(obj, createServer(target, publish));
+export function probeServer(target: any, receiver: object, sender?: object | false) {
+	const respond = sender === false
+		? noop
+		: probeSend(sender ?? receiver);
+	probeReceive(receiver, createServer(target, respond));
 }
 
 /**
