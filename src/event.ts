@@ -1,5 +1,14 @@
 import { AbortError, uniqueId } from "./misc.js";
 
+/*
+ * There 2 syntax can be used for declare types of event map:
+ * ① SingleEventEmitter<[number, string]>
+ * ② SingleEventEmitter<(foo: number, bar: string) => void>
+ *
+ * The ② supports specific parameter names, but it has a redundant return type,
+ * and parameter names are not always needed, so we choose the simpler ①.
+ */
+
 type Handler<T, A extends any[]> = (this: T, ...args: A) => unknown;
 
 /**
@@ -61,6 +70,8 @@ type HandlerMap<T, A extends EventsMap> = Partial<{
 }>;
 
 /**
+ * Emit multiple type events and may have listeners for them.
+ *
  * # Alternatives
  * [nanoevents](https://github.com/ai/nanoevents).
  *

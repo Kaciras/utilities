@@ -43,7 +43,7 @@ Build the project:
 pnpm build
 ```
 
-Run tests. Some tests are for generated bundle, you should build first.
+Run tests. Some tests are for generated bundles, you should build them first.
 
 ```
 pnpm run test:unit
