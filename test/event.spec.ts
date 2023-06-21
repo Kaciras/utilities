@@ -23,6 +23,16 @@ describe("SingleEventEmitter", () => {
 		}
 	});
 
+	it("should pass this to handlers", () => {
+		expect.assertions(1);
+		const emitter = new SingleEventEmitter();
+
+		emitter.addListener(function () {
+			expect(this).toBe(emitter);
+		});
+		emitter.dispatchEvent(11, 22);
+	});
+
 	it("should unbinds listener", () => {
 		const emitter = new SingleEventEmitter();
 		emitter.addListener(handler1);
@@ -74,9 +84,8 @@ describe("SingleEventEmitter", () => {
 });
 
 interface EventTypes {
-	foo: (...values: number[]) => void;
-
-	bar(...values: number[]): void;
+	foo: number[];
+	bar: number[];
 }
 
 describe("MultiEventEmitter", () => {
@@ -103,6 +112,16 @@ describe("MultiEventEmitter", () => {
 
 		expect(handler2).toHaveBeenCalledTimes(1);
 		expect(handler2).toHaveBeenNthCalledWith(1, 33);
+	});
+
+	it("should pass this to handlers", () => {
+		expect.assertions(1);
+		const emitter = new MultiEventEmitter();
+
+		emitter.addListener("foo", function () {
+			expect(this).toBe(emitter);
+		});
+		emitter.dispatchEvent("foo", 11, 22);
 	});
 
 	it("should auto remove on once", () => {

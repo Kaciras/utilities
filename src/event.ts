@@ -1,6 +1,6 @@
 import { AbortError, uniqueId } from "./misc.js";
 
-type Handler<T extends any[]> = (...args: T) => any;
+type Handler<T, A extends any[]> = (this: T, ...args: A) => unknown;
 
 /**
  * Event dispatcher for only one type of event.
@@ -8,11 +8,11 @@ type Handler<T extends any[]> = (...args: T) => any;
  * Listeners are called synchronously in the order in which
  * they were registered.
  */
-export class SingleEventEmitter<T extends any[] = any[]> {
+export class SingleEventEmitter<A extends any[] = any[]> {
 
-	private handlers: Array<Handler<T>> = [];
+	private handlers: Array<Handler<this, A>> = [];
 
-	addListener(handler: Handler<T>) {
+	addListener(handler: Handler<this, A>) {
 		this.handlers.push(handler);
 	}
 
@@ -27,7 +27,7 @@ export class SingleEventEmitter<T extends any[] = any[]> {
 	 *
 	 * @param handler The listener to remove
 	 */
-	removeListener(handler: Handler<T>) {
+	removeListener(handler: Handler<this, A>) {
 		const { handlers } = this;
 		this.handlers = handlers.filter(h => h !== handler);
 	}
@@ -36,28 +36,29 @@ export class SingleEventEmitter<T extends any[] = any[]> {
 		this.handlers = [];
 	}
 
-	once(handler: Handler<T>) {
-		const wrapper = (...args: T) => {
-			handler(...args);
-			this.removeListener(wrapper as Handler<T>);
+	once(handler: Handler<this, A>) {
+		const wrapper = (...args: A) => {
+			handler.apply(this, args);
+			this.removeListener(wrapper);
 		};
-		this.addListener(wrapper as Handler<T>);
+		this.addListener(wrapper as Handler<this, A>);
 	}
 
-	dispatchEvent(...args: T) {
-		for (const handler of this.handlers) handler(...args);
+	dispatchEvent(...args: A) {
+		for (const handler of this.handlers) handler.apply(this, args);
 	}
 }
 
-type EventsMap = Record<string, any>;
-
-type HandlerMap<T extends EventsMap> = Partial<{
-	[K in keyof T]: Array<T[K]>;
-}>;
+/** Event name with its arguments */
+type EventsMap = Record<never, any[]>;
 
 interface Default extends EventsMap {
-	[event: string]: (...args: any) => any;
+	[event: string]: any[];
 }
+
+type HandlerMap<T, A extends EventsMap> = Partial<{
+	[K in keyof A]: Array<Handler<T, A[K]>>;
+}>;
 
 /**
  * # Alternatives
@@ -67,14 +68,13 @@ interface Default extends EventsMap {
  */
 export class MultiEventEmitter<T extends EventsMap = Default> {
 
-	private events: HandlerMap<T> = Object.create(null);
+	private events: HandlerMap<this, T> = Object.create(null);
 
-	addListener<K extends keyof T>(name: K, handler: T[K]) {
-		const { events } = this;
-		(events[name] ??= [] as Array<T[K]>).push(handler);
+	addListener<K extends keyof T>(name: K, handler: Handler<this, T[K]>) {
+		(this.events[name] ??= []).push(handler);
 	}
 
-	removeListener<K extends keyof T>(name: K, handler: T[K]) {
+	removeListener<K extends keyof T>(name: K, handler: Handler<this, T[K]>) {
 		let handlers = this.events[name];
 		if (!handlers) {
 			return;
@@ -95,17 +95,17 @@ export class MultiEventEmitter<T extends EventsMap = Default> {
 		}
 	}
 
-	once<K extends keyof T>(name: K, handler: T[K]) {
-		const wrapper = (...args: unknown[]) => {
-			handler(...args);
-			this.removeListener(name, wrapper as T[K]);
+	once<K extends keyof T>(name: K, handler: Handler<this, T[K]>) {
+		const wrapper = (...args: T[K]) => {
+			handler.apply(this, args);
+			this.removeListener(name, wrapper);
 		};
-		this.addListener(name, wrapper as T[K]);
+		this.addListener(name, wrapper as Handler<this, T[K]>);
 	}
 
-	dispatchEvent<K extends keyof T>(name: K, ...args: Parameters<T[K]>) {
+	dispatchEvent<K extends keyof T>(name: K, ...args: T[K]) {
 		const handlers = this.events[name];
-		for (const handler of handlers ?? []) handler(...args);
+		for (const handler of handlers ?? []) handler.apply(this, args);
 	}
 }
 
