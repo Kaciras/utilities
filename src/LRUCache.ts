@@ -1,5 +1,7 @@
 // noinspection LoopStatementThatDoesntLoopJS
 
+import { noop } from "./lang.js";
+
 type Dispose<T> = (value: T) => unknown;
 
 export interface LRUCacheOptions<T> {
@@ -50,7 +52,7 @@ export default class LRUCache<K, T> {
 	constructor(options: LRUCacheOptions<T> = {}) {
 		this.ttl = options.ttl ?? Infinity;
 		this.capacity = options.capacity ?? Infinity;
-		this.dispose = options.dispose ?? (() => {});
+		this.dispose = options.dispose ?? noop;
 	}
 
 	/**

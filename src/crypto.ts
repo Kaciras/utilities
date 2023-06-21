@@ -1,4 +1,3 @@
-import { BinaryLike } from "crypto";
 import { base64url } from "./codec.js";
 
 type BufferOrString = BufferSource | string;
@@ -13,7 +12,7 @@ function toBuf(value: BufferOrString) {
  * @param data the data to be digested.
  * @return Url-safe base64 encoded digest string.
  */
-export function sha256(data: BufferSource | BinaryLike) {
+export function sha256(data: BufferOrString) {
 	return crypto.subtle.digest("SHA-256", toBuf(data)).then(base64url);
 }
 

@@ -65,13 +65,13 @@ const urlSafeMap: Record<string, string> = {
 /**
  * creates an Url-Safe Base64 encoded ASCII string from a binary data.
  */
-export function base64url(buffer: Uint8Array | ArrayBuffer | Buffer) {
+export function base64url(buffer: BufferSource | Buffer) {
 	if (typeof window === "undefined") {
 		if (!Buffer.isBuffer(buffer)) {
-			buffer = Buffer.from(buffer);
+			buffer = Buffer.from(buffer as any);
 		}
 		return buffer.toString("base64url");
 	}
-	const str = String.fromCharCode(...new Uint8Array(buffer));
+	const str = new TextDecoder().decode(buffer);
 	return btoa(str).replaceAll(/[+/=]/g, v => urlSafeMap[v]);
 }

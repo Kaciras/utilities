@@ -7,6 +7,7 @@ describe("SingleEventEmitter", () => {
 	class Sub extends SingleEventEmitter<[11]> {}
 
 	const e = new Sub();
+
 	e.addListener(function (arg) {
 		expectType<11>(arg);
 		expectType<Sub>(this);
@@ -16,14 +17,14 @@ describe("SingleEventEmitter", () => {
 	e.dispatchEvent();
 	// @ts-expect-error
 	e.dispatchEvent("str");
+	e.dispatchEvent(11);
 });
 
 describe("MultiEventEmitter", () => {
-	type Events = { test: [11] };
-
-	class MSub extends MultiEventEmitter<Events> {}
+	class MSub extends MultiEventEmitter<{ test: [11] }> {}
 
 	const e = new MSub();
+
 	e.addListener("test", function (arg) {
 		expectType<11>(arg);
 		expectType<MSub>(this);
@@ -32,7 +33,15 @@ describe("MultiEventEmitter", () => {
 	// @ts-expect-error
 	e.dispatchEvent("NOE", 123);
 	// @ts-expect-error
+	e.dispatchEvent("test");
+	// @ts-expect-error
 	e.dispatchEvent("test", "str");
+	e.dispatchEvent("test", 11);
+
+	// @ts-expect-error
+	e.removeAllListeners("NOE");
+	e.removeAllListeners();
+	e.removeAllListeners("test");
 });
 
 describe("message should be object", () => {
