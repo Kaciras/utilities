@@ -153,7 +153,7 @@ it("should forward rejections", () => {
 });
 
 it("should throw if respond failed", () => {
-	const respond = jest.fn().mockRejectedValue(Stubs.error);
+	const respond = jest.fn<any>().mockRejectedValue(Stubs.error);
 
 	const serve = createServer({}, respond);
 	return expect(serve({ p: [0], a: [] })).rejects.toThrow(Stubs.error);

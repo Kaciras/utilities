@@ -260,7 +260,7 @@ describe("pubSub2ReqRes", () => {
 	});
 
 	it("should forward errors from publish function", async () => {
-		const post = jest.fn().mockRejectedValue(Stubs.error);
+		const post = jest.fn<any>().mockRejectedValue(Stubs.error);
 		const { txMap, request } = pubSub2ReqRes(post);
 
 		await expect(request({})).rejects.toThrow(Stubs.error);

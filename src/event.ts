@@ -59,15 +59,15 @@ export class SingleEventEmitter<A extends any[] = any[]> {
 }
 
 /** Event name with its arguments */
-type EventsMap = Record<never, any[]>;
+type EventMap = Record<never, any[]>;
 
-interface Default extends EventsMap {
+interface Default extends EventMap {
 	[event: string]: any[];
 }
 
-type HandlerMap<T, A extends EventsMap> = Partial<{
-	[K in keyof A]: Array<Handler<T, A[K]>>;
-}>;
+type HandlerMap<T, A extends EventMap> = {
+	[K in keyof A]?: Array<Handler<T, A[K]>>;
+}
 
 /**
  * Emit multiple type events and may have listeners for them.
@@ -77,7 +77,7 @@ type HandlerMap<T, A extends EventsMap> = Partial<{
  *
  * In Node, you can import EventEmitter from "event" instead.
  */
-export class MultiEventEmitter<T extends EventsMap = Default> {
+export class MultiEventEmitter<T extends EventMap = Default> {
 
 	private events: HandlerMap<this, T> = Object.create(null);
 
@@ -158,8 +158,8 @@ type ResIdMixin = object & { r?: number };
  * since the key is deserialized from the message.
  *
  * @example
- * const { request, subscribe } = pubSub2ReqRes(window.postMessage);
- * window.addEventListener("message", e => subscribe(e.data));
+ * const { request, receive } = pubSub2ReqRes(window.postMessage);
+ * window.addEventListener("message", e => receive(e.data));
  * const response = await request({ text: "Hello" });
  *
  * @param publish The publish message function
@@ -172,7 +172,7 @@ export function pubSub2ReqRes<
 >(publish: PostMessage<T>, timeout = 10e3) {
 	const txMap = new Map<number, PromiseController>();
 
-	function dispatch(message: R) {
+	function receive(message: R) {
 		const session = txMap.get(message.r!);
 		if (session) {
 			session.resolve(message);
@@ -215,5 +215,5 @@ export function pubSub2ReqRes<
 		}
 	}
 
-	return { txMap, request, receive: dispatch } as RequestResponseWrapper<T, R>;
+	return { txMap, request, receive } as RequestResponseWrapper<T, R>;
 }
