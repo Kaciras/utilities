@@ -10,7 +10,7 @@ export default {
 	coverageDirectory: "coverage",
 	coverageProvider: "v8",
 	testMatch: [
-		"<rootDir>/test/**/*.spec.ts",
+		"<rootDir>/test/*.spec.ts",
 		"<rootDir>/test/integration/*.ts",
 	],
 	// https://github.com/kulshekhar/ts-jest/issues/1057

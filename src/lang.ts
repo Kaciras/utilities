@@ -40,6 +40,9 @@ export function silencePromise(value: any) {
  *
  * This function does not use `Object.setPrototypeOf` because it has bad performance.
  *
+ * # Compare with Lodash _.create
+ * This function auto-detect `prototype` of parent, lodash does not.
+ *
  * @param parent Prototype of returned object.
  * @param value Provide properties for returned object.
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf

@@ -12,7 +12,7 @@ import isBuiltin from "is-builtin-module";
  *
  * @see https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API
  */
-function compileTypeScript(entries) {
+function generateTypeDeclaration(entries) {
 	const { config } = ts.readConfigFile("tsconfig.json", ts.sys.readFile);
 	const { options } = ts.convertCompilerOptionsFromJson(config.compilerOptions, ".");
 
@@ -75,7 +75,7 @@ const resolveBuiltinModule = {
 	},
 };
 
-async function buildPlatform(input, typeOfWindow) {
+async function generateBundle(input, typeOfWindow) {
 	const bundle = await rollup({
 		input,
 		plugins: [
@@ -93,6 +93,6 @@ async function buildPlatform(input, typeOfWindow) {
 	});
 }
 
-compileTypeScript(["src/node.ts", "src/browser.ts"]);
-await buildPlatform("src/node.ts", "'undefined'");
-await buildPlatform("src/browser.ts", "'object'");
+generateTypeDeclaration(["src/node.ts", "src/browser.ts"]);
+await generateBundle("src/node.ts", "'undefined'");
+await generateBundle("src/browser.ts", "'object'");

@@ -29,6 +29,7 @@ const svgEscapes: Record<string, string> = {
 
 /**
  * Escape an SVG string，make it available for data url, the result is more efficient than base64.
+ *
  * Double quotes will be replaced with single quotes.
  *
  * @example
