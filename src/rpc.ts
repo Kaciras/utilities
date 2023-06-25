@@ -13,8 +13,8 @@
  *
  * IMO it's overdesign, so we only support function call.
  */
-import { PostMessage, pubSub2ReqRes } from "./event.js";
-import { Awaitable, noop } from "./lang.js";
+import { PostMessage, pubSub2ReqRes } from "./event.ts";
+import { Awaitable, noop } from "./lang.ts";
 
 /* ============================================================================= *\
  *                              Message Processing
@@ -192,7 +192,6 @@ type VoidRemoteProperty<T> =
 
 type VoidCallable<T> = T extends (...args: infer A) => any
 	? (...args: A) => Promise<void> : unknown;
-
 
 class RPCHandler implements ProxyHandler<SendFn> {
 

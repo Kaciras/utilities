@@ -2,7 +2,7 @@
 
 import { expectAssignable, expectType } from "tsd-lite";
 import { describe } from "@jest/globals";
-import { Awaitable, ItemOfIterable, noop } from "../../src/lang.js";
+import { Awaitable, ItemOfIterable, noop } from "../../src/lang.ts";
 
 describe("Awaitable", () => {
 	expectAssignable<Awaitable<number>>(11);

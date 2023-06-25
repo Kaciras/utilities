@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
-import { base64url } from "../src/codec.js";
-import { AESHelper, sha256 } from "../src/crypto.js";
+import { base64url } from "../src/codec.ts";
+import { AESHelper, sha256 } from "../src/crypto.ts";
 
 describe("sha256", () => {
 	const cases: Array<[any, string]> = [

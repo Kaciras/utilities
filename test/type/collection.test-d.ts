@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { describe } from "@jest/globals";
 import { expectType } from "tsd-lite";
-import { cartesianArray, cartesianObject } from "../../src/collection.js";
+import { cartesianArray, cartesianObject } from "../../src/collection.ts";
 
 describe("cartesianObject", () => {
 	expectType<Iterable<{

@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, jest } from "@jest/globals";
-import LRUCache from "../src/LRUCache.js";
+import LRUCache from "../src/LRUCache.ts";
 
 jest.useFakeTimers();
 

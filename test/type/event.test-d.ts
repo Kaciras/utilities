@@ -1,7 +1,7 @@
 import { describe } from "@jest/globals";
 import { expectType } from "tsd-lite";
-import { noop } from "../../src/lang.js";
-import { MultiEventEmitter, pubSub2ReqRes, SingleEventEmitter } from "../../src/event.js";
+import { noop } from "../../src/lang.ts";
+import { MultiEventEmitter, pubSub2ReqRes, SingleEventEmitter } from "../../src/event.ts";
 
 describe("SingleEventEmitter", () => {
 	class Sub extends SingleEventEmitter<[11]> {}

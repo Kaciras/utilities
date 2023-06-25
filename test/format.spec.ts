@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { compositor, dataSizeIEC, dataSizeSI, durationFmt, ellipsis } from "../src/format.js";
+import { compositor, dataSizeIEC, dataSizeSI, durationFmt, ellipsis } from "../src/format.ts";
 
 describe("formatDiv", () => {
 	const invalid = [

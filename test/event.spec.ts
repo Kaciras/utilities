@@ -1,8 +1,8 @@
 import { describe, expect, it, jest } from "@jest/globals";
-import { noop } from "../src/lang.js";
-import { AbortError } from "../src/misc.js";
-import { MultiEventEmitter, pubSub2ReqRes, SingleEventEmitter } from "../src/event.js";
-import { Stubs } from "./global.js";
+import { noop } from "../src/lang.ts";
+import { AbortError } from "../src/misc.ts";
+import { MultiEventEmitter, pubSub2ReqRes, SingleEventEmitter } from "../src/event.ts";
+import { Stubs } from "./global.ts";
 
 describe("SingleEventEmitter", () => {
 	const handler1 = jest.fn();

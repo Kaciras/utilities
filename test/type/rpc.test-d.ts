@@ -1,7 +1,7 @@
 import { describe } from "@jest/globals";
 import { expectType } from "tsd-lite";
-import { noop } from "../../src/lang.js";
-import { createClient, probeClient, Remote, ResponseMessage, SendFn, VoidRemote } from "../../src/rpc.js";
+import { noop } from "../../src/lang.ts";
+import { createClient, probeClient, Remote, ResponseMessage, SendFn, VoidRemote } from "../../src/rpc.ts";
 
 const sender = 0 as unknown as () => ResponseMessage;
 

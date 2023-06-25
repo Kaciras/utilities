@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { cartesianArray, cartesianObject, MultiMap } from "../src/collection.js";
+import { cartesianArray, cartesianObject, MultiMap } from "../src/collection.ts";
 
 describe("MultiMap", () => {
 	it("should calc correct count", () => {

@@ -1,4 +1,4 @@
-import { AbortError, uniqueId } from "./misc.js";
+import { AbortError, uniqueId } from "./misc.ts";
 
 /*
  * There 2 syntax can be used for declare types of event map:

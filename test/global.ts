@@ -1,4 +1,4 @@
-import { uniqueId } from "../src/misc.js";
+import { uniqueId } from "../src/misc.ts";
 
 class StubError extends Error {
 

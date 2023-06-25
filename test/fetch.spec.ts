@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, jest } from "@jest/globals";
 import { getLocal } from "mockttp";
-import { identity } from "../src/lang.js";
-import { FetchClient, FetchClientError, fetchFile, ResponseFacade } from "../src/fetch.js";
+import { identity } from "../src/lang.ts";
+import { FetchClient, FetchClientError, fetchFile, ResponseFacade } from "../src/fetch.ts";
 
 describe("fetchFile", () => {
 	const fetchStub = jest.spyOn(globalThis, "fetch");

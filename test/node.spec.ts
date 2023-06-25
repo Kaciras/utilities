@@ -1,5 +1,5 @@
 import { expect, it } from "@jest/globals";
-import * as browser from "../src/node.js";
+import * as browser from "../src/node.ts";
 
 it("should export sub modules", () => {
 	expect("isPointerInside" in browser).toBe(false);

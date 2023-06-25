@@ -1,5 +1,5 @@
 import { expect, it } from "@jest/globals";
-import * as browser from "../src/browser.js";
+import * as browser from "../src/browser.ts";
 
 it("should export sub modules", () => {
 	expect("onExit" in browser).toBe(false);

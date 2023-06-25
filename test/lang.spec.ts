@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { createInstance, identity, silencePromise, silentCall } from "../src/lang.js";
+import { createInstance, identity, silencePromise, silentCall } from "../src/lang.ts";
 
 describe("identity", () => {
 	it("should return the argument", () => {

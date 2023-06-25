@@ -2,7 +2,7 @@ import consumers from "stream/consumers";
 import * as http from "http";
 import { EventEmitter } from "events";
 import { describe, expect, it, jest } from "@jest/globals";
-import { Stubs } from "./global.js";
+import { Stubs } from "./global.ts";
 import {
 	Communicate,
 	createClient,
@@ -12,7 +12,7 @@ import {
 	Respond,
 	serve,
 	transfer,
-} from "../src/rpc.js";
+} from "../src/rpc.ts";
 
 function createTestRPC<T>(controller: T) {
 	let respond: Respond;

@@ -1,4 +1,4 @@
-import { ItemOfIterable } from "./lang.js";
+import { ItemOfIterable } from "./lang.ts";
 
 /**
  * A Map which allows multiple values for the same Key.

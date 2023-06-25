@@ -1,4 +1,4 @@
-import { base64url } from "./codec.js";
+import { base64url } from "./codec.ts";
 
 type BufferOrString = BufferSource | string;
 
