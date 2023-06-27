@@ -39,4 +39,9 @@ describe("base64url", () => {
 		const end = byteOffset + length;
 		expect(base64url(buffer.slice(byteOffset, end))).toBe(str);
 	});
+
+	it("should support arbitrary length input", () => {
+		const largeThanStackSize = Buffer.alloc(1048576 + 1);
+		expect(base64url(largeThanStackSize)).toHaveLength(1398103);
+	});
 });
