@@ -1,6 +1,8 @@
 import { readFileSync } from "fs";
-import { test as base } from "@playwright/test";
 import swc from "@swc/core";
+import { expect, test as base } from "@playwright/test";
+
+export { expect };
 
 const swcrc = JSON.parse(readFileSync(".swcrc", "utf8"));
 
@@ -22,9 +24,16 @@ export const test = base.extend({
 			const { code: body } = swc.transformFileSync(path, swcrc);
 			return route.fulfill({ body, contentType: "text/javascript" });
 		});
+
 		await page.goto(baseURL);
+
+		// Coverage APIs are only supported on Chromium-based browsers.
+		if (page.context().browser()!.browserType().name() !== "chromium") {
+			return use(page);
+		}
+
+		await page.coverage.startJSCoverage();
 		await use(page);
+		const coverage = await page.coverage.stopJSCoverage();
 	},
 });
-
-export { expect } from "@playwright/test";
