@@ -56,12 +56,11 @@ async function reportCoverage() {
 
 	for (const coverage of coverages) {
 		const { source, code, map } = transformed.get(coverage.url)!;
-		const sources = {
+		const converter = v8toIstanbul(".", undefined, {
 			originalSource: source,
 			source: code,
 			sourceMap: { sourcemap: JSON.parse(map) },
-		};
-		const converter = v8toIstanbul(".", undefined, sources);
+		});
 		await converter.load();
 		converter.applyCoverage(coverage.functions);
 		coverageMap.merge(converter.toIstanbul());
@@ -76,10 +75,9 @@ async function reportCoverage() {
 }
 
 export const test = base.extend({
-	page: async ({ page }, use) => {
+	page: async ({ page, browser }, use) => {
 		await page.route(`${baseURL}**/*`, loadIndexAndModule);
 		await page.goto(baseURL);
-		const browser = page.context().browser()!;
 
 		// Coverage APIs are only supported on Chromium-based browsers.
 		if (browser.browserType().name() !== "chromium") {

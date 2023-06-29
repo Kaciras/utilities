@@ -47,5 +47,6 @@ Run tests. Some tests are for generated bundles, you should build them first.
 
 ```
 pnpm run test:unit
+pnpm run test:browser
 pnpm run test:types
 ```

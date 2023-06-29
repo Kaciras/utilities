@@ -64,17 +64,22 @@ const urlSafeMap: Record<string, string> = {
 };
 
 /**
- * creates an Url-Safe Base64 encoded ASCII string from a binary data.
+ * Create an Url-Safe Base64 encoded ASCII string from a binary data.
  *
  * @see https://developer.mozilla.org/en-US/docs/Glossary/Base64#the_unicode_problem
  */
 export function base64url(buffer: BufferSource | Buffer) {
 	if (typeof window === "undefined") {
+		// Call Buffer.from with another Buffer will copy data.
 		if (!Buffer.isBuffer(buffer)) {
 			buffer = Buffer.from(buffer as any);
 		}
 		return buffer.toString("base64url");
 	}
+	/*
+	 * Don't use `String.fromCharCode(...new Uint8Array(buffer))`,
+	 * because it causes stackoverflow if the buffer larger than stack.
+	 */
 	const bytes = new Uint8Array(buffer as any);
 	const chars = Array.from(bytes, c => String.fromCodePoint(c));
 	return btoa(chars.join("")).replaceAll(/[+/=]/g, v => urlSafeMap[v]);

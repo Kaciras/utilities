@@ -51,7 +51,7 @@ interface AESOptions {
  * Currently, WebCrypto does not support streams. Further reading:
  * https://github.com/w3c/webcrypto/issues/73
  *
- * On browser, this class is available only in secure contexts (HTTPS).
+ * On browser, this class is only available in secure contexts (HTTPS).
  * https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto
  *
  * @example
