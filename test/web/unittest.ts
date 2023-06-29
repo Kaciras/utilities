@@ -1,4 +1,5 @@
 import { readFileSync } from "fs";
+import { Profiler } from "inspector";
 import swc from "@swc/core";
 import { expect, Request, Route, test as base } from "@playwright/test";
 import v8toIstanbul from "v8-to-istanbul";
@@ -19,32 +20,46 @@ const BlankHTML = {
 	body: "<html><head></head><body></body></html>",
 };
 
-const transformed = new Map<string, any>();
+interface TransformedItem {
+	code: string;
+	map: string;
+	source: string;
+}
+
+const transformed = new Map<string, TransformedItem>();
 
 function loadIndexAndModule(route: Route, request: Request) {
 	const url = request.url();
 	if (url === baseURL) {
 		return route.fulfill(BlankHTML);
 	}
-	const path = decodeURIComponent(url.slice(baseURL.length));
-	const source = readFileSync(path, "utf8");
-	swcrc.sourceFileName = path;
-	const { code, map } = swc.transformSync(source, swcrc);
-	transformed.set(url, { source, map });
-	return route.fulfill({ body: code, contentType: "text/javascript" });
+
+	let output = transformed.get(url);
+	if (output === undefined) {
+		const path = decodeURIComponent(url.slice(baseURL.length));
+		const source = readFileSync(path, "utf8");
+
+		swcrc.sourceFileName = path;
+		output = swc.transformSync(source, swcrc) as TransformedItem;
+
+		output.source = source;
+		transformed.set(url, output);
+	}
+
+	return route.fulfill({ body: output.code, contentType: "text/javascript" });
 }
 
-let coverages: any[];
+let coverages: Profiler.ScriptCoverage[];
 
 async function reportCoverage() {
 	const coverageMap = libCoverage.createCoverageMap();
 
 	for (const coverage of coverages) {
-		const { source, map } = transformed.get(coverage.url);
+		const { source, code, map } = transformed.get(coverage.url)!;
 		const sources = {
-			source: coverage.source,
-			sourceMap: { sourcemap: JSON.parse(map) },
 			originalSource: source,
+			source: code,
+			sourceMap: { sourcemap: JSON.parse(map) },
 		};
 		const converter = v8toIstanbul(".", undefined, sources);
 		await converter.load();
