@@ -10,8 +10,31 @@ test("saveFile", async ({ page }) => {
 	});
 
 	const download = await downloadPromise;
-	console.log(await download.suggestedFilename());
+	expect(await download.suggestedFilename()).toBe("baz.txt");
 
-	const fp = await download.createReadStream();
-	expect(await text(fp!)).toBe("foobar");
+	const stream = await download.createReadStream();
+	expect(await text(stream!)).toBe("foobar");
+});
+
+test("selectFile", async ({ page }) => {
+	const uploadPromise = page.waitForEvent("filechooser");
+
+	const selected = page.evaluate(async () => {
+		const { selectFile } = await import("/src/interactive.ts");
+		const [file] = await selectFile("image/*");
+
+		// Return the file back for assertion.
+		return { name: file.name, type: file.type, data: await file.text() };
+	});
+
+	const fileChooser = await uploadPromise;
+	expect(fileChooser.isMultiple()).toBe(false);
+
+	await fileChooser.setFiles({
+		name: "foo.png",
+		mimeType: "image/png",
+		buffer: Buffer.from("bar"),
+	});
+
+	expect(await selected).toStrictEqual({ name: "foo.png", data: "bar", type: "image/png" });
 });
