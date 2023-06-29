@@ -9,6 +9,7 @@ export default {
 	],
 	coverageDirectory: "coverage",
 	coverageProvider: "v8",
+	coverageReporters: ["lcov"],
 	testMatch: [
 		"<rootDir>/test/*.spec.ts",
 		"<rootDir>/test/integration/*.ts",

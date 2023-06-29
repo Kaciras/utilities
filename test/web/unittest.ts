@@ -36,12 +36,6 @@ function loadIndexAndModule(route: Route, request: Request) {
 
 let coverages: any[];
 
-const reportConfig = {
-	skipEmpty: false,
-	skipFull: false,
-	maxCols: process.stdout.columns || 100,
-};
-
 async function reportCoverage() {
 	const coverageMap = libCoverage.createCoverageMap();
 
@@ -63,7 +57,7 @@ async function reportCoverage() {
 		dir: "playwright-report",
 	});
 
-	reports.create("html", reportConfig).execute(context);
+	reports.create("lcov").execute(context);
 }
 
 export const test = base.extend({
@@ -77,6 +71,7 @@ export const test = base.extend({
 			return use(page);
 		}
 
+		// Schedule `reportCoverage` once on test end.
 		if (!coverages) {
 			coverages = [];
 			browser.on("disconnected", reportCoverage);
