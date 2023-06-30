@@ -1,5 +1,6 @@
 import { readFileSync } from "fs";
 import { Profiler } from "inspector";
+import { parse as parseImports } from "es-module-lexer";
 import swc from "@swc/core";
 import { expect, Request, Route, test as base } from "@playwright/test";
 import v8toIstanbul from "v8-to-istanbul";
@@ -9,7 +10,7 @@ import libCoverage from "istanbul-lib-coverage";
 
 export { expect };
 
-const swcrc = JSON.parse(readFileSync(".swcrc", "utf8"));
+const swcrc = JSON.parse(readFileSync(".swcrc", "utf8")) as swc.Options;
 swcrc.sourceMaps = true;
 
 const baseURL = "http://localhost/";
@@ -20,13 +21,14 @@ const BlankHTML = {
 	body: "<html><head></head><body></body></html>",
 };
 
-interface TransformedItem {
-	code: string;
-	map: string;
+// Satisfies unexported type `Sources` in v8-to-istanbul.
+interface TransformedOutput {
 	source: string;
+	sourceMap: any;
+	originalSource: string;
 }
 
-const transformed = new Map<string, TransformedItem>();
+const transformed = new Map<string, TransformedOutput>();
 
 function loadIndexAndModule(route: Route, request: Request) {
 	const url = request.url();
@@ -36,31 +38,47 @@ function loadIndexAndModule(route: Route, request: Request) {
 
 	let output = transformed.get(url);
 	if (output === undefined) {
-		const path = decodeURIComponent(url.slice(baseURL.length));
-		const source = readFileSync(path, "utf8");
+		let path = url.slice(baseURL.length);
+		path = decodeURIComponent(path);
+		path = path.replace(/\.js$/, ".ts");
 
-		swcrc.sourceFileName = path;
-		output = swc.transformSync(source, swcrc) as TransformedItem;
-
-		output.source = source;
-		transformed.set(url, output);
+		transformed.set(url, output = compile(path));
 	}
 
-	return route.fulfill({ body: output.code, contentType: "text/javascript" });
+	return route.fulfill({ body: output.source, contentType: "text/javascript" });
+}
+
+function compile(path: string): TransformedOutput {
+	const originalSource = readFileSync(path, "utf8");
+	let code = originalSource;
+
+	const [imports] = parseImports(code);
+	for (const { n, ss, se } of imports) {
+		if (n!.charCodeAt(0) !== 46) {
+			const c = `/${"*".repeat(se - ss - 2)}/`;
+			code = code.slice(0, ss) + c + code.slice(se);
+		}
+	}
+
+	swcrc.filename = swcrc.sourceFileName = path;
+	const output = swc.transformSync(code, swcrc);
+
+	return {
+		source: output.code,
+		originalSource,
+		sourceMap: { sourcemap: JSON.parse(output.map!) },
+	};
 }
 
 let coverages: Profiler.ScriptCoverage[];
 
 async function reportCoverage() {
+	console.info("\nCollecting test coverage...");
 	const coverageMap = libCoverage.createCoverageMap();
 
 	for (const coverage of coverages) {
-		const { source, code, map } = transformed.get(coverage.url)!;
-		const converter = v8toIstanbul(".", undefined, {
-			originalSource: source,
-			source: code,
-			sourceMap: { sourcemap: JSON.parse(map) },
-		});
+		const sources = transformed.get(coverage.url)!;
+		const converter = v8toIstanbul(".", undefined, sources);
 		await converter.load();
 		converter.applyCoverage(coverage.functions);
 		coverageMap.merge(converter.toIstanbul());
