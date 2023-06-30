@@ -124,13 +124,11 @@ export function dragSortContext(swap = false) {
 export function syncScroll(...elements: HTMLElement[]) {
 	let skip = false;
 
-	if (elements.length) {
-		sync(elements[0]);
-	}
-
 	function sync(target: HTMLElement) {
 		const p = target.scrollTop / (target.scrollHeight - target.offsetHeight);
-		elements.forEach(el => el.scrollTop = p * (el.scrollHeight - el.offsetHeight));
+		for (const el of elements) {
+			el.scrollTop = p * (el.scrollHeight - el.offsetHeight);
+		}
 	}
 
 	function scrollHandler(event: Event) {
@@ -139,14 +137,21 @@ export function syncScroll(...elements: HTMLElement[]) {
 		}
 		skip = true;
 
-		// Must delay to the next frame if the user enables smooth scrolling.
+		// Must delay to the next frame if the user uses smooth scrolling.
 		requestAnimationFrame(() => {
 			sync(event.target as HTMLElement);
 			requestAnimationFrame(() => skip = false);
 		});
 	}
 
-	elements.forEach(el => el.addEventListener("scroll", scrollHandler));
+	if (elements.length) {
+		sync(elements[0]);
+	}
+	for (const el of elements) {
+		el.addEventListener("scroll", scrollHandler);
+	}
 
-	return () => elements.forEach(el => el.removeEventListener("scroll", scrollHandler));
+	return () => {
+		elements.forEach(el => el.removeEventListener("scroll", scrollHandler));
+	};
 }

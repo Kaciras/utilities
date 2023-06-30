@@ -78,6 +78,7 @@ test.describe("nthInChildren", () => {
 		return expect(task).rejects.toThrow(/Cannot read properties/);
 	});
 });
+
 test.describe("dragSortContext", () => {
 	test.beforeEach(({ page }) => page.setContent(rects));
 
@@ -153,7 +154,7 @@ test.describe("syncScroll", () => {
 		expect(await page.evaluate(getScrollTops)).toStrictEqual([150, 300, 450]);
 	});
 
-	test.only("unregister", async ({ page }) => {
+	test("unregister", async ({ page }) => {
 		await page.evaluate(async () => {
 			const { syncScroll } = await import("/src/dom.ts");
 			syncScroll(
