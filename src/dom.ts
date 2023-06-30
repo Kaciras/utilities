@@ -114,3 +114,39 @@ export function dragSortContext(swap = false) {
 		},
 	};
 }
+
+/**
+ * Synchronize vertical scroll of elements by percentage. Call this function will
+ * perform synchronization immediately, based on the first argument。
+ *
+ * @return A handle function that can be called to stop the effect from running again.
+ */
+export function syncScroll(...elements: HTMLElement[]) {
+	let skip = false;
+
+	if (elements.length) {
+		sync(elements[0]);
+	}
+
+	function sync(target: HTMLElement) {
+		const p = target.scrollTop / (target.scrollHeight - target.offsetHeight);
+		elements.forEach(el => el.scrollTop = p * (el.scrollHeight - el.offsetHeight));
+	}
+
+	function scrollHandler(event: Event) {
+		if (skip) {
+			return;
+		}
+		skip = true;
+
+		// Must delay to the next frame if the user enables smooth scrolling.
+		requestAnimationFrame(() => {
+			sync(event.target as HTMLElement);
+			requestAnimationFrame(() => skip = false);
+		});
+	}
+
+	elements.forEach(el => el.addEventListener("scroll", scrollHandler));
+
+	return () => elements.forEach(el => el.removeEventListener("scroll", scrollHandler));
+}

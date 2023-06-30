@@ -1,47 +1,170 @@
+import { readFileSync } from "fs";
 import { expect, test } from "./unittest.js";
 
+const rects = readFileSync("test/fixtures/3-rects.html", "utf8")
+	.replaceAll("\n", ""); // Avoid text nodes of "\n"
+
+const scroll = readFileSync("test/fixtures/scroll.html", "utf8");
+
 test("isPointerInside", async ({ page }) => {
-	await page.setContent(`
-<html>
-<head>
-<style>
-body {
-width: 100vw;
-height: 100vh;
-}
-main {
-width: 100px;
-height: 100px;
-}
-</style>
-</head>
-<body>
-<main style=''></main>
-</body>	
-</html>
-	`);
+	await page.setContent(rects);
 
 	await page.evaluate(async () => {
 		const { isPointerInside } = await import("/src/dom.ts");
 		const main = document.body.firstElementChild!;
 		document.body.onclick = e => {
-			main.textContent = "" + isPointerInside(e, main);
+			document.title = "" + isPointerInside(e, main);
 		};
 	});
 
 	await page.mouse.click(50, 50);
-	expect(await page.textContent("main")).toBe("true");
+	expect(await page.title()).toBe("true");
 
 	await page.mouse.click(111, 222);
-	expect(await page.textContent("main")).toBe("false");
+	expect(await page.title()).toBe("false");
 });
 
-test("swapElements", async ({ page }) => {
-	await page.setContent("<hr id='a'><hr id='b'><hr id='c'>");
-	await page.evaluate(async () => {
-		const { swapElements } = await import("/src/dom.ts");
-		swapElements(document.getElementById("a")!, document.getElementById("c")!);
+test.describe("swapElements", () => {
+	test.beforeEach(({ page }) => page.setContent(rects));
+
+	test("with end", async ({ page }) => {
+		await page.evaluate(async () => {
+			const { swapElements } = await import("/src/dom.ts");
+			swapElements(document.getElementById("A")!, document.getElementById("C")!);
+		});
+		expect(await page.innerText("body")).toBe("C\nB\nA");
 	});
-	const html = await page.innerHTML("body");
-	expect(html).toBe("<hr id=\"c\"><hr id=\"b\"><hr id=\"a\">");
+
+	test("with next", async ({ page }) => {
+		await page.evaluate(async () => {
+			const { swapElements } = await import("/src/dom.ts");
+			swapElements(document.getElementById("A")!, document.getElementById("B")!);
+		});
+		expect(await page.innerText("body")).toBe("B\nA\nC");
+	});
+
+	test("with previous", async ({ page }) => {
+		await page.evaluate(async () => {
+			const { swapElements } = await import("/src/dom.ts");
+			swapElements(document.getElementById("B")!, document.getElementById("A")!);
+		});
+		expect(await page.innerText("body")).toBe("B\nA\nC");
+	});
+});
+
+test.describe("nthInChildren", () => {
+	test.beforeEach(({ page }) => page.setContent(rects));
+
+	test("should work", async ({ page }) => {
+		const task = page.evaluate(async () => {
+			const { nthInChildren } = await import("/src/dom.ts");
+			return nthInChildren(document.getElementById("C")!);
+		});
+		return expect(task).resolves.toBe(2);
+	});
+
+	test("begin index", async ({ page }) => {
+		const task = page.evaluate(async () => {
+			const { nthInChildren } = await import("/src/dom.ts");
+			return nthInChildren(document.getElementById("C")!, 2);
+		});
+		return expect(task).resolves.toBe(2);
+	});
+
+	test("fail on no parent", async ({ page }) => {
+		const task = page.evaluate(async () => {
+			return (await import("/src/dom.ts")).nthInChildren(document);
+		});
+		return expect(task).rejects.toThrow(/Cannot read properties/);
+	});
+});
+test.describe("dragSortContext", () => {
+	test.beforeEach(({ page }) => page.setContent(rects));
+
+	async function setup(swap?: boolean) {
+		const { dragSortContext } = await import("/src/dom.ts");
+		const ctx = (window as any)._ctx = dragSortContext(swap);
+		for (const div of document.getElementsByTagName("div")) {
+			ctx.register(div);
+			div.draggable = true;
+		}
+	}
+
+	test("insert", async ({ page }) => {
+		await page.evaluate(setup, undefined);
+		await page.dragAndDrop("#A", "#C");
+		expect(await page.innerText("body")).toBe("B\nC\nA");
+	});
+
+	test("swap", async ({ page }) => {
+		await page.evaluate(setup, true);
+		await page.dragAndDrop("#A", "#C");
+		expect(await page.innerText("body")).toBe("C\nB\nA");
+	});
+
+	test("unregister", async ({ page }) => {
+		await page.evaluate(setup, undefined);
+		await page.evaluate(() => {
+			const c = document.getElementById("C");
+			(window as any)._ctx.unregister(c);
+		});
+		await page.dragAndDrop("#A", "#C");
+		expect(await page.innerText("body")).toBe("A\nB\nC");
+	});
+});
+
+test.describe("syncScroll", () => {
+	test.beforeEach(({ page }) => page.setContent(scroll));
+
+	function getScrollTops() {
+		const a = document.getElementById("A")!;
+		const b = document.getElementById("B")!;
+		const c = document.getElementById("C")!;
+		return [a.scrollTop, b.scrollTop, c.scrollTop];
+	}
+
+	test("trigger immediately", async ({ page }) => {
+		await page.evaluate(async () => {
+			const { syncScroll } = await import("/src/dom.ts");
+			document.getElementById("A")!.scrollTop = 150;
+			syncScroll(
+				document.getElementById("A")!,
+				document.getElementById("B")!,
+				document.getElementById("C")!,
+			);
+		});
+		expect(await page.evaluate(getScrollTops)).toStrictEqual([150, 300, 450]);
+	});
+
+	test("it should work", async ({ page }) => {
+		await page.evaluate(async () => {
+			const { syncScroll } = await import("/src/dom.ts");
+			syncScroll(
+				document.getElementById("A")!,
+				document.getElementById("B")!,
+				document.getElementById("C")!,
+			);
+		});
+		expect(await page.evaluate(getScrollTops)).toStrictEqual([0, 0, 0]);
+
+		await page.mouse.move(50, 100);
+		await page.mouse.wheel(0, 150);
+		await page.waitForTimeout(100);
+		expect(await page.evaluate(getScrollTops)).toStrictEqual([150, 300, 450]);
+	});
+
+	test.only("unregister", async ({ page }) => {
+		await page.evaluate(async () => {
+			const { syncScroll } = await import("/src/dom.ts");
+			syncScroll(
+				document.getElementById("A")!,
+				document.getElementById("B")!,
+				document.getElementById("C")!,
+			)();
+		});
+		await page.mouse.move(50, 100);
+		await page.mouse.wheel(0, 150);
+		await page.waitForTimeout(100);
+		expect(await page.evaluate(getScrollTops)).toStrictEqual([150, 0, 0]);
+	});
 });
