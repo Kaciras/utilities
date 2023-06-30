@@ -16,7 +16,15 @@ export default defineConfig({
 		trace: "on-first-retry",
 	},
 	projects: [
-		{
+		env.CI ? {
+			name: "chromium",
+			use: {
+				...devices["Desktop Chrome"],
+				launchOptions: {
+					executablePath: "/usr/local/share/chromium/chrome-linux/chrome",
+				},
+			},
+		} : {
 			name: "chromium",
 			use: { ...devices["Desktop Chrome"] },
 		},
