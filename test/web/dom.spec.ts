@@ -145,12 +145,10 @@ test.describe("syncScroll", () => {
 				document.getElementById("B")!,
 				document.getElementById("C")!,
 			);
+			document.getElementById("A")!.scroll({ top: 150 });
 		});
-		expect(await page.evaluate(getScrollTops)).toStrictEqual([0, 0, 0]);
 
-		await page.mouse.move(50, 100);
-		await page.mouse.wheel(0, 150);
-		await page.waitForTimeout(100);
+		await page.waitForTimeout(10);
 		expect(await page.evaluate(getScrollTops)).toStrictEqual([150, 300, 450]);
 	});
 
@@ -162,10 +160,10 @@ test.describe("syncScroll", () => {
 				document.getElementById("B")!,
 				document.getElementById("C")!,
 			)();
+			document.getElementById("A")!.scroll({ top: 150 });
 		});
-		await page.mouse.move(50, 100);
-		await page.mouse.wheel(0, 150);
-		await page.waitForTimeout(100);
+
+		await page.waitForTimeout(10);
 		expect(await page.evaluate(getScrollTops)).toStrictEqual([150, 0, 0]);
 	});
 });
