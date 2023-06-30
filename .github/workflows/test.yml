@@ -18,9 +18,6 @@ jobs:
           version: 8
           run_install: true
 
-      - name: Install Playwright Browsers
-        run: pnpm exec playwright install --with-deps
-
       - run: node build-lib.js
 
       - run: pnpm run test:unit --coverage
