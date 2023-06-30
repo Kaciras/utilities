@@ -20,9 +20,7 @@ export default defineConfig({
 			name: "chromium",
 			use: {
 				...devices["Desktop Chrome"],
-				launchOptions: {
-					executablePath: "/usr/local/share/chromium/chrome-linux/chrome",
-				},
+				channel: "chrome",
 			},
 		} : {
 			name: "chromium",

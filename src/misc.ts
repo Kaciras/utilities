@@ -1,5 +1,3 @@
-import tp from "timers/promises";
-
 /**
  * An AbortSignal that never aborts.
  */
@@ -37,14 +35,15 @@ export class AbortError extends Error {
  * Get a Promise that will be fulfilled after specified time.
  * When canceled, the returned Promise will be rejected with an 'AbortError'.
  *
+ * # Alternatives
+ * In Node, you can import `setTimeout` from "timers/promises" instead.
+ *
  * @param ms Time to sleep in millisecond.
  * @param signal An optional AbortSignal that can be used to cancel the scheduled sleep.
  */
 export function sleep(ms: number, signal = NeverAbort) {
-	if (typeof window === "undefined") {
-		return tp.setTimeout(ms, undefined, { signal });
-	}
 	return new Promise((resolve, reject) => {
+		signal.throwIfAborted();
 		setTimeout(resolve, ms);
 		signal.addEventListener("abort", () => reject(new AbortError()));
 	});
