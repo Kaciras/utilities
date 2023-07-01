@@ -131,7 +131,7 @@ export function syncScroll(...elements: HTMLElement[]) {
 		}
 	}
 
-	function scrollHandler(event: Event) {
+	function handleScroll(event: Event) {
 		if (skip) {
 			return;
 		}
@@ -148,10 +148,10 @@ export function syncScroll(...elements: HTMLElement[]) {
 		sync(elements[0]);
 	}
 	for (const el of elements) {
-		el.addEventListener("scroll", scrollHandler);
+		el.addEventListener("scroll", handleScroll);
 	}
 
 	return () => {
-		elements.forEach(el => el.removeEventListener("scroll", scrollHandler));
+		elements.forEach(el => el.removeEventListener("scroll", handleScroll));
 	};
 }

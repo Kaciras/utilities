@@ -38,7 +38,7 @@ function generateTypeDeclaration(entries) {
 const swcrc = JSON.parse(readFileSync(".swcrc", "utf8"));
 
 const JS_RE = /\.[mc]?[jt]sx?$/;
-const EXTENSIONS = [".ts", ".tsx", ".mjs", ".js", ".cjs", ".jsx"];
+const EXTENSIONS = [".ts", ".js", ".cjs"];
 
 const swcTransform = {
 	name: "swc-transform-sync",

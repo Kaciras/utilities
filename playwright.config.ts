@@ -16,15 +16,14 @@ export default defineConfig({
 		trace: "on-first-retry",
 	},
 	projects: [
-		env.CI ? {
+		{
 			name: "chromium",
-			use: {
+			use: env.CI ? {
 				...devices["Desktop Chrome"],
 				channel: "chrome",
+			} : {
+				...devices["Desktop Chrome"],
 			},
-		} : {
-			name: "chromium",
-			use: { ...devices["Desktop Chrome"] },
 		},
 		// {
 		// 	name: "firefox",
