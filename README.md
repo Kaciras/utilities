@@ -9,6 +9,7 @@ A set of common JS functions for Node and browser.
 Goals:
 
 * Just work for most cases, not a general framework.
+* No dependencies.
 * High performance & less code.
 * Write with latest ECMAScript.
 * Tree-shakeable.

@@ -52,6 +52,15 @@ function compile(path: string): TransformedOutput {
 	const originalSource = readFileSync(path, "utf8");
 	let code = originalSource;
 
+	/*
+	 * Remove 3rd party imports (include Node builtin module), as
+	 * they require more complex processing.
+	 *
+	 * It safety because this project promises no dependencies.
+	 *
+	 * Import statements are replaced with comments of the same length
+	 * to avoid affecting source map.
+	 */
 	const [imports] = parseImports(code);
 	for (const { n, ss, se } of imports) {
 		if (n!.charCodeAt(0) !== 46) {
