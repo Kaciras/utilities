@@ -91,7 +91,17 @@ test.describe("dragSortContext", () => {
 		}
 	}
 
-	test("insert", async ({ page }) => {
+	function unregister(id: string) {
+		(window as any)._ctx.unregister(document.getElementById(id));
+	}
+
+	test("insert before", async ({ page }) => {
+		await page.evaluate(setup, undefined);
+		await page.dragAndDrop("#C", "#A");
+		expect(await page.innerText("body")).toBe("C\nA\nB");
+	});
+
+	test("insert after", async ({ page }) => {
 		await page.evaluate(setup, undefined);
 		await page.dragAndDrop("#A", "#C");
 		expect(await page.innerText("body")).toBe("B\nC\nA");
@@ -105,11 +115,17 @@ test.describe("dragSortContext", () => {
 
 	test("unregister", async ({ page }) => {
 		await page.evaluate(setup, undefined);
-		await page.evaluate(() => {
-			const c = document.getElementById("C");
-			(window as any)._ctx.unregister(c);
-		});
+		await page.evaluate(unregister, "C");
+
 		await page.dragAndDrop("#A", "#C");
+		expect(await page.innerText("body")).toBe("A\nB\nC");
+	});
+
+	test("unregister 2", async ({ page }) => {
+		await page.evaluate(setup, undefined);
+		await page.evaluate(unregister, "C");
+
+		await page.dragAndDrop("#C", "#A");
 		expect(await page.innerText("body")).toBe("A\nB\nC");
 	});
 });
