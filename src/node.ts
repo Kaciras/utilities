@@ -15,6 +15,8 @@ export * as RPC from "./rpc.ts";
 
 export { default as LRUCache } from "./LRUCache.ts";
 
+const exitSignals: Signals[] = ["SIGTERM", "SIGINT", "SIGQUIT", "SIGHUP", "SIGBREAK"];
+
 /**
  * Add exit listener to be called when process receive terminating signals.
  *
@@ -25,6 +27,7 @@ export { default as LRUCache } from "./LRUCache.ts";
  * [node-graceful](https://github.com/mrbar42/node-graceful)
  *
  * @param listener listener function
+ * @see https://nodejs.org/dist/latest/docs/api/process.html#signal-events
  */
 export function onExit(listener: (signal: Signals) => unknown) {
 	let exiting = false;
@@ -38,12 +41,9 @@ export function onExit(listener: (signal: Signals) => unknown) {
 		}
 	}
 
-	const signals: Signals[] = [
-		"SIGTERM",
-		"SIGINT",
-		"SIGQUIT",
-		"SIGHUP",
-		"SIGBREAK",
-	];
-	signals.forEach(signal => process.on(signal, handle));
+	for (const signal of exitSignals) {
+		process.on(signal, handle);
+	}
+
+	return () => exitSignals.forEach(s => process.off(s, handle));
 }
