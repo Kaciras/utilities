@@ -91,6 +91,8 @@ async function generateBundle(input, typeOfWindow) {
 		dir: "lib",
 		chunkFileNames: "[name].js",
 	});
+
+	return bundle.close();
 }
 
 generateTypeDeclaration(["src/node.ts", "src/browser.ts"]);
