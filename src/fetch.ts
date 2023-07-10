@@ -1,4 +1,4 @@
-import { OnFulfilled, OnRejected } from "./lang.ts";
+import { identity, OnFulfilled, OnRejected } from "./lang.ts";
 
 /**
  * Fetch the resource into a File object, detect name and last modified from response.
@@ -69,8 +69,8 @@ async function checkStatus(fetching: Promise<Response>) {
  *     console.error(e.message);
  * }
  *
- * // Use `raw` to get the original response promise.
- * const unchecked = await client.get(...).raw;
+ * // Use `unchecked` to skip status checking.
+ * const unchecked = await client.get(...).unchecked;
  *
  * // Get the response body in JSON format.
  * const data = await client.get(...).json<Type>();
@@ -80,13 +80,16 @@ async function checkStatus(fetching: Promise<Response>) {
  */
 export class ResponseFacade implements Promise<Response> {
 
-	readonly raw: Promise<Response>;
-
+	private readonly raw: Promise<Response>;
 	private readonly check: Check;
 
 	constructor(raw: Promise<Response>, check: Check) {
 		this.raw = raw;
 		this.check = check;
+	}
+
+	get unchecked() {
+		return new ResponseFacade(this.raw, identity);
 	}
 
 	json<T = any>(): Promise<T> {

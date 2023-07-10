@@ -176,10 +176,8 @@ describe("FetchClient", () => {
 		await httpServer.forDelete("/posts/1").thenReply(451);
 
 		const response = client.delete("/posts/1");
-
-		expect((await response.raw).status).toBe(451);
-
 		const error = await response.catch(identity);
+
 		expect(error).toBeInstanceOf(FetchClientError);
 		expect(error.name).toBe("FetchClientError");
 		expect(error.code).toBe(451);
@@ -196,6 +194,14 @@ describe("FetchClient", () => {
 		const request = mockFetch.mock.calls[0][0] as Request;
 		expect(request.credentials).toBe("include");
 		expect(request.url).toBe("ftp://a.com/s.txt");
+	});
+
+	it("should support skip the status checking", async () => {
+		const client = new FetchClient({ baseURL: httpServer.url });
+		await httpServer.forDelete("/posts/1").thenReply(451);
+
+		const response = client.delete("/posts/1");
+		expect((await response.unchecked).status).toBe(451);
 	});
 
 	it("should return the JSON body", async () => {
