@@ -1,4 +1,4 @@
-import { AbortError, uniqueId } from "./misc.ts";
+import { uniqueId } from "./misc.ts";
 
 /*
  * There 2 syntax can be used for declare types of event map:
@@ -211,7 +211,7 @@ export function pubSub2ReqRes<
 		const tx = txMap.get(sessionId);
 		if (tx) {
 			txMap.delete(sessionId);
-			tx.reject(new AbortError("Timed out"));
+			tx.reject(new Error("Timed out"));
 		}
 	}
 

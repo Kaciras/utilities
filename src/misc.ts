@@ -23,14 +23,6 @@ export function uniqueId() {
 	return uniqueIdCounter += 1;
 }
 
-export class AbortError extends Error {
-
-	constructor(...args: Parameters<ErrorConstructor>) {
-		super(...args);
-		this.name = "AbortError";
-	}
-}
-
 /**
  * Get a Promise that will be fulfilled after specified time.
  * When canceled, the returned Promise will be rejected with an 'AbortError'.
@@ -42,9 +34,11 @@ export class AbortError extends Error {
  * @param signal An optional AbortSignal that can be used to cancel the scheduled sleep.
  */
 export function sleep(ms: number, signal = NeverAbort) {
-	return new Promise((resolve, reject) => {
-		signal.throwIfAborted();
+	return new Promise<void>((resolve, reject) => {
+		if (signal.aborted) {
+			reject(signal.reason);
+		}
 		setTimeout(resolve, ms);
-		signal.addEventListener("abort", () => reject(new AbortError()));
+		signal.addEventListener("abort", () => reject(signal.reason));
 	});
 }
