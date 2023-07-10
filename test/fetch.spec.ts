@@ -204,6 +204,14 @@ describe("FetchClient", () => {
 		expect((await response.unchecked).status).toBe(451);
 	});
 
+	it("should quick check the status", async () => {
+		const client = new FetchClient({ baseURL: httpServer.url });
+		await httpServer.forGet("/").thenReply(206);
+
+		const response = client.get("/");
+		await expect(response.hasStatus(206)).resolves.toBe(true);
+	});
+
 	it("should return the JSON body", async () => {
 		const client = new FetchClient();
 		const json = { foo: 11, bar: 22 };

@@ -92,6 +92,10 @@ export class ResponseFacade implements Promise<Response> {
 		return new ResponseFacade(this.raw, identity);
 	}
 
+	hasStatus(value: number) {
+		return this.then(x => x.status === value);
+	}
+
 	json<T = any>(): Promise<T> {
 		return this.then(x => x.json());
 	}
