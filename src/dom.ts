@@ -53,15 +53,19 @@ export function nthInChildren(el: Node, from?: number) {
 }
 
 /**
- * Add reorderable support for elements using drag-and-drop. Elements must be
- * children of same parent node.
- *
- * TODO: sort items between different parent.
+ * Reorder elements using drag-and-drop. Elements must be children of same parent.
  *
  * This function creates a "Drag context". Elements registered in the
  * same context can drag to swap with each other.
  *
  * You need add draggable="true" to the element if it is not default draggable.
+ *
+ * # Sort cross different parent?
+ * It's hard to decision insert before or after to target element. One solution is to
+ * calculate the pointer is in the first half or the second half of the target,
+ * but this is hard to implement and cannot handle the new added CSS property.
+ *
+ * https://github.com/SortableJS/Sortable/blob/7af63fdc5d7512e7f0b8abb10970d473521b31a5/src/Sortable.js#L161
  *
  * # Alternatives
  * [Sortable](https://github.com/SortableJS/Sortable)

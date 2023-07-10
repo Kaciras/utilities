@@ -1,6 +1,7 @@
 # Utilities
 
 ![npm](https://img.shields.io/npm/v/@kaciras/utilities)
+![npm type definitions](https://img.shields.io/npm/types/%40kaciras%2Futilities)
 [![Test](https://github.com/Kaciras/utilities/actions/workflows/test.yml/badge.svg)](https://github.com/Kaciras/utilities/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/Kaciras/utilities/branch/master/graph/badge.svg?token=LVN4Y86T39)](https://codecov.io/gh/Kaciras/utilities)
 

@@ -78,7 +78,7 @@ export function base64url(buffer: BufferSource | Buffer) {
 	}
 	/*
 	 * Don't use `String.fromCharCode(...new Uint8Array(buffer))`,
-	 * because it causes stackoverflow if the buffer larger than stack.
+	 * It will causes stackoverflow if the buffer is larger than the stack.
 	 */
 	const bytes = new Uint8Array(buffer as any);
 	const chars = Array.from(bytes, c => String.fromCodePoint(c));

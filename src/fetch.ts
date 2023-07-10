@@ -47,13 +47,7 @@ export class FetchClientError extends Error {
 	}
 }
 
-type Params = Record<string, any>;
-
-const defaultRequest: RequestInit = {
-	credentials: "include",
-};
-
-type Check = (task: Promise<Response>) => Promise<Response>;
+type Check = (promise: Promise<Response>) => Promise<Response>;
 
 async function checkStatus(fetching: Promise<Response>) {
 	const response = await fetching;
@@ -96,11 +90,11 @@ export class ResponseFacade implements Promise<Response> {
 	}
 
 	json<T = any>(): Promise<T> {
-		return this.then(r => r.json());
+		return this.then(x => x.json());
 	}
 
 	get location(): Promise<string> {
-		return this.then(r => r.headers.get("location")!);
+		return this.then(x => x.headers.get("location")!);
 	}
 
 	get [Symbol.toStringTag]() {
@@ -123,8 +117,16 @@ export class ResponseFacade implements Promise<Response> {
 	}
 }
 
-// The overload of `fetch` used in FetchClient.
-type FetchFn = (request: Request, init: RequestInit) => Promise<Response>;
+/**
+ * The overload of `fetch` that parameters are not undefined.
+ */
+type ResolvedFetch = (request: Request, init: RequestInit) => Promise<Response>;
+
+type Params = Record<string, any>;
+
+const defaultRequest: RequestInit = {
+	credentials: "include",
+};
 
 export interface FetchClientOptions {
 
@@ -142,7 +144,7 @@ export interface FetchClientOptions {
 	/**
 	 * Use custom implementation instead of `global.fetch`.
 	 */
-	fetch?: FetchFn;
+	fetch?: ResolvedFetch;
 
 	/**
 	 * Custom settings that you want to apply to each request.
@@ -165,7 +167,7 @@ export class FetchClient {
 	protected readonly init: RequestInit;
 	protected readonly baseURL: string;
 	protected readonly check: Check;
-	protected readonly doFetch: FetchFn;
+	protected readonly doFetch: ResolvedFetch;
 
 	constructor(options: FetchClientOptions = {}) {
 		this.init = options.init ?? defaultRequest;
