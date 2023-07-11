@@ -2,9 +2,31 @@ import { ItemOfIterable } from "./lang.ts";
 
 /**
  * A Map which allows multiple values for the same Key.
+ *
+ * Methods inherited from Map are used for entire array of values.
+ *
+ * @example
+ * const map = new MultiMap<string, number>();
+ * map.set("A", [11, 22]);	// A -> [11,22]
+ * map.add("B", 11);		// B -> [11]
+ * map.add("B", 22);		// B -> [11,22]
+ *
+ * map.size;				// 2
+ * map.count;				// 4
+ *
+ * map.has("A");			// true
+ * map.hasItem("A", 11);	// true
+ * map.hasItem("A", 33);	// false
+ *
+ * map.deleteItem("B", 33);	// false, B -> [11,22]
+ * map.deleteItem("B", 22);	// true,  B -> [11]
+ * map.delete("A");			// true,  A no longer exists.
  */
 export class MultiMap<K, V> extends Map<K, V[]> {
 
+	/**
+	 * The number of values in this Map.
+	 */
 	get count() {
 		let returnValue = 0;
 		for (const [, v] of this) {
@@ -13,10 +35,16 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 		return returnValue;
 	}
 
+	/**
+	 * Get the iterator of values.
+	 */
 	* items() {
 		for (const list of super.values()) yield* list;
 	}
 
+	/**
+	 * Adds new values to the array of the specified key.
+	 */
 	add(key: K, ...values: V[]) {
 		let list = super.get(key);
 		if (!list) {
@@ -25,6 +53,12 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 		list.push(...values);
 	}
 
+	/**
+	 * Remove the value from array of the specified key.
+	 *
+	 * @returns true if a value in the Map existed and has been removed,
+	 * 			or false if the value or the key does not exist.
+	 */
 	deleteItem(key: K, value: V) {
 		const list = super.get(key);
 		if (!list)
@@ -35,14 +69,16 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 			return false;
 
 		if (list.length === 1) {
-			super.delete(key);
+			return super.delete(key);
 		} else {
-			list.splice(i, 1);
+			return !!list.splice(i, 1).length;
 		}
-
-		return true;
 	}
 
+	/**
+	 * Returns a boolean indicating whether a value is exists in
+	 * array of the specified key or not.
+	 */
 	hasItem(key: K, value: V) {
 		const list = super.get(key);
 		return list ? list.indexOf(value) !== -1 : false;
@@ -104,8 +140,8 @@ export type CPRowArray<T extends CPSrcArray> =
 /**
  * Get the cartesian product generator of multiple arrays.
  *
- * For Iterable inputs, just convert it to an array. The recursive function will be
- * called multiple times at each index, we still need an array to hold the elements.
+ * For Iterable src, just convert it to an array. The recursive function will be
+ * called multiple times at each index, so we need to hold the elements.
  * e.g. `cartesianArray(Array.from(iterable))`.
  *
  * @example

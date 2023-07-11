@@ -15,9 +15,9 @@ export const NeverAbort: AbortSignal = {
 let uniqueIdCounter = 0;
 
 /**
- * Generate a unique positive number, each call returns a different value.
+ * Generate a positive number, each call returns a different value.
  *
- * This function more efficient than `Math.random()`.
+ * This function is more efficient than `Math.random()`.
  */
 export function uniqueId() {
 	return uniqueIdCounter += 1;

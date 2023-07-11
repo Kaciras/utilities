@@ -69,11 +69,11 @@ async function checkStatus(fetching: Promise<Response>) {
  *     console.error(e.message);
  * }
  *
- * // Use `unchecked` to skip status checking.
- * const unchecked = await client.get(...).unchecked;
- *
  * // Get the response body in JSON format.
  * const data = await client.get(...).json<Type>();
+ *
+ * // Get raw response without status checking.
+ * const response = await client.get(...).unchecked;
  *
  * // Get the Location header.
  * const location = await apiService.get(...).location;
@@ -88,14 +88,31 @@ export class ResponseFacade implements Promise<Response> {
 		this.check = check;
 	}
 
+	/**
+	 * Get the ResponseFacade for the same response, without any checks.
+	 */
 	get unchecked() {
 		return new ResponseFacade(this.raw, identity);
 	}
 
+	/**
+	 * Convenience method for status checking, resolved to true if the response
+	 * status is equals to the value, otherwise false.
+	 *
+	 * Note: The status may be checked before and throw an error,
+	 * to avoid this you can use `.unchecked.hasStatus(...)`.
+	 */
 	hasStatus(value: number) {
 		return this.then(x => x.status === value);
 	}
 
+	/**
+	 * Convenience method for parse the JSON body.
+	 *
+	 * Advantages over Response.json():
+	 * 1) Prefer generic `res.json<T>()` over casting `res.json() as T`.
+	 * 2) Using this method can reduce one then/await call.
+	 */
 	json<T = any>(): Promise<T> {
 		return this.then(x => x.json());
 	}
