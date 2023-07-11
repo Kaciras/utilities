@@ -1,3 +1,5 @@
+import { readFileSync } from "fs";
+import { parse as parseImports } from "es-module-lexer";
 import { expect, it } from "@jest/globals";
 import { Plugin, rollup } from "rollup";
 import isBuiltin from "is-builtin-module";
@@ -38,4 +40,8 @@ it.each([
 		plugins: [resolveBuiltinModule, importOnlyEntry(file)],
 	});
 	expect((await bundle.generate({})).output[0].code).toBe("\n");
+});
+
+it("should have no import in browser build", () => {
+	expect(parseImports(readFileSync("./lib/browser.js", "utf8"))[0]).toHaveLength(0);
 });

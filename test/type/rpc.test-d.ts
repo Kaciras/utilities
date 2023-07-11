@@ -3,7 +3,7 @@ import { expectType } from "tsd-lite";
 import { noop } from "../../src/lang.ts";
 import { createClient, probeClient, Remote, ResponseMessage, SendFn, VoidRemote } from "../../src/rpc.ts";
 
-const sender = 0 as unknown as () => ResponseMessage;
+const sender = noop as () => ResponseMessage;
 
 describe("SendFn", () => {
 	const syncResp: SendFn = (_, __) => ({} as ResponseMessage);

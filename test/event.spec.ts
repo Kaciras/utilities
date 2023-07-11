@@ -1,6 +1,5 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { noop } from "../src/lang.ts";
-import { AbortError } from "../src/misc.ts";
 import { MultiEventEmitter, pubSub2ReqRes, SingleEventEmitter } from "../src/event.ts";
 import { Stubs } from "./global.ts";
 
@@ -340,6 +339,6 @@ describe("pubSub2ReqRes", () => {
 		jest.advanceTimersByTime(101);
 
 		expect(txMap.size).toBe(0);
-		await expect(promise).rejects.toThrow(new AbortError("Timed out"));
+		await expect(promise).rejects.toThrow(new Error("Timed out"));
 	}));
 });
