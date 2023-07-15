@@ -2,18 +2,18 @@
 import process from "process";
 import Signals = NodeJS.Signals;
 
-export * from "./lang.ts";
-export * from "./collection.ts";
-export * from "./codec.ts";
-export * from "./crypto.ts";
-export * from "./event.ts";
-export * from "./fetch.ts";
-export * from "./format.ts";
-export * from "./misc.ts";
+export * from "./lang.js";
+export * from "./collection.js";
+export * from "./codec.js";
+export * from "./crypto.js";
+export * from "./event.js";
+export * from "./fetch.js";
+export * from "./format.js";
+export * from "./misc.js";
 
-export * as RPC from "./rpc.ts";
+export * as RPC from "./rpc.js";
 
-export { default as LRUCache } from "./LRUCache.ts";
+export { default as LRUCache } from "./LRUCache.js";
 
 const exitSignals: Signals[] = ["SIGTERM", "SIGINT", "SIGQUIT", "SIGHUP", "SIGBREAK"];
 

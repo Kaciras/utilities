@@ -1,6 +1,6 @@
 // noinspection LoopStatementThatDoesntLoopJS
 
-import { noop } from "./lang.ts";
+import { noop } from "./lang.js";
 
 type Dispose<T> = (value: T) => unknown;
 

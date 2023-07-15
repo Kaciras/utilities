@@ -1,4 +1,4 @@
-import { uniqueId } from "./misc.ts";
+import { uniqueId } from "./misc.js";
 
 /*
  * There 2 syntax can be used for declare types of event map:
