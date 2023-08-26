@@ -59,7 +59,7 @@ export class SingleEventEmitter<A extends any[] = any[]> {
 }
 
 /** Event name with its arguments */
-type EventMap = Record<never, any[]>;
+type EventMap = Record<string | symbol, any[]>;
 
 interface Default extends EventMap {
 	[event: string]: any[];

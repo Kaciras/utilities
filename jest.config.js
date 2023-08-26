@@ -14,8 +14,11 @@ export default {
 		"<rootDir>/test/*.spec.ts",
 		"<rootDir>/test/integration/*.ts",
 	],
-	//
-	// https://github.com/kulshekhar/ts-jest/issues/1057
+	/*
+	 * TS does not resolve ".ts" to ".d.ts" in declaration file,
+	 * so we still need ".js" extension in source.
+	 * https://github.com/kulshekhar/ts-jest/issues/1057
+	 */
 	moduleNameMapper: {
 		"^(\\.{1,2}/.*)\\.js$": "$1",
 	},

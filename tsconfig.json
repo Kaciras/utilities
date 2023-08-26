@@ -8,7 +8,7 @@
 		],
 		"outDir": "lib",
 		"emitDeclarationOnly": true,
-		"module": "ESNext",
+		"module": "NodeNext",
 		"moduleResolution": "NodeNext",
 		"declaration": true,
 		"strict": true,

@@ -82,7 +82,7 @@ describe("SingleEventEmitter", () => {
 	});
 });
 
-interface EventTypes {
+type EventTypes = {
 	foo: number[];
 	bar: number[];
 }
