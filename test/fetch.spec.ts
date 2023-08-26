@@ -6,7 +6,7 @@ import { FetchClient, FetchClientError, fetchFile, ResponseFacade } from "../src
 describe("fetchFile", () => {
 	const fetchStub = jest.spyOn(globalThis, "fetch");
 
-	afterAll(() => void fetchStub.mockReset());
+	afterAll(() => void fetchStub.mockRestore());
 
 	it("should throw error if status is not 2xx", () => {
 		fetchStub.mockResolvedValue(new Response("", { status: 429 }));
