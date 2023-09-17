@@ -10,7 +10,7 @@ test("saveFile", async ({ page }) => {
 	});
 
 	const download = await downloadPromise;
-	expect(await download.suggestedFilename()).toBe("baz.txt");
+	expect(download.suggestedFilename()).toBe("baz.txt");
 
 	const stream = await download.createReadStream();
 	expect(await text(stream!)).toBe("foobar");

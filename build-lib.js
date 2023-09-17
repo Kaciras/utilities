@@ -75,8 +75,8 @@ const resolveBuiltinModule = {
 	},
 };
 
-async function generateBundle(input, typeOfWindow) {
-	const bundle = await rollup({
+async function bundle(input, typeOfWindow) {
+	const build = await rollup({
 		input,
 		plugins: [
 			resolveBuiltinModule,
@@ -87,14 +87,15 @@ async function generateBundle(input, typeOfWindow) {
 		],
 	});
 
-	await bundle.write({
+	const { output: [chunk] } = await build.write({
 		dir: "lib",
 		chunkFileNames: "[name].js",
 	});
 
-	return bundle.close();
+	await build.close();
+	console.info(`Generated bundle: lib/${chunk.fileName}`);
 }
 
 generateTypeDeclaration(["src/node.ts", "src/browser.ts"]);
-await generateBundle("src/node.ts", "'undefined'");
-await generateBundle("src/browser.ts", "'object'");
+await bundle("src/node.ts", "'undefined'");
+await bundle("src/browser.ts", "'object'");

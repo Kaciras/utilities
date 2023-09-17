@@ -18,11 +18,9 @@ export default defineConfig({
 	projects: [
 		{
 			name: "chromium",
-			use: env.CI ? {
+			use: {
 				...devices["Desktop Chrome"],
-				channel: "chrome",
-			} : {
-				...devices["Desktop Chrome"],
+				channel: env.CI && "chrome",
 			},
 		},
 		// {
