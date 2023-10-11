@@ -141,11 +141,11 @@ export class ResponseFacade implements Promise<Response> {
 	}
 }
 
-/**
- * The overload of `fetch` that parameters are not undefined.
- */
-type ResolvedFetch = (request: Request, init: RequestInit) => Promise<Response>;
+type ResolvedFetch = (request: Request) => Promise<Response>;
 
+/**
+ * Query parameters of the URL, value will be converted to string using toString().
+ */
 type Params = Record<string, any>;
 
 const defaultRequest: RequestInit = {
@@ -229,9 +229,12 @@ export class FetchClient {
 			headers.set("content-type", "application/json");
 		}
 
-		const custom: RequestInit = { method, headers, body };
-		const request = new Request(baseURL + url, init);
-		return new ResponseFacade(doFetch(request, custom), check);
+		const custom: RequestInit = {
+			...init,
+			method, headers, body,
+		};
+		const request = new Request(baseURL + url, custom);
+		return new ResponseFacade(doFetch(request), check);
 	}
 
 	head(url: string, params?: Params) {
