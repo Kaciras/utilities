@@ -24,6 +24,18 @@ describe("MultiMap", () => {
 		expect(map.get(11)).toStrictEqual([11, 22, 11]);
 	});
 
+	it("should distribute item to keys", () => {
+		const map = new MultiMap();
+
+		map.distribute(["foo", "bar"], 11, 22);
+		map.distribute(["bar"], 33);
+
+		expect(Object.fromEntries(map)).toStrictEqual({
+			foo: [11, 22],
+			bar: [11, 22, 33],
+		});
+	});
+
 	it("should delete items", () => {
 		const map = new MultiMap();
 		expect(map.deleteItem(11, 11)).toBe(false);

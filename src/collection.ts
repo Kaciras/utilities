@@ -54,6 +54,15 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 	}
 
 	/**
+	 * Append values to each key.
+	 */
+	distribute(keys: K[], ...values: V[]) {
+		for (const key of keys) {
+			this.add(key, ...values);
+		}
+	}
+
+	/**
 	 * Remove the value from array of the specified key.
 	 *
 	 * @returns true if a value in the Map existed and has been removed,
