@@ -19,8 +19,17 @@ const groupRE = /[0-9.]+\s?([a-z]+)\s*/gi;
 export class UnitConvertor<T extends readonly string[]> {
 
 	private readonly name: string;
-	private readonly units: T;
-	private readonly fractions: number[];
+
+	/**
+	 * Supported units of this convertor, from small to large.
+	 */
+	readonly units: T;
+
+	/**
+	 * Parallel array of `units`, containing the magnification
+	 * relative to the smallest unit.
+	 */
+	readonly fractions: number[];
 
 	constructor(name: string, units: T, fractions: number[]) {
 		this.name = name;
@@ -47,11 +56,11 @@ export class UnitConvertor<T extends readonly string[]> {
 	 * Find the index of the largest fraction that is less than the value.
 	 *
 	 * @example
-	 * durationFmt.largest(1200_000);	// 2 (.units[2] === "ms")
-	 * durationFmt.largest(0);			// 0 (.units[0] === "ns")
-	 * durationFmt.largest(999e12);		// 6 (.units[6] === "d")
+	 * durationFmt.suit(1200_000);	// 2 (.units[2] === "ms")
+	 * durationFmt.suit(0);			// 0 (.units[0] === "ns")
+	 * durationFmt.suit(999e12);	// 6 (.units[6] === "d")
 	 */
-	private largest(value: number) {
+	suit(value: number) {
 		const s = this.fractions;
 		let i = 0;
 
@@ -86,7 +95,7 @@ export class UnitConvertor<T extends readonly string[]> {
 		const { units, fractions } = this;
 		let v = value * this.getFraction(unit);
 
-		const i = this.largest(Math.abs(v));
+		const i = this.suit(Math.abs(v));
 		v /= fractions[i];
 
 		return `${Number(v.toFixed(precision))} ${units[i]}`;
@@ -119,7 +128,7 @@ export class UnitConvertor<T extends readonly string[]> {
 		const groups: string[] = [];
 
 		// Backtrace to calculate each group.
-		for (let i = this.largest(v); i >= 0 && parts > 0; i--, parts -= 1) {
+		for (let i = this.suit(v); i >= 0 && parts > 0; i--, parts -= 1) {
 			const f = fractions[i];
 
 			// Avoid tailing zeros.
