@@ -45,6 +45,11 @@ export class UnitConvertor<T extends readonly string[]> {
 
 	/**
 	 * Find the index of the largest fraction that is less than the value.
+	 *
+	 * @example
+	 * durationFmt.largest(1200_000);	// 2 (.units[2] === "ms")
+	 * durationFmt.largest(0);			// 0 (.units[0] === "ns")
+	 * durationFmt.largest(999e12);		// 6 (.units[6] === "d")
 	 */
 	private largest(value: number) {
 		const s = this.fractions;
@@ -63,7 +68,12 @@ export class UnitConvertor<T extends readonly string[]> {
 	 * The result may lose precision and cannot be converted back.
 	 *
 	 * @example
-	 * dataSizeIEC.formatDiv(number)
+	 * durationFmt.formatDiv(0.1, "ns");		// "0.1 ns"
+	 * durationFmt.formatDiv(0, "s");			// "0 ns"
+	 * durationFmt.formatDiv(97215, "s", 4);	// "1.1252 d"
+	 * durationFmt.formatDiv(0.522, "h");		// "31.32 m"
+	 * durationFmt.formatDiv(0.522, "h", 1);	// "31.3 m"
+	 * durationFmt.formatDiv(0.522, "h", 99);	// "31.32 m"
 	 *
 	 * @param value Numeric value to use.
 	 * @param unit Unit ot the value.
@@ -88,13 +98,12 @@ export class UnitConvertor<T extends readonly string[]> {
 	 * The result may lose precision and cannot be converted back.
 	 *
 	 * @example
-	 * durationFmt.formatMod(0.1, "ns");			// "0ns"
-	 * durationFmt.formatMod(0, "s");				// "0s"
-	 * durationFmt.formatMod(10000, "d");			// "10000d"
-	 * durationFmt.formatMod(97215, "s", 4);		// "1d 3h 0m 15s"
-	 * durationFmt.formatMod(0.522, "h");			// "31m 19s"
-	 * durationFmt.formatMod(0.522, "h", 1);		// "31m"
-	 * durationFmt.formatMod(0.522, "h", 999);		// "31m 19s 200ms"
+	 * durationFmt.formatMod(0.1, "ns");		// "0ns"
+	 * durationFmt.formatMod(0, "s");			// "0s"
+	 * durationFmt.formatMod(97215, "s", 4);	// "1d 3h 0m 15s"
+	 * durationFmt.formatMod(0.522, "h");		// "31m 19s"
+	 * durationFmt.formatMod(0.522, "h", 1);	// "31m"
+	 * durationFmt.formatMod(0.522, "h", 99);	// "31m 19s 200ms"
 	 *
 	 * @param value Numeric value to use.
 	 * @param unit Unit ot the value.
