@@ -42,10 +42,14 @@ function loadIndexAndModule(route: Route, request: Request) {
 		path = decodeURIComponent(path);
 		path = path.replace(/\.js$/, ".ts");
 
-		transformed.set(url, output = compile(path));
+		output = compile(path);
+		transformed.set(url, output);
 	}
 
-	return route.fulfill({ body: output.source, contentType: "text/javascript" });
+	return route.fulfill({
+		body: output.source,
+		contentType: "text/javascript",
+	});
 }
 
 function compile(path: string): TransformedOutput {

@@ -125,7 +125,7 @@ export class MultiEventEmitter<T extends EventMap = Default> {
  */
 export type PostMessage<T = any> = (message: T, transfer: Transferable[]) => void;
 
-export interface PromiseController<T = unknown> {
+interface PromiseController<T = unknown> {
 
 	timer?: ReturnType<typeof setTimeout>;
 
@@ -134,7 +134,7 @@ export interface PromiseController<T = unknown> {
 	reject(reason: unknown): void;
 }
 
-export interface RequestResponseWrapper<T, R> {
+interface RequestResponseWrapper<T, R> {
 
 	txMap: Map<number, PromiseController<R>>;
 

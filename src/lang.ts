@@ -11,7 +11,7 @@ export const identity = <T>(v: T) => v;
 
 // https://stackoverflow.com/a/38642922/7065321
 // eslint-disable-next-line @typescript-eslint/ban-types
-type Constructor<T> = Function & { prototype: T }
+type ClassOf<T> = Function & { prototype: T }
 
 /**
  * Call a function silently. returns undefined if any error occurs.
@@ -47,7 +47,7 @@ export function silencePromise(value: any) {
  * @param value Provide properties for returned object.
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf
  */
-export function createInstance<P extends object | null, C>(parent: P | Constructor<P>, value: C) {
+export function createInstance<P extends object | null, C>(parent: P | ClassOf<P>, value: C) {
 	const proto = typeof parent === "function" ? parent.prototype : parent;
 	return Object.assign(Object.create(proto), value) as P extends null ? C : P & C;
 }
