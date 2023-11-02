@@ -96,7 +96,7 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 
 export type CPSrcObject = Record<string, Iterable<unknown>>;
 
-export type CPRowObject<T extends CPSrcObject> = {
+export type CPCellObject<T extends CPSrcObject> = {
 	-readonly [K in keyof T]: ItemOfIterable<T[K]>
 }
 
@@ -133,7 +133,7 @@ export function cartesianObject<const T extends CPSrcObject>(src: T) {
 		}
 	}
 
-	return recursive(0) as Iterable<CPRowObject<T>>;
+	return recursive(0) as Iterable<CPCellObject<T>>;
 }
 
 export type CPSrcArray = ReadonlyArray<Iterable<unknown>>;
@@ -143,7 +143,7 @@ type CastArray<T extends CPSrcArray> =
 		? REST extends CPSrcArray
 			? [ItemOfIterable<E>, ...CastArray<REST>] : never : T;
 
-export type CPRowArray<T extends CPSrcArray> =
+export type CPCellArray<T extends CPSrcArray> =
 	T extends readonly [any, ...any[]] ? CastArray<T> : T[number];
 
 /**
@@ -181,5 +181,5 @@ export function cartesianArray<const T extends CPSrcArray>(src: T) {
 		}
 	}
 
-	return recursive(0) as Iterable<CPRowArray<T>>;
+	return recursive(0) as Iterable<CPCellArray<T>>;
 }
