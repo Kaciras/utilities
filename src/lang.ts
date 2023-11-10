@@ -5,6 +5,8 @@ export type Awaitable<T> = T | Promise<T>;
 export type OnFulfilled<T, R> = ((value: T) => R | PromiseLike<R>) | null;
 export type OnRejected<R> = ((reason: any) => R | PromiseLike<R>) | null;
 
+export const alwaysTrue: (..._: unknown[]) => true = () => true;
+export const alwaysFalse: (..._: unknown[]) => false = () => false;
 export const noop: (..._: unknown[]) => void = () => {};
 
 export const identity = <T>(v: T) => v;

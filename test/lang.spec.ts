@@ -1,9 +1,15 @@
 import { describe, expect, it } from "@jest/globals";
-import { createInstance, identity, silencePromise, silentCall } from "../src/lang.ts";
+import { alwaysFalse, alwaysTrue, createInstance, identity, silencePromise, silentCall } from "../src/lang.ts";
 
-describe("identity", () => {
-	it("should return the argument", () => {
+describe("commonly used functions", () => {
+	it("identity", () => {
 		expect(identity(1122)).toBe(1122);
+	});
+	it("alwaysTrue", () => {
+		expect(alwaysTrue()).toBe(true);
+	});
+	it("alwaysFalse", () => {
+		expect(alwaysFalse()).toBe(false);
 	});
 });
 
