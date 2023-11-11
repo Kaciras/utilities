@@ -1,6 +1,13 @@
 /**
  * Detect if the pointer is inside the element.
  *
+ * @example
+ * const dialog = document.querySelector("dialog");
+ * dialog.showModal();
+ * dialog.onclick = e => {
+ *     if (!isPointerInside(e)) dialog.close();
+ * };
+ *
  * @param event You can only get pointer position in event handler.
  * @param el The element to check. if not present, use event.currentTarget.
  * @see https://stackoverflow.com/q/2601097/7065321
@@ -16,7 +23,7 @@ export function isPointerInside(event: MouseEvent, el?: Element) {
 }
 
 /**
- * Swap the positions of nodeA and nodeB in the DOM.
+ * Swap locations of nodeA and nodeB in the DOM.
  *
  * @see https://stackoverflow.com/a/10717422/7065321
  */
@@ -69,6 +76,13 @@ export function nthInChildren(el: Node, from?: number) {
  *
  * # Alternatives
  * [Sortable](https://github.com/SortableJS/Sortable)
+ *
+ * @example
+ * const context = dragSortContext();
+ * const list = document.querySelectorAll(".sort-list > a")
+ * for (const link of list){
+ *     context.register(link);
+ * }
  *
  * @param swap true to swap items with eachother rather than sorted.
  */

@@ -253,16 +253,14 @@ type Placeholders = Record<string, string | RegExp>;
  * [mustache.js](https://github.com/janl/mustache.js)
  *
  * @example
- * const template = <HTML text>;
+ * const template = "<html><head></head><body></body></html>";
  * const newComposite = compositor(template, {
- * 		metadata: "<!--ssr-metadata-->",
  * 		bodyAttrs: /(?<=<body.*?)(?=>)/s,
  * 		appHtml: /(?<=<body.*?>).*(?=<\/body>)/s,
  * });
  *
  * const c = newComposite();
  * c.put("appHtml", "<div id='app'>...</div>");
- * c.put("metadata", "<meta...>");
  * c.put("bodyAttrs", " class='ssr dark'");
  * return composite.toString();
  *

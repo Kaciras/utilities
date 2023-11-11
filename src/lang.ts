@@ -7,9 +7,11 @@ export type OnRejected<R> = ((reason: any) => R | PromiseLike<R>) | null;
 
 export const alwaysTrue: (..._: unknown[]) => true = () => true;
 export const alwaysFalse: (..._: unknown[]) => false = () => false;
-export const noop: (..._: unknown[]) => void = () => {};
 
+/** This function returns the first argument it receives. */
 export const identity = <T>(v: T) => v;
+
+export const noop: (..._: unknown[]) => void = () => {};
 
 // https://stackoverflow.com/a/38642922/7065321
 // eslint-disable-next-line @typescript-eslint/ban-types
