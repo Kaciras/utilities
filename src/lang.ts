@@ -13,6 +13,8 @@ export const identity = <T>(v: T) => v;
 
 export const noop: (..._: unknown[]) => void = () => {};
 
+export const AsyncFunction = async function () {}.constructor as typeof Function;
+
 // https://stackoverflow.com/a/38642922/7065321
 // eslint-disable-next-line @typescript-eslint/ban-types
 type ClassOf<T> = Function & { prototype: T }

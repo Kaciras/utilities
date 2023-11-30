@@ -1,5 +1,13 @@
 import { describe, expect, it } from "@jest/globals";
-import { alwaysFalse, alwaysTrue, createInstance, identity, silencePromise, silentCall } from "../src/lang.ts";
+import {
+	alwaysFalse,
+	alwaysTrue,
+	AsyncFunction,
+	createInstance,
+	identity,
+	silencePromise,
+	silentCall,
+} from "../src/lang.ts";
 
 describe("commonly used functions", () => {
 	it("identity", () => {
@@ -10,6 +18,17 @@ describe("commonly used functions", () => {
 	});
 	it("alwaysFalse", () => {
 		expect(alwaysFalse()).toBe(false);
+	});
+});
+
+describe("AsyncFunction", () => {
+	it("should not a global object", () => {
+		expect("AsyncFunction" in globalThis).toBe(false);
+	});
+	it("should compile JS code", () => {
+		const promise = Promise.resolve(11);
+		const fn = new AsyncFunction("x", "return await x");
+		return expect(fn(promise)).resolves.toBe(11);
 	});
 });
 
