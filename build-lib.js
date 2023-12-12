@@ -4,7 +4,7 @@ import ts from "typescript";
 import { rollup } from "rollup";
 import swc from "@swc/core";
 import replace from "@rollup/plugin-replace";
-import isBuiltin from "is-builtin-module";
+import isBuiltinModule from "is-builtin-module";
 
 /**
  * Generate type declaration files. This function does not throw any error
@@ -63,23 +63,11 @@ const swcTransform = {
 	},
 };
 
-// Tells Rollup that Node builtin modules are side-effect free.
-const resolveBuiltinModule = {
-	name: "node-builtin",
-	resolveId(id) {
-		if (isBuiltin(id)) return {
-			id,
-			external: true,
-			moduleSideEffects: false,
-		};
-	},
-};
-
 async function bundle(input, typeOfWindow) {
 	const build = await rollup({
 		input,
+		external: isBuiltinModule,
 		plugins: [
-			resolveBuiltinModule,
 			swcTransform,
 			replace({
 				"typeof window": typeOfWindow,
