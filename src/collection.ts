@@ -1,5 +1,10 @@
 import { ItemOfIterable } from "./lang.js";
 
+export function firstItem<T>(iterable: Iterable<T>) {
+	// noinspection LoopStatementThatDoesntLoopJS
+	for (const item of iterable) return item;
+}
+
 /**
  * A Map which allows multiple values for the same Key.
  *

@@ -1,5 +1,14 @@
 import { describe, expect, it } from "@jest/globals";
-import { cartesianArray, cartesianObject, MultiMap } from "../src/collection.ts";
+import { cartesianArray, cartesianObject, firstItem, MultiMap } from "../src/collection.ts";
+
+describe("firstItem", () => {
+	it("should work with empty iterable", () => {
+		expect(firstItem(new Map())).toBeUndefined();
+	});
+	it("should return the first item", () => {
+		expect(firstItem(new Set([11, 22]))).toBe(11);
+	});
+});
 
 describe("MultiMap", () => {
 	it("should calc correct count", () => {
