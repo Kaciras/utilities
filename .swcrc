@@ -3,6 +3,6 @@
 		"parser": {
 			"syntax": "typescript"
 		},
-		"target": "es2022"
+		"target": "esnext"
 	}
 }

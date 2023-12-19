@@ -2,7 +2,7 @@ import { readFileSync } from "fs";
 import { parse as parseImports } from "es-module-lexer";
 import { expect, it } from "@jest/globals";
 import { Plugin, rollup } from "rollup";
-import isBuiltin from "is-builtin-module";
+import isBuiltinModule from "is-builtin-module";
 import { noop } from "../../src/lang.ts";
 
 function importOnlyEntry(file: string): Plugin {
@@ -23,7 +23,7 @@ function importOnlyEntry(file: string): Plugin {
 const resolveBuiltinModule: Plugin = {
 	name: "node-builtin",
 	resolveId(id: string) {
-		if (isBuiltin(id)) return {
+		if (isBuiltinModule(id)) return {
 			id,
 			external: true,
 			moduleSideEffects: false,

@@ -1,5 +1,10 @@
 import { ItemOfIterable } from "./lang.js";
 
+/**
+ * Get the first item of the iterable object, or undefined it's empty.
+ *
+ * NOTE: Code after the first yield in Generator will not be executed.
+ */
 export function firstItem<T>(iterable: Iterable<T>) {
 	// noinspection LoopStatementThatDoesntLoopJS
 	for (const item of iterable) return item;
@@ -12,9 +17,9 @@ export function firstItem<T>(iterable: Iterable<T>) {
  *
  * @example
  * const map = new MultiMap<string, number>();
- * map.set("A", [11, 22]);	// A -> [11,22]
+ * map.set("A", [11, 22]);	// A -> [11, 22]
  * map.add("B", 11);		// B -> [11]
- * map.add("B", 22);		// B -> [11,22]
+ * map.add("B", 22);		// B -> [11, 22]
  *
  * map.size;				// 2
  * map.count;				// 4
@@ -23,7 +28,7 @@ export function firstItem<T>(iterable: Iterable<T>) {
  * map.hasItem("A", 11);	// true
  * map.hasItem("A", 33);	// false
  *
- * map.deleteItem("B", 33);	// false, B -> [11,22]
+ * map.deleteItem("B", 33);	// false, B -> [11, 22]
  * map.deleteItem("B", 22);	// true,  B -> [11]
  * map.delete("A");			// true,  A no longer exists.
  */
@@ -61,7 +66,7 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 	/**
 	 * Append values to each key.
 	 */
-	distribute(keys: K[], ...values: V[]) {
+	distribute(keys: Iterable<K>, ...values: V[]) {
 		for (const key of keys) {
 			this.add(key, ...values);
 		}
@@ -85,7 +90,7 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 		if (list.length === 1) {
 			return super.delete(key);
 		} else {
-			return !!list.splice(i, 1).length;
+			return !!list.splice(i, 1);
 		}
 	}
 
