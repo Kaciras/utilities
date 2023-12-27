@@ -169,7 +169,7 @@ type ResIdMixin = object & { r?: number };
 export function pubSub2ReqRes<
 	T extends ReqIdMixin = any,
 	R extends ResIdMixin = any,
->(publish: PostMessage<T>, timeout = 10e3) {
+>(publish: PostMessage<T>, timeout = 0) {
 	const txMap = new Map<number, PromiseController>();
 
 	function receive(message: R) {
@@ -211,7 +211,7 @@ export function pubSub2ReqRes<
 		const tx = txMap.get(sessionId);
 		if (tx) {
 			txMap.delete(sessionId);
-			tx.reject(new Error("Timed out"));
+			tx.reject(new Error("Receiving message timed out"));
 		}
 	}
 

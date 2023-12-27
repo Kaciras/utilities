@@ -314,7 +314,7 @@ describe("pubSub2ReqRes", () => {
 	}));
 
 	it("should not prevent Node from exit", () => {
-		const { txMap, request } = pubSub2ReqRes(noop);
+		const { txMap, request } = pubSub2ReqRes(noop, 1e4);
 		request({});
 
 		const { value } = txMap.values().next();
@@ -339,6 +339,6 @@ describe("pubSub2ReqRes", () => {
 		jest.advanceTimersByTime(101);
 
 		expect(txMap.size).toBe(0);
-		await expect(promise).rejects.toThrow(new Error("Timed out"));
+		await expect(promise).rejects.toThrow(new Error("Receiving message timed out"));
 	}));
 });
