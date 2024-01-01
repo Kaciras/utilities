@@ -4,10 +4,13 @@ import { expectType } from "tsd-lite";
 import { cartesianArray, cartesianObject } from "../../src/collection.ts";
 
 describe("cartesianObject", () => {
+	const symbolKey = Symbol();
+
 	expectType<Iterable<{
 		foo: 1 | 2;
 		bar: string[] | "B";
 	}>>(cartesianObject({
+		[symbolKey]: [33, 44],
 		foo: [1, 2],
 		bar: [new Array<string>(), "B"],
 	}));

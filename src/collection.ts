@@ -1,7 +1,7 @@
 import { ItemOfIterable } from "./lang.js";
 
 /**
- * Get the first item of the iterable object, or undefined it's empty.
+ * Get the first item of the iterable object, or undefined if it's empty.
  *
  * NOTE: Code after the first yield in Generator will not be executed.
  */
@@ -107,11 +107,13 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 export type CPSrcObject = Record<string, Iterable<unknown>>;
 
 export type CPCellObject<T extends CPSrcObject> = {
-	-readonly [K in keyof T]: ItemOfIterable<T[K]>
+	-readonly [K in Exclude<keyof T, symbol>]: ItemOfIterable<T[K]>
 }
 
 /**
  * Get the cartesian product generator of objects.
+ *
+ * NOTE: properties with symbol keys are ignored.
  *
  * @example
  * cartesianObject({

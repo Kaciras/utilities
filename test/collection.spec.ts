@@ -116,18 +116,27 @@ describe("cartesianObject", () => {
 		expect(Object.keys(params[0])).toHaveLength(0);
 	});
 
+	it("should ignore symbol keys", () => {
+		const params = Array.from(cartesianObject({
+			a: [0, 1],
+			[Symbol()]: [2, 3, 4],
+		}));
+		expect(params).toStrictEqual([{ a: 0 }, { a: 1 }]);
+	});
+
 	it("should works", () => {
 		const params = cartesianObject({
 			a: [0, 1],
-			b: new Set([20, 30, 40]),
+			b: [2],
+			c: new Set([3, 4, 5]),
 		});
 		const expected = expect.arrayContaining([
-			{ a: 0, b: 20 },
-			{ a: 0, b: 30 },
-			{ a: 0, b: 40 },
-			{ a: 1, b: 20 },
-			{ a: 1, b: 30 },
-			{ a: 1, b: 40 },
+			{ a: 0, b: 2, c: 3 },
+			{ a: 0, b: 2, c: 4 },
+			{ a: 0, b: 2, c: 5 },
+			{ a: 1, b: 2, c: 3 },
+			{ a: 1, b: 2, c: 4 },
+			{ a: 1, b: 2, c: 5 },
 		]);
 		expect(Array.from(params)).toEqual(expected);
 	});
