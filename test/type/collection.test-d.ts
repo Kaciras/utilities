@@ -24,6 +24,23 @@ describe("cartesianObject", () => {
 	}));
 
 	expectType<Iterable<{}>>(cartesianObject({}));
+
+	expectType<Iterable<{
+		foo: 1 | 2;
+		bar: "A" | "B";
+	}>>(cartesianObject([
+		["foo", [1, 2]],
+		["bar", ["A", "B"]],
+	]));
+
+	// @ts-expect-error
+	cartesianObject([1, 2, 3]);
+	// @ts-expect-error
+	cartesianObject([["1", "2", "3"]]);
+	// @ts-expect-error
+	cartesianObject([[1, [2, 3]]]);
+	// @ts-expect-error
+	cartesianObject([["1"], ["2"], ["3"]]);
 });
 
 describe("cartesianArray", () => {

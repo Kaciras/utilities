@@ -151,6 +151,25 @@ describe("cartesianObject", () => {
 	});
 });
 
+describe("cartesianObject with entries", () => {
+	it("should works", () => {
+		const params = cartesianObject([
+			["a", [0, 1]],
+			["b", [2]],
+			["c", [3, 4, 5]],
+		]);
+		const expected = expect.arrayContaining([
+			{ a: 0, b: 2, c: 3 },
+			{ a: 0, b: 2, c: 4 },
+			{ a: 0, b: 2, c: 5 },
+			{ a: 1, b: 2, c: 3 },
+			{ a: 1, b: 2, c: 4 },
+			{ a: 1, b: 2, c: 5 },
+		]);
+		expect(Array.from(params)).toEqual(expected);
+	});
+});
+
 describe("cartesianArray", () => {
 	it("should support empty fields", () => {
 		const iter = cartesianArray([

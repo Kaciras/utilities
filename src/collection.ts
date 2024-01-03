@@ -106,9 +106,29 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 
 export type CPSrcObject = Record<string, Iterable<unknown>>;
 
-export type CPCellObject<T extends CPSrcObject> = {
+export type CPSrcEntries = ReadonlyArray<readonly [string, readonly unknown[]]>;
+
+// https://fettblog.eu/typescript-union-to-intersection
+type UnionToIntersection<U> =
+	(U extends any ? (x: U) => void : never) extends ((x: infer I) => void) ? I : never;
+
+// https://stackoverflow.com/a/53994079
+type Merge<T> = unknown & { [P in keyof T]: T[P] };
+
+type CPCellObject<T extends CPSrcObject> = {
 	-readonly [K in Exclude<keyof T, symbol>]: ItemOfIterable<T[K]>
 }
+
+type FromEntries<T> = T extends ReadonlyArray<infer E>
+	? E extends readonly [infer K, infer V]
+		? { [P in Extract<K, string>]: ItemOfIterable<V> } : never : never;
+
+type CPCellEntries<T> = Merge<UnionToIntersection<FromEntries<T>>>;
+
+type CPObjectSrc = CPSrcObject | CPSrcEntries;
+
+export type CPObjectCell<T extends CPObjectSrc> = T extends CPSrcObject
+	? CPCellObject<T> : CPCellEntries<T>;
 
 /**
  * Get the cartesian product generator of objects.
@@ -129,8 +149,8 @@ export type CPCellObject<T extends CPSrcObject> = {
  * { a: 1, b: 2, c: 4 }
  * { a: 1, b: 2, c: 5 }
  */
-export function cartesianObject<const T extends CPSrcObject>(src: T) {
-	const entries = Object.entries(src);
+export function cartesianObject<const T extends CPObjectSrc>(src: T) {
+	const entries = Array.isArray(src) ? src : Object.entries(src);
 	const temp = {} as Record<string, unknown>;
 
 	function* recursive(index: number): Iterable<unknown> {
@@ -145,7 +165,7 @@ export function cartesianObject<const T extends CPSrcObject>(src: T) {
 		}
 	}
 
-	return recursive(0) as Iterable<CPCellObject<T>>;
+	return recursive(0) as Iterable<CPObjectCell<T>>;
 }
 
 export type CPSrcArray = ReadonlyArray<Iterable<unknown>>;
