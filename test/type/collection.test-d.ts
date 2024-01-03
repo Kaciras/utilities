@@ -27,10 +27,10 @@ describe("cartesianObject", () => {
 
 	expectType<Iterable<{
 		foo: 1 | 2;
-		bar: "A" | "B";
+		bar: string[] | "B";
 	}>>(cartesianObject([
 		["foo", [1, 2]],
-		["bar", ["A", "B"]],
+		["bar", [new Array<string>(), "B"]],
 	]));
 
 	// @ts-expect-error

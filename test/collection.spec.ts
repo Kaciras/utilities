@@ -156,7 +156,7 @@ describe("cartesianObject with entries", () => {
 		const params = cartesianObject([
 			["a", [0, 1]],
 			["b", [2]],
-			["c", [3, 4, 5]],
+			["c", new Set([3, 4, 5])],
 		]);
 		const expected = expect.arrayContaining([
 			{ a: 0, b: 2, c: 3 },

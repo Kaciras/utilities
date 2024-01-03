@@ -1,4 +1,4 @@
-import { ItemOfIterable } from "./lang.js";
+import { ItemOfIterable, UnionToIntersection } from "./lang.js";
 
 /**
  * Get the first item of the iterable object, or undefined if it's empty.
@@ -106,11 +106,9 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 
 export type CPSrcObject = Record<string, Iterable<unknown>>;
 
-export type CPSrcEntries = ReadonlyArray<readonly [string, readonly unknown[]]>;
+export type CPSrcEntries = ReadonlyArray<readonly [string, Iterable<unknown>]>;
 
-// https://fettblog.eu/typescript-union-to-intersection
-type UnionToIntersection<U> =
-	(U extends any ? (x: U) => void : never) extends ((x: infer I) => void) ? I : never;
+type CPObjectInput = CPSrcObject | CPSrcEntries;
 
 // https://stackoverflow.com/a/53994079
 type Merge<T> = unknown & { [P in keyof T]: T[P] };
@@ -125,15 +123,13 @@ type FromEntries<T> = T extends ReadonlyArray<infer E>
 
 type CPCellEntries<T> = Merge<UnionToIntersection<FromEntries<T>>>;
 
-type CPObjectSrc = CPSrcObject | CPSrcEntries;
-
-export type CPObjectCell<T extends CPObjectSrc> = T extends CPSrcObject
+export type CartesianObjectCell<T extends CPObjectInput> = T extends CPSrcObject
 	? CPCellObject<T> : CPCellEntries<T>;
 
 /**
  * Get the cartesian product generator of objects.
  *
- * NOTE: properties with symbol keys are ignored.
+ * NOTE: properties with symbol keys are ignored if the src is an object.
  *
  * @example
  * cartesianObject({
@@ -148,8 +144,14 @@ export type CPObjectCell<T extends CPObjectSrc> = T extends CPSrcObject
  * { a: 1, b: 2, c: 3 }
  * { a: 1, b: 2, c: 4 }
  * { a: 1, b: 2, c: 5 }
+ * // Also support for entries, the following returns same result:
+ * cartesianObject([
+ *     ["a", [0, 1]],
+ *     ["b", [2]],
+ *     ["c", new Set([3, 4, 5])],
+ * ]);
  */
-export function cartesianObject<const T extends CPObjectSrc>(src: T) {
+export function cartesianObject<const T extends CPObjectInput>(src: T) {
 	const entries = Array.isArray(src) ? src : Object.entries(src);
 	const temp = {} as Record<string, unknown>;
 
@@ -165,17 +167,17 @@ export function cartesianObject<const T extends CPObjectSrc>(src: T) {
 		}
 	}
 
-	return recursive(0) as Iterable<CPObjectCell<T>>;
+	return recursive(0) as Iterable<CartesianObjectCell<T>>;
 }
 
-export type CPSrcArray = ReadonlyArray<Iterable<unknown>>;
+export type CPArrayInput = ReadonlyArray<Iterable<unknown>>;
 
-type CastArray<T extends CPSrcArray> =
+type CastArray<T extends CPArrayInput> =
 	T extends readonly [infer E, ...infer REST]
-		? REST extends CPSrcArray
+		? REST extends CPArrayInput
 			? [ItemOfIterable<E>, ...CastArray<REST>] : never : T;
 
-export type CPCellArray<T extends CPSrcArray> =
+export type CartesianArrayCell<T extends CPArrayInput> =
 	T extends readonly [any, ...any[]] ? CastArray<T> : T[number];
 
 /**
@@ -199,7 +201,7 @@ export type CPCellArray<T extends CPSrcArray> =
  * [1, 2, 4]
  * [1, 2, 5]
  */
-export function cartesianArray<const T extends CPSrcArray>(src: T) {
+export function cartesianArray<const T extends CPArrayInput>(src: T) {
 	const temp = new Array<unknown>(src.length);
 
 	function* recursive(index: number): Iterable<unknown> {
@@ -213,5 +215,5 @@ export function cartesianArray<const T extends CPSrcArray>(src: T) {
 		}
 	}
 
-	return recursive(0) as Iterable<CPCellArray<T>>;
+	return recursive(0) as Iterable<CartesianArrayCell<T>>;
 }
