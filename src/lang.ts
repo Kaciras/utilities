@@ -1,13 +1,11 @@
-export type ItemOfIterable<T> = T extends Iterable<infer E> ? E : never;
+export type ItemOfIterable<T> = T extends Iterable<infer E>
+	? E
+	: T extends AsyncIterable<infer E> ? E : never;
 
 export type Awaitable<T> = T | Promise<T>;
 
 export type OnFulfilled<T, R> = ((value: T) => R | PromiseLike<R>) | null;
 export type OnRejected<R> = ((reason: any) => R | PromiseLike<R>) | null;
-
-// https://fettblog.eu/typescript-union-to-intersection
-export type UnionToIntersection<U> =
-	(U extends any ? (x: U) => void : never) extends ((x: infer I) => void) ? I : never;
 
 export const alwaysTrue: (..._: unknown[]) => true = () => true;
 export const alwaysFalse: (..._: unknown[]) => false = () => false;

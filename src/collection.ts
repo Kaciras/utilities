@@ -1,4 +1,4 @@
-import { ItemOfIterable, UnionToIntersection } from "./lang.js";
+import { ItemOfIterable } from "./lang.js";
 
 /**
  * Get the first item of the iterable object, or undefined if it's empty.
@@ -110,21 +110,13 @@ export type CPSrcEntries = ReadonlyArray<readonly [string, Iterable<unknown>]>;
 
 type CPObjectInput = CPSrcObject | CPSrcEntries;
 
-// https://stackoverflow.com/a/53994079
-type Merge<T> = unknown & { [P in keyof T]: T[P] };
-
 type CPCellObject<T extends CPSrcObject> = {
 	-readonly [K in Exclude<keyof T, symbol>]: ItemOfIterable<T[K]>
 }
 
-type FromEntries<T> = T extends ReadonlyArray<infer E>
-	? E extends readonly [infer K, infer V]
-		? { [P in Extract<K, string>]: ItemOfIterable<V> } : never : never;
+type CPCellEntries<T> = T extends CPSrcEntries ? { [K in T[number] as K[0]]: ItemOfIterable<K[1]> } : never;
 
-type CPCellEntries<T> = Merge<UnionToIntersection<FromEntries<T>>>;
-
-export type CartesianObjectCell<T extends CPObjectInput> = T extends CPSrcObject
-	? CPCellObject<T> : CPCellEntries<T>;
+export type CartesianObjectCell<T> = T extends CPSrcObject ? CPCellObject<T> : CPCellEntries<T>;
 
 /**
  * Get the cartesian product generator of objects.
@@ -144,6 +136,7 @@ export type CartesianObjectCell<T extends CPObjectInput> = T extends CPSrcObject
  * { a: 1, b: 2, c: 3 }
  * { a: 1, b: 2, c: 4 }
  * { a: 1, b: 2, c: 5 }
+ *
  * // Also support for entries, the following returns same result:
  * cartesianObject([
  *     ["a", [0, 1]],
@@ -200,6 +193,13 @@ export type CartesianArrayCell<T extends CPArrayInput> =
  * [1, 2, 3]
  * [1, 2, 4]
  * [1, 2, 5]
+ *
+ * // returns an empty Generator if a row is empty.
+ * cartesianArray([
+ *     [0, 1],
+ *     [],
+ *     new Set([3, 4, 5]),
+ * ]);
  */
 export function cartesianArray<const T extends CPArrayInput>(src: T) {
 	const temp = new Array<unknown>(src.length);

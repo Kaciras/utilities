@@ -319,8 +319,7 @@ function probeReceive(obj: any, callback: any) {
 }
 
 /**
- * Serve RPC requests, the post & receive methods are auto-detected
- * from the object.
+ * Serve RPC requests, the post & receive methods are auto-detected from parameters.
  *
  * @param target The service object contains methods that client can use.
  * @param sender The object contains receive method.
@@ -335,8 +334,7 @@ export function probeServer(target: any, receiver: object, sender?: object | fal
 }
 
 /**
- * Create a RPC client, the post & receive methods are auto-detected
- * from the sender & receiver.
+ * Create an RPC client, the post & receive methods are auto-detected from parameters.
  *
  * @param sender The object provides the post method.
  * @param receiver The object provides the receive method, default is same as the sender.

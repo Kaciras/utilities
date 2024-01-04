@@ -199,12 +199,12 @@ export class UnitConvertor<T extends readonly string[]> {
 export const durationFmt = new UnitConvertor("time", TIME_UNITS, TIME_FRACTIONS);
 
 /**
- * Convert between bytes and human-readable string using SI prefixes.
+ * Convert between bytes and human-readable string using SI (1000) prefixes.
  */
 export const dataSizeSI = new UnitConvertor("data size", SIZE_UNITS, SIZE_FRACTIONS_SI);
 
 /**
- * Convert between bytes and human-readable string using IEC prefixes.
+ * Convert between bytes and human-readable string using IEC (1024) prefixes.
  */
 export const dataSizeIEC = new UnitConvertor("data size", SIZE_UNITS, SIZE_FRACTIONS_IEC);
 
