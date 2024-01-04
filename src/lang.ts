@@ -2,7 +2,7 @@ export type ItemOfIterable<T> = T extends Iterable<infer E>
 	? E
 	: T extends AsyncIterable<infer E> ? E : never;
 
-export type Awaitable<T> = T | Promise<T>;
+export type Awaitable<T> = T | PromiseLike<T>;
 
 export type OnFulfilled<T, R> = ((value: T) => R | PromiseLike<R>) | null;
 export type OnRejected<R> = ((reason: any) => R | PromiseLike<R>) | null;
