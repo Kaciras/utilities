@@ -6,9 +6,11 @@
  */
 
 //@formatter:off
-const SIZE_UNITS			= ["B", "KB",  "MB",  "GB",  "TB",  "PB",  "EB",  "ZB",  "YB"] as const;
+const SIZE_UNITS_SI			= ["B", "KB",  "MB",  "GB",  "TB",  "PB",  "EB",  "ZB",  "YB"] as const;
 const SIZE_FRACTIONS_SI		= [ 1,  1e3,   1e6,   1e9,   1e12,  1e15,  1e18,  1e21,  1e24];
-const SIZE_FRACTIONS_IEC	= [ 1,  2**10, 2**20, 2**30, 2**40, 2**50, 2**60, 2**70, 2**80];
+
+const SIZE_UNITS_IEC		= ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"] as const;
+const SIZE_FRACTIONS_IEC	= [ 1,  1024,  2**20, 2**30, 2**40, 2**50, 2**60, 2**70, 2**80];
 
 const TIME_UNITS			= ["ns", "us", "ms", "s",  "m",   "h",   "d"] as const;
 const TIME_FRACTIONS		= [ 1,   1e3,  1e6,  1e9,  6e10, 36e11, 864e11];
@@ -201,12 +203,12 @@ export const durationFmt = new UnitConvertor("time", TIME_UNITS, TIME_FRACTIONS)
 /**
  * Convert between bytes and human-readable string using SI (1000) prefixes.
  */
-export const dataSizeSI = new UnitConvertor("data size", SIZE_UNITS, SIZE_FRACTIONS_SI);
+export const dataSizeSI = new UnitConvertor("data size", SIZE_UNITS_SI, SIZE_FRACTIONS_SI);
 
 /**
  * Convert between bytes and human-readable string using IEC (1024) prefixes.
  */
-export const dataSizeIEC = new UnitConvertor("data size", SIZE_UNITS, SIZE_FRACTIONS_IEC);
+export const dataSizeIEC = new UnitConvertor("data size", SIZE_UNITS_IEC, SIZE_FRACTIONS_IEC);
 
 type EllipsisPos = "begin" | "mid" | "end";
 

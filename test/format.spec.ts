@@ -18,15 +18,15 @@ describe("formatDiv", () => {
 		[0.7, "0.7 B"],
 		[10.1, "10.1 B"],
 		[1023, "1023 B"],
-		[1025, "1 KB"],
-		[1.2089258196146292e+24, "1 YB"],
-		[1.2089258196146292e+25, "10 YB"],
+		[1025, "1 KiB"],
+		[1.2089258196146292e+24, "1 YiB"],
+		[1.2089258196146292e+25, "10 YiB"],
 
 		[-0, "0 B"],
 		[-0.7, "-0.7 B"],
 		[-10.1, "-10.1 B"],
 		[-1023, "-1023 B"],
-		[-1025, "-1 KB"],
+		[-1025, "-1 KiB"],
 	];
 	it.each(cases)("should format bytes %s", (number, string) => {
 		expect(dataSizeIEC.formatDiv(number)).toBe(string);
@@ -100,7 +100,7 @@ describe("UnitConvertor.parse", () => {
 	});
 
 	it("should throw on unknown unit", () => {
-		expect(() => dataSizeIEC.parse("1023 SB")).toThrow(new Error("Unknown data size unit: SB"));
+		expect(() => dataSizeIEC.parse("1023 SiB")).toThrow(new Error("Unknown data size unit: SiB"));
 	});
 
 	it("should throw error with invalid target unit", () => {
@@ -133,8 +133,8 @@ describe("UnitConvertor.parse", () => {
 		[1023, "1023 B"],
 		[1023, "1023B"],
 		[1023, "+1023B"],
-		[1024, "1 KB"],
-		[1.2089258196146292e+24, "1 YB"],
+		[1024, "1 KiB"],
+		[1.2089258196146292e+24, "1 YiB"],
 
 		[-0.7, "-0.7 B"],
 		[-10.1, "-10.1 B"],
