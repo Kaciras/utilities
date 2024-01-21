@@ -6,14 +6,15 @@
  */
 
 //@formatter:off
-const SIZE_UNITS_SI			= ["B", "KB",  "MB",  "GB",  "TB",  "PB",  "EB",  "ZB",  "YB"] as const;
-const SIZE_FRACTIONS_SI		= [ 1,  1e3,   1e6,   1e9,   1e12,  1e15,  1e18,  1e21,  1e24];
+const SIZE_UNITS_SI		= ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"] as const;
+const DECIMAL_SYMBOLS	= ["",  "K",  "M",  "G",  "T",  "P",  "E",  "Z",  "Y"] as const;
+const DECIMAL_FRACTIONS	= [ 1,  1e3,  1e6,  1e9,  1e12,  1e15, 1e18, 1e21, 1e24];
 
-const SIZE_UNITS_IEC		= ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"] as const;
-const SIZE_FRACTIONS_IEC	= [ 1,  1024,  2**20, 2**30, 2**40, 2**50, 2**60, 2**70, 2**80];
+const SIZE_UNITS_IEC	= ["B", "KiB",  "MiB",  "GiB",  "TiB",  "PiB",  "EiB",  "ZiB",  "YiB"] as const;
+const BINARY_FRACTIONS	= [ 1,  1024,   2**20,  2**30,  2**40,  2**50,  2**60,  2**70,  2**80];
 
-const TIME_UNITS			= ["ns", "us", "ms", "s",  "m",   "h",   "d"] as const;
-const TIME_FRACTIONS		= [ 1,   1e3,  1e6,  1e9,  6e10, 36e11, 864e11];
+const TIME_UNITS		= ["ns", "us", "ms", "s",  "m",   "h",   "d"] as const;
+const TIME_FRACTIONS	= [ 1,   1e3,  1e6,  1e9,  6e10, 36e11, 864e11];
 // @formatter:on
 
 const groupRE = /[0-9.]+\s?([a-z]+)\s*/gi;
@@ -21,6 +22,7 @@ const groupRE = /[0-9.]+\s?([a-z]+)\s*/gi;
 export class UnitConvertor<T extends readonly string[]> {
 
 	private readonly name: string;
+	private readonly space: string;
 
 	/**
 	 * Supported units of this convertor, from small to large.
@@ -33,8 +35,9 @@ export class UnitConvertor<T extends readonly string[]> {
 	 */
 	readonly fractions: number[];
 
-	constructor(name: string, units: T, fractions: number[]) {
+	constructor(name: string, units: T, fractions: number[], space = " ") {
 		this.name = name;
+		this.space = space;
 		this.units = units;
 		this.fractions = fractions;
 	}
@@ -100,7 +103,7 @@ export class UnitConvertor<T extends readonly string[]> {
 		const i = this.suit(Math.abs(v));
 		v /= fractions[i];
 
-		return `${Number(v.toFixed(precision))} ${units[i]}`;
+		return `${Number(v.toFixed(precision))}${this.space}${units[i]}`;
 	}
 
 	/**
@@ -201,14 +204,22 @@ export class UnitConvertor<T extends readonly string[]> {
 export const durationFmt = new UnitConvertor("time", TIME_UNITS, TIME_FRACTIONS);
 
 /**
+ * Convert between number and decimal prefixed number.
+ *
+ * @example
+ * decimalPrefix.formatDiv(123456789); // 123.46M
+ */
+export const decimalPrefix = new UnitConvertor("decimal prefix", DECIMAL_SYMBOLS, DECIMAL_FRACTIONS, "");
+
+/**
  * Convert between bytes and human-readable string using SI (1000) prefixes.
  */
-export const dataSizeSI = new UnitConvertor("data size", SIZE_UNITS_SI, SIZE_FRACTIONS_SI);
+export const dataSizeSI = new UnitConvertor("data size", SIZE_UNITS_SI, DECIMAL_FRACTIONS);
 
 /**
  * Convert between bytes and human-readable string using IEC (1024) prefixes.
  */
-export const dataSizeIEC = new UnitConvertor("data size", SIZE_UNITS_IEC, SIZE_FRACTIONS_IEC);
+export const dataSizeIEC = new UnitConvertor("data size", SIZE_UNITS_IEC, BINARY_FRACTIONS);
 
 type EllipsisPos = "begin" | "mid" | "end";
 

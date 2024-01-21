@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { compositor, dataSizeIEC, dataSizeSI, durationFmt, ellipsis } from "../src/format.ts";
+import { compositor, dataSizeIEC, dataSizeSI, decimalPrefix, durationFmt, ellipsis } from "../src/format.ts";
 
 describe("formatDiv", () => {
 	const invalid = [
@@ -41,6 +41,10 @@ describe("formatDiv", () => {
 	it("should support specific unit of the value", () => {
 		expect(dataSizeSI.formatDiv(10000, "YB")).toBe("10000 YB");
 		expect(dataSizeSI.formatDiv(512e4, "MB")).toBe("5.12 TB");
+	});
+
+	it("should append decimal prefix immediately after the number", () =>{
+		expect(decimalPrefix.formatDiv(123456789)).toBe("123.46M");
 	});
 });
 
