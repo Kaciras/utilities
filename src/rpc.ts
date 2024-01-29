@@ -193,7 +193,7 @@ type VoidRemoteProperty<T> =
 type VoidCallable<T> = T extends (...args: infer A) => any
 	? (...args: A) => Promise<void> : unknown;
 
-class RPCHandler implements ProxyHandler<SendFn> {
+class RPCProxyHandler implements ProxyHandler<SendFn> {
 
 	/**
 	 * Keys for current property in reversed order.
@@ -212,7 +212,7 @@ class RPCHandler implements ProxyHandler<SendFn> {
 	}
 
 	get(send: SendFn, key: PropertyKey): any {
-		return new Proxy(send, new RPCHandler([key, ...this.path]));
+		return new Proxy(send, new RPCProxyHandler([key, ...this.path]));
 	}
 }
 
@@ -287,7 +287,7 @@ export function createClient(sender: SendFn, listen?: Listen) {
 		sender = request;
 		listen(receive);
 	}
-	return new Proxy(sender, new RPCHandler([]));
+	return new Proxy(sender, new RPCProxyHandler([]));
 }
 
 /* ============================================================================= *
@@ -321,6 +321,12 @@ function probeReceive(obj: any, callback: any) {
 /**
  * Serve RPC requests, the post & receive methods are auto-detected from parameters.
  *
+ * @example
+ * probeServer(APIs, globalThis);	// In WebWorker, child processes.
+ *
+ * import {parentPort} from "worker_threads";
+ * probeServer(APIs, parentPort);	// In worker threads.
+ *
  * @param target The service object contains methods that client can use.
  * @param sender The object contains receive method.
  * @param receiver The object contains post method,
@@ -335,6 +341,12 @@ export function probeServer(target: any, receiver: object, sender?: object | fal
 
 /**
  * Create an RPC client, the post & receive methods are auto-detected from parameters.
+ *
+ * @example
+ * probeClient(new Worker("...")).hello();
+ *
+ * import { fork } from "child_process"
+ * probeClient(fork("...")).hello();
  *
  * @param sender The object provides the post method.
  * @param receiver The object provides the receive method, default is same as the sender.

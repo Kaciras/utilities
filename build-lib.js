@@ -10,6 +10,8 @@ import isBuiltinModule from "is-builtin-module";
  * Generate type declaration files. This function does not throw any error
  * if compilation failed, you should check the console for messages.
  *
+ * Large file slow down the IDE, so we don't merge declarations.
+ *
  * @see https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API
  */
 function generateTypeDeclaration(entries) {
@@ -69,9 +71,7 @@ async function bundle(input, typeOfWindow) {
 		external: isBuiltinModule,
 		plugins: [
 			swcTransform,
-			replace({
-				"typeof window": typeOfWindow,
-			}),
+			replace({ "typeof window": typeOfWindow }),
 		],
 	});
 

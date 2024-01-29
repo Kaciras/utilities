@@ -3,6 +3,9 @@ import { defineConfig, devices } from "@playwright/test";
 
 /**
  * See https://playwright.dev/docs/test-configuration.
+ *
+ * Use builtin chrome on CI:
+ * https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md
  */
 export default defineConfig({
 	testDir: "./test/web",

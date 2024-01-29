@@ -3,8 +3,9 @@ import { NeverAbort, uniqueId } from "../src/misc.ts";
 
 describe("NeverAbort", () => {
 	it("should not abort", () => {
-		expect(NeverAbort.aborted).toBe(false);
+		// NeverAbort.throwIfAborted();
 		expect(NeverAbort.dispatchEvent).toThrow();
+		expect(NeverAbort.aborted).toBe(false);
 	});
 
 	it("should ignore listeners", () => {

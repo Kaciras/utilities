@@ -22,7 +22,7 @@ const groupRE = /[0-9.]+\s?([a-z]+)\s*/gi;
 export class UnitConvertor<T extends readonly string[]> {
 
 	private readonly name: string;
-	private readonly space: string;
+	private readonly separator: string;
 
 	/**
 	 * Supported units of this convertor, from small to large.
@@ -37,7 +37,7 @@ export class UnitConvertor<T extends readonly string[]> {
 
 	constructor(name: string, units: T, fractions: number[], space = " ") {
 		this.name = name;
-		this.space = space;
+		this.separator = space;
 		this.units = units;
 		this.fractions = fractions;
 	}
@@ -49,7 +49,7 @@ export class UnitConvertor<T extends readonly string[]> {
 	 * @example
 	 * dataSizeSI.getFraction("TB");		// 1e12
 	 * dataSizeSI.getFraction("TB", "MB");	// 1e6
-	 * dataSizeSI.getFraction("MB"，"TB");	// 1e-6
+	 * dataSizeSI.getFraction("MB", "TB");	// 1e-6
 	 *
 	 * @throws Error If a parameter is not in the `units` property.
 	 */
@@ -91,7 +91,6 @@ export class UnitConvertor<T extends readonly string[]> {
 
 	/**
 	 * Scale the number to the most appropriate unit and round.
-	 *
 	 * The result may lose precision and cannot be converted back.
 	 *
 	 * @example
@@ -116,12 +115,14 @@ export class UnitConvertor<T extends readonly string[]> {
 		const i = this.suit(Math.abs(v));
 		v /= fractions[i];
 
-		return `${Number(v.toFixed(precision))}${this.space}${units[i]}`;
+		return `${Number(v.toFixed(precision))}${this.separator}${units[i]}`;
 	}
 
 	/**
-	 * Iterate over values and find a minimum unit such that the values are not less than 1 in that unit,
-	 * then return a function to format value with the unit.
+	 * Iterate over values and find a minimum unit such that the values are
+	 * not less than 1 in that unit, then return a function to format value with the unit.
+	 *
+	 * The format function preserve trailing zeros.
 	 *
 	 * @example
 	 * const format = dataSizeSI.homogeneous([1200, 1e13], "KB");
@@ -131,10 +132,10 @@ export class UnitConvertor<T extends readonly string[]> {
 	 * format(-120);	// -0.12 MB
 	 *
 	 * @param values The values used to calculate unit.
-	 * @param unit The unit of numbers in the values array.
+	 * @param unit The unit of numbers in the values array, default is the minimum unit.
 	 */
 	homogeneous(values: Iterable<number>, unit?: T[number]) {
-		const { fractions, units, space } = this;
+		const { fractions, units, separator } = this;
 		const x = this.getFraction(unit);
 		let min = Infinity;
 
@@ -151,12 +152,11 @@ export class UnitConvertor<T extends readonly string[]> {
 		const scale = x / fractions[min];
 		const newUnit = units[min];
 		return (v: number, precision = 2) =>
-			(v * scale).toFixed(precision) + space + newUnit;
+			(v * scale).toFixed(precision) + separator + newUnit;
 	}
 
 	/**
 	 * Formats a value with unit into multiple groups.
-	 *
 	 * The result may lose precision and cannot be converted back.
 	 *
 	 * @example
@@ -184,7 +184,7 @@ export class UnitConvertor<T extends readonly string[]> {
 		for (let i = this.suit(v); i >= 0 && parts > 0; i--, parts -= 1) {
 			const f = fractions[i];
 
-			// Avoid tailing zeros.
+			// Avoid trailing zeros.
 			if (v * f < 1) break;
 
 			const t = Math.floor(v / f);

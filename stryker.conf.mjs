@@ -9,6 +9,7 @@ export default {
 	ignorePatterns: [
 		".idea",
 		"/coverage",
+		"/playwright-report",
 		"/lib",
 		"/test/integration"
 	],

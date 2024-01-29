@@ -1,6 +1,5 @@
 // The entry point of @kaciras/utilities/node
 import process from "process";
-import Signals = NodeJS.Signals;
 
 export * from "./lang.js";
 export * from "./collection.js";
@@ -10,10 +9,10 @@ export * from "./event.js";
 export * from "./fetch.js";
 export * from "./format.js";
 export * from "./misc.js";
-
 export * as RPC from "./rpc.js";
-
 export { default as LRUCache } from "./LRUCache.js";
+
+type Signals = NodeJS.Signals;
 
 const exitSignals: Signals[] = ["SIGTERM", "SIGINT", "SIGQUIT", "SIGHUP", "SIGBREAK"];
 
