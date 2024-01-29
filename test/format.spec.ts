@@ -174,6 +174,21 @@ describe("UnitConvertor.parse", () => {
 	});
 });
 
+describe("UnitConvertor.getFraction", () => {
+	it.each([
+		["TB", undefined, 1e12],
+		[undefined, "KB", 1e-3],
+		["TB", "MB", 1e6],
+		["MB", "TB", 1e-6],
+	])("should works %#", (unit, base, expected) => {
+		expect(dataSizeSI.getFraction(unit, base)).toBe(expected);
+	});
+
+	it("should throw error with invalid unit", () => {
+		expect(() => dataSizeSI.getFraction("B", "foobar")).toThrow();
+	});
+});
+
 describe("ellipsis", () => {
 	it("should throw error if position is invalid", () => {
 		// @ts-expect-error

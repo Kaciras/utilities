@@ -43,18 +43,29 @@ export class UnitConvertor<T extends readonly string[]> {
 	}
 
 	/**
-	 * Get the fraction of the unit, throw error if the unit is invalid.
+	 * Get the fraction of the unit based on another.
+	 * If any parameter is undefined, it equals to the minimum unit.
+	 *
+	 * @example
+	 * dataSizeSI.getFraction("TB");		// 1e12
+	 * dataSizeSI.getFraction("TB", "MB");	// 1e6
+	 * dataSizeSI.getFraction("MB"，"TB");	// 1e-6
+	 *
+	 * @throws Error If a parameter is not in the `units` property.
 	 */
-	private getFraction(unit?: string) {
+	public getFraction(unit?: string, base?: string): number {
+		if (base !== undefined) {
+			return this.getFraction(unit) / this.getFraction(base);
+		}
 		if (unit === undefined) {
 			return 1;
 		}
-		const { units, name, fractions } = this;
+		const { units, fractions } = this;
 		const i = units.indexOf(unit);
 		if (i !== -1) {
 			return fractions[i];
 		}
-		throw new Error(`Unknown ${name} unit: ${unit}`);
+		throw new Error(`Unknown ${this.name} unit: ${unit}`);
 	}
 
 	/**
