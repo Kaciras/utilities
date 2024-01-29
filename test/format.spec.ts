@@ -43,7 +43,7 @@ describe("formatDiv", () => {
 		expect(dataSizeSI.formatDiv(512e4, "MB")).toBe("5.12 TB");
 	});
 
-	it("should append decimal prefix immediately after the number", () =>{
+	it("should append decimal prefix immediately after the number", () => {
 		expect(decimalPrefix.formatDiv(123456789)).toBe("123.46M");
 	});
 });
@@ -186,6 +186,29 @@ describe("UnitConvertor.getFraction", () => {
 
 	it("should throw error with invalid unit", () => {
 		expect(() => dataSizeSI.getFraction("B", "foobar")).toThrow();
+	});
+});
+
+describe("UnitConvertor.homogeneous", () => {
+	it("should works", () => {
+		const format = dataSizeSI.homogeneous([1200, 1e13]);
+		expect(format(0)).toBe("0.00 KB");
+		expect(format(1200)).toBe("1.20 KB");
+	});
+
+	it("should support specific unit", () => {
+		const format = dataSizeSI.homogeneous([1200, 1e13], "MB");
+		expect(format(1200)).toBe("1.20 GB");
+	});
+
+	it("should support empty values", () => {
+		const format = dataSizeSI.homogeneous([]);
+		expect(format(1200)).toBe("1200.00 B");
+	});
+
+	it("should support zero values", () => {
+		const format = dataSizeSI.homogeneous([0]);
+		expect(format(1200)).toBe("1200.00 B");
 	});
 });
 

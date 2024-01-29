@@ -53,7 +53,7 @@ export class UnitConvertor<T extends readonly string[]> {
 	 *
 	 * @throws Error If a parameter is not in the `units` property.
 	 */
-	public getFraction(unit?: string, base?: string): number {
+	getFraction(unit?: string, base?: string): number {
 		if (base !== undefined) {
 			return this.getFraction(unit) / this.getFraction(base);
 		}
@@ -75,6 +75,8 @@ export class UnitConvertor<T extends readonly string[]> {
 	 * durationFmt.suit(1200_000);	// 2 (.units[2] === "ms")
 	 * durationFmt.suit(0);			// 0 (.units[0] === "ns")
 	 * durationFmt.suit(999e12);	// 6 (.units[6] === "d")
+	 *
+	 * @param value A positive number. If it's likely to be negative, use Math.abs first.
 	 */
 	suit(value: number) {
 		const s = this.fractions;
@@ -115,6 +117,39 @@ export class UnitConvertor<T extends readonly string[]> {
 		v /= fractions[i];
 
 		return `${Number(v.toFixed(precision))}${this.space}${units[i]}`;
+	}
+
+	/**
+	 * Iterate over values and find a minimum unit such that the values are not less than 1 in that unit,
+	 * then return a function to format value with the unit.
+	 *
+	 * @example
+	 * const format = dataSizeSI.homogeneous([1200, 1e13], "KB");
+	 * format(1200);	// 1.20 MB
+	 * format(120);		// 0.12 MB
+	 * format(12);		// 0.01 MB
+	 * format(-120);	// -0.12 MB
+	 *
+	 * @param values The values used to calculate unit.
+	 * @param unit The unit of numbers in the values array.
+	 */
+	homogeneous(values: Iterable<number>, unit?: T[number]) {
+		const { fractions, units, space } = this;
+		const x = this.getFraction(unit);
+		let min = Infinity;
+
+		for (const value of values) {
+			min = value === 0 // 0 is equal in any unit.
+				? min
+				: Math.min(min, this.suit(value * x));
+		}
+		if (min === Infinity) {
+			min = 0; // All values are 0, use the minimum unit.
+		}
+
+		const scale = x / fractions[min];
+		const newUnit = units[min];
+		return (v: number) => (v * scale).toFixed(2) + space + newUnit;
 	}
 
 	/**
