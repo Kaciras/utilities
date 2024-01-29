@@ -78,7 +78,7 @@ export class UnitConvertor<T extends readonly string[]> {
 	 *
 	 * @param value A positive number. If it's likely to be negative, use Math.abs first.
 	 */
-	suit(value: number) {
+	private suit(value: number) {
 		const s = this.fractions;
 		let i = 0;
 
@@ -150,7 +150,8 @@ export class UnitConvertor<T extends readonly string[]> {
 
 		const scale = x / fractions[min];
 		const newUnit = units[min];
-		return (v: number) => (v * scale).toFixed(2) + space + newUnit;
+		return (v: number, precision = 2) =>
+			(v * scale).toFixed(precision) + space + newUnit;
 	}
 
 	/**
