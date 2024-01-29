@@ -138,7 +138,8 @@ export class UnitConvertor<T extends readonly string[]> {
 		const x = this.getFraction(unit);
 		let min = Infinity;
 
-		for (const value of values) {
+		for (let value of values) {
+			value = Math.abs(value);
 			min = value === 0 // 0 is equal in any unit.
 				? min
 				: Math.min(min, this.suit(value * x));

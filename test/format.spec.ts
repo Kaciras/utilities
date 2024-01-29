@@ -201,6 +201,12 @@ describe("UnitConvertor.homogeneous", () => {
 		expect(format(1200)).toBe("1.20 GB");
 	});
 
+	it("should support negative values", () => {
+		const format = dataSizeSI.homogeneous([-1200, 1e13]);
+		expect(format(1200)).toBe("1.20 KB");
+		expect(format(-1200)).toBe("-1.20 KB");
+	});
+
 	it("should support empty values", () => {
 		const format = dataSizeSI.homogeneous([]);
 		expect(format(1200)).toBe("1200.00 B");
