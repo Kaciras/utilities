@@ -57,14 +57,14 @@ it("should refresh expiration time on get", () => {
 
 it("should update recent usage on get", () => {
 	const cache = new LRUCache({ capacity: 2 });
-	cache.set("foo", 111);
-	cache.set("bar", 222);
+	cache.set("foo", 11);
+	cache.set("bar", 22);
 
 	cache.get("foo");
-	cache.set("baz", 333);
+	cache.set("baz", 33);
 
 	expect(cache.get("bar")).toBeUndefined();
-	expect(cache.get("foo")).toBe(111);
+	expect(cache.get("foo")).toBe(11);
 });
 
 it("should support override value", () => {
@@ -93,31 +93,31 @@ it("should dispose old value on set", () => {
 
 it("should update recent usage on set", () => {
 	const cache = new LRUCache({ capacity: 2 });
-	cache.set("foo", 111);
-	cache.set("bar", 222);
-	cache.set("foo", 111);
+	cache.set("foo", 11);
+	cache.set("bar", 22);
+	cache.set("foo", 11);
 
-	cache.set("baz", 333);
+	cache.set("baz", 33);
 
 	expect(cache.get("bar")).toBeUndefined();
-	expect(cache.get("foo")).toBe(111);
+	expect(cache.get("foo")).toBe(11);
 });
 
 it("should do LRU elimination", () => {
 	const dispose = jest.fn();
 	const cache = new LRUCache({ ttl: 1000, dispose, capacity: 2 });
 
-	cache.set("foo", 111);
-	cache.set("bar", 222);
-	cache.set("baz", 333);
+	cache.set("foo", 11);
+	cache.set("bar", 22);
+	cache.set("baz", 33);
 
 	expect(cache.size).toBe(2);
 	expect(cache.get("foo")).toBeUndefined();
-	expect(cache.get("baz")).toBe(333);
+	expect(cache.get("baz")).toBe(33);
 
 	expect(jest.getTimerCount()).toBe(2);
 	expect(dispose).toHaveBeenCalledTimes(1);
-	expect(dispose).toHaveBeenCalledWith(111);
+	expect(dispose).toHaveBeenCalledWith(11);
 });
 
 it("should pass on deleting non exist entry", () => {
@@ -148,8 +148,8 @@ it("should dispose the value on delete", () => {
 
 it("should clear entries", () => {
 	const cache = new LRUCache();
-	cache.set("foo", 111);
-	cache.set("bar", 222);
+	cache.set("foo", 11);
+	cache.set("bar", 22);
 
 	cache.clear();
 
@@ -161,52 +161,60 @@ it("should clear entries", () => {
 it("should dispose values on clear", () => {
 	const dispose = jest.fn();
 	const cache = new LRUCache({ ttl: 1000, dispose });
-	cache.set("foo", 111);
-	cache.set("bar", 222);
+	cache.set("foo", 11);
+	cache.set("bar", 22);
 
 	cache.clear();
 
 	expect(jest.getTimerCount()).toBe(0);
 	expect(dispose).toHaveBeenCalledTimes(2);
-	expect(dispose).toHaveBeenCalledWith(111);
-	expect(dispose).toHaveBeenCalledWith(222);
+	expect(dispose).toHaveBeenCalledWith(11);
+	expect(dispose).toHaveBeenCalledWith(22);
 });
 
 it("should use custom dispose function on clear", () => {
 	const dispose = jest.fn();
 	const dispose2 = jest.fn();
 	const cache = new LRUCache({ ttl: 1000, dispose });
-	cache.set("foo", 111);
-	cache.set("bar", 222);
+	cache.set("foo", 11);
+	cache.set("bar", 22);
 
 	cache.clear(dispose2);
 
 	expect(dispose).toHaveBeenCalledTimes(0);
 	expect(dispose2).toHaveBeenCalledTimes(2);
-	expect(dispose2).toHaveBeenCalledWith(111);
-	expect(dispose2).toHaveBeenCalledWith(222);
+	expect(dispose2).toHaveBeenCalledWith(11);
+	expect(dispose2).toHaveBeenCalledWith(22);
 });
 
 it("should get key iterator", () => {
 	const cache = new LRUCache();
-	cache.set("foo", 111);
-	cache.set("bar", 222);
+	cache.set("foo", 11);
+	cache.set("bar", 22);
 
 	expect(Array.from(cache.keys())).toStrictEqual(["foo", "bar"]);
 });
 
 it("should get value iterator", () => {
 	const cache = new LRUCache();
-	cache.set("foo", 111);
-	cache.set("bar", 222);
+	cache.set("foo", 11);
+	cache.set("bar", 22);
 
-	expect(Array.from(cache.values())).toStrictEqual([111, 222]);
+	expect(Array.from(cache.values())).toStrictEqual([11, 22]);
 });
 
 it("should get key-value pair iterator", () => {
 	const cache = new LRUCache();
-	cache.set("foo", 111);
-	cache.set("bar", 222);
+	cache.set("foo", 11);
+	cache.set("bar", 22);
 
-	expect(Array.from(cache)).toStrictEqual([["foo", 111], ["bar", 222]]);
+	expect(Array.from(cache)).toStrictEqual([["foo", 11], ["bar", 22]]);
+});
+
+it("should allow zero capacity", () => {
+	const cache = new LRUCache({ capacity: 0 });
+	cache.set("foo", 11);
+
+	expect(cache.size).toBe(0);
+	expect(cache.get("foo")).toBeUndefined();
 });

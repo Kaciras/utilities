@@ -103,8 +103,13 @@ describe("UnitConvertor.parse", () => {
 		expect(() => dataSizeSI.parse(input)).toThrow(new Error(`Can not convert "${input}" to data size`));
 	});
 
-	it("should throw on unknown unit", () => {
-		expect(() => dataSizeIEC.parse("1023 SiB")).toThrow(new Error("Unknown data size unit: SiB"));
+	it.each([
+		[decimalPrefix, "Unknown decimal prefix unit: SiB"],
+		[dataSizeSI, "Unknown data size unit: SiB"],
+		[dataSizeIEC, "Unknown data size unit: SiB"],
+		[durationFmt, "Unknown time unit: SiB"],
+	])("should throw on unknown unit", (convertor, message) => {
+		expect(() => convertor.parse("1023 SiB")).toThrow(new Error(message));
 	});
 
 	it("should throw error with invalid target unit", () => {
@@ -219,8 +224,8 @@ describe("UnitConvertor.homogeneous", () => {
 	});
 
 	it("should support zero values", () => {
-		const format = dataSizeSI.homogeneous([0]);
-		expect(format(1200)).toBe("1200.00 B");
+		const format = dataSizeSI.homogeneous([8964, 0]);
+		expect(format(1200)).toBe("1.20 KB");
 	});
 });
 

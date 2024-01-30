@@ -92,6 +92,14 @@ describe("ResponseFacade", () => {
 		const facade = new ResponseFacade(fetching, identity);
 		expect("" + facade).toBe("[object ResponseFacade]");
 	});
+
+	it("should quick check the status", async () => {
+		const resp = new Response(null, { status: 206 });
+		const f = new ResponseFacade(Promise.resolve(resp), identity);
+
+		await expect(f.hasStatus(206)).resolves.toBe(true);
+		await expect(f.hasStatus(404)).resolves.toBe(false);
+	});
 });
 
 describe("FetchClient", () => {
@@ -202,14 +210,6 @@ describe("FetchClient", () => {
 
 		const response = client.delete("/posts/1");
 		expect((await response.unchecked).status).toBe(451);
-	});
-
-	it("should quick check the status", async () => {
-		const client = new FetchClient({ baseURL: httpServer.url });
-		await httpServer.forGet("/").thenReply(206);
-
-		const response = client.get("/");
-		await expect(response.hasStatus(206)).resolves.toBe(true);
 	});
 
 	it("should return the JSON body", async () => {
