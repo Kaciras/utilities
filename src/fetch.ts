@@ -1,4 +1,4 @@
-import { identity, OnFulfilled, OnRejected } from "./lang.js";
+import { identity, OnFulfilled, OnRejected } from "./lang.ts";
 
 /**
  * Fetch the resource into a File object, detect name and last modified from response.

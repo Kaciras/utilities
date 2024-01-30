@@ -1,4 +1,4 @@
-import { ItemOfIterable } from "./lang.js";
+import { ItemOfIterable } from "./lang.ts";
 
 /**
  * Get the first item of the iterable object, or undefined if it's empty.

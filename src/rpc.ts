@@ -13,8 +13,8 @@
  *
  * IMO it's overdesign, so we only support function call.
  */
-import { PostMessage, pubSub2ReqRes } from "./event.js";
-import { Awaitable, noop } from "./lang.js";
+import { PostMessage, pubSub2ReqRes } from "./event.ts";
+import { Awaitable, noop } from "./lang.ts";
 
 /* ============================================================================= *\
  *                              Message Processing

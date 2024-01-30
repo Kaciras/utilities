@@ -1,5 +1,5 @@
 import { dirname, resolve } from "path";
-import { existsSync, readFileSync } from "fs";
+import { readFileSync } from "fs";
 import ts from "typescript";
 import { rollup } from "rollup";
 import swc from "@swc/core";
@@ -39,9 +39,6 @@ function generateTypeDeclaration(entries) {
 // Cannot use import-assertion because the filename has no extension.
 const swcrc = JSON.parse(readFileSync(".swcrc", "utf8"));
 
-const JS_RE = /\.[mc]?[jt]sx?$/;
-const EXTENSIONS = [".ts", ".js", ".cjs"];
-
 const swcTransform = {
 	name: "swc-transform-sync",
 
@@ -49,14 +46,9 @@ const swcTransform = {
 		if (id.startsWith("\0")) {
 			return null;
 		}
-		const path = importer
+		return importer
 			? resolve(dirname(importer), id)
 			: resolve(id);
-
-		const stem = path.replace(JS_RE, "");
-		return EXTENSIONS
-			.map(ext => `${stem}${ext}`)
-			.find(existsSync);
 	},
 
 	transform(code, id) {
