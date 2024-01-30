@@ -65,7 +65,7 @@ function compile(path: string): TransformedOutput {
 	 * Import statements are replaced with comments of the same length
 	 * to avoid affecting source map.
 	 */
-	const [imports] = parseImports(code);
+	const [imports] = parseImports(code, path);
 	for (const { n, ss, se } of imports) {
 		if (n!.charCodeAt(0) !== 46) {
 			const c = `/${"*".repeat(se - ss - 2)}/`;
