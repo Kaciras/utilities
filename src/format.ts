@@ -340,7 +340,6 @@ export function compositor<T extends Placeholders>(
 		let startPos: number;
 		let endPos: number;
 
-		// noinspection SuspiciousTypeOfGuard (IDEA bug)
 		if (typeof pattern === "string") {
 			startPos = template.indexOf(pattern);
 			if (startPos === -1) {

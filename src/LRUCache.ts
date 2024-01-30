@@ -1,5 +1,3 @@
-// noinspection LoopStatementThatDoesntLoopJS
-
 import { noop } from "./lang.js";
 
 type Dispose<T> = (value: T) => unknown;
@@ -142,6 +140,7 @@ export default class LRUCache<K, T> {
 		if (this.size <= this.capacity) {
 			return;
 		}
+		// noinspection LoopStatementThatDoesntLoopJS
 		for (const [key, e] of this.map) {
 			this.map.delete(key);
 			this.dispose(e.value);
