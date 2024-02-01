@@ -1,5 +1,13 @@
 import { describe, expect, it } from "@jest/globals";
-import { compositor, dataSizeIEC, dataSizeSI, decimalPrefix, durationFmt, ellipsis } from "../src/format.ts";
+import {
+	compositor,
+	dataSizeIEC,
+	dataSizeSI,
+	decimalPrefix,
+	durationFmt,
+	ellipsis,
+	separateThousand,
+} from "../src/format.ts";
 
 describe("formatDiv", () => {
 	const invalid = [
@@ -257,6 +265,26 @@ describe("ellipsis", () => {
 		["0123456789", 4, "end", "012…"],
 	])("should works", (value, length, position, expected) => {
 		expect(ellipsis(value, length, position as any)).toBe(expected);
+	});
+});
+
+describe("separateThousand", () => {
+	it.each([
+		["0.123456", "0.123456"],
+		["100.123456", "100.123456"],
+		["1000.123456", "1,000.123456"],
+		["10000000.123456", "10,000,000.123456"],
+		["0", "0"],
+		["100", "100"],
+		["1000", "1,000"],
+		["10000000", "10,000,000"],
+		["ee 1234 ww 5678", "ee 1,234 ww 5,678"],
+	])("should works with %#", (text, expected) => {
+		expect(separateThousand(text)).toBe(expected);
+	});
+
+	it("should support custom separator", () => {
+		expect(separateThousand("1000", "_")).toBe("1_000");
 	});
 });
 

@@ -303,6 +303,22 @@ export function ellipsis(value: string, length: number, position: EllipsisPos = 
 	throw new TypeError(`Invalid position: ${position}. supported (start|mid|end)`);
 }
 
+/**
+ * Search numbers from the text and insert thousands separators to them.
+ *
+ * This function uses Lookbehind, which may not be supported by older browsers..
+ * https://caniuse.com/js-regexp-lookbehind
+ *
+ * @example
+ * separateThousand("ID: 5678, Price: 1234$");		// "ID: 5,678, Price: 1,234$"
+ * separateThousand("var n = 1000000.2345", "_");	// "var n = 1_000_000.2345"
+ *
+ * @link https://stackoverflow.com/a/2901298
+ */
+export function separateThousand(text: string, separator = ",") {
+	return text.replaceAll(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, separator);
+}
+
 type Placeholders = Record<string, string | RegExp>;
 
 /**
