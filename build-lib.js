@@ -57,6 +57,12 @@ const swcTransform = {
 	},
 };
 
+/*
+ * Source files for both browser and Node may contain imports of Node module,
+ * so tree-shaking is needed.
+ *
+ * Separating code that contains imports would make the filenames less clear.
+ */
 async function bundle(input, typeOfWindow) {
 	const build = await rollup({
 		input,

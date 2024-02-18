@@ -1,4 +1,5 @@
 import { uniqueId } from "../src/misc.ts";
+import { expect } from "@jest/globals";
 
 class StubError extends Error {
 
@@ -35,3 +36,7 @@ export const Stubs = Object.freeze({
 	 */
 	error: new StubError(0),
 });
+
+export function assertListEquals(actual?: Iterable<any>, expected?: any[]) {
+	expect([...actual!]).toStrictEqual(expected);
+}

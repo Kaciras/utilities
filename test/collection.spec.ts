@@ -1,9 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { cartesianArray, cartesianObject, firstItem, MultiMap, UniqueMultiMap } from "../src/collection.ts";
-
-function assertListEquals(actual?: Iterable<any>, expected?: any[]) {
-	expect([...actual!]).toStrictEqual(expected);
-}
+import { assertListEquals } from "./global.ts";
 
 describe("firstItem", () => {
 	it("should work with empty iterable", () => {
