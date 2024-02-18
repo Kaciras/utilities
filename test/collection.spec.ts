@@ -1,5 +1,9 @@
 import { describe, expect, it } from "@jest/globals";
-import { cartesianArray, cartesianObject, firstItem, MultiMap } from "../src/collection.ts";
+import { cartesianArray, cartesianObject, firstItem, MultiMap, UniqueMultiMap } from "../src/collection.ts";
+
+function assertListEquals(actual?: Iterable<any>, expected?: any[]) {
+	expect([...actual!]).toStrictEqual(expected);
+}
 
 describe("firstItem", () => {
 	it("should work with empty iterable", () => {
@@ -10,9 +14,9 @@ describe("firstItem", () => {
 	});
 });
 
-describe("MultiMap", () => {
+function multiMapBaseTests(Class: typeof MultiMap) {
 	it("should calc correct count", () => {
-		const map = new MultiMap();
+		const map = new Class();
 		expect(map.size).toBe(0);
 		expect(map.count).toBe(0);
 
@@ -25,39 +29,35 @@ describe("MultiMap", () => {
 	});
 
 	it("should add items", () => {
-		const map = new MultiMap();
+		const map = new Class();
+		map.add(11, 11, 22);
+		map.add(11, 33);
 
-		map.add(11, 11);
-		map.add(11, 22, 11);
-
-		expect(map.get(11)).toStrictEqual([11, 22, 11]);
+		assertListEquals(map.get(11), [11, 22, 33]);
 	});
 
 	it("should distribute item to keys", () => {
-		const map = new MultiMap();
-
+		const map = new Class();
 		map.distribute(["foo", "bar"], 11, 22);
 		map.distribute(["bar"], 33);
 
-		expect(Object.fromEntries(map)).toStrictEqual({
-			foo: [11, 22],
-			bar: [11, 22, 33],
-		});
+		assertListEquals(map.get("foo"), [11, 22]);
+		assertListEquals(map.get("bar"), [11, 22, 33]);
 	});
 
 	it("should delete items", () => {
-		const map = new MultiMap();
+		const map = new Class();
 		expect(map.deleteItem(11, 11)).toBe(false);
 
 		map.add(11, 11);
 		map.add(11, 22);
 
 		expect(map.deleteItem(11, 11)).toBe(true);
-		expect(map.get(11)).toStrictEqual([22]);
+		assertListEquals(map.get(11), [22]);
 	});
 
 	it("should noop on remove item which is not exists", () => {
-		const map = new MultiMap();
+		const map = new Class();
 		map.add(11, 11);
 
 		expect(map.deleteItem(11, 22)).toBe(false);
@@ -67,8 +67,8 @@ describe("MultiMap", () => {
 		expect(map.count).toBe(1);
 	});
 
-	it("should remove empty arrays", () => {
-		const map = new MultiMap();
+	it("should remove empty lists", () => {
+		const map = new Class();
 		map.add(11, 11);
 
 		expect(map.deleteItem(11, 11)).toBe(true);
@@ -78,7 +78,7 @@ describe("MultiMap", () => {
 	});
 
 	it("should work on hasItem", () => {
-		const map = new MultiMap();
+		const map = new Class();
 		expect(map.hasItem(11, 11)).toBe(false);
 
 		map.add(11, 11);
@@ -87,7 +87,7 @@ describe("MultiMap", () => {
 	});
 
 	it("should support iterate all items", () => {
-		const map = new MultiMap();
+		const map = new Class();
 		map.add(11, 11, 22);
 		map.add(22, 33);
 
@@ -96,6 +96,30 @@ describe("MultiMap", () => {
 		expect(iterator.next()).toStrictEqual({ done: false, value: 22 });
 		expect(iterator.next()).toStrictEqual({ done: false, value: 33 });
 		expect(iterator.next().done).toBe(true);
+	});
+}
+
+describe("MultiMap", () => {
+	multiMapBaseTests(MultiMap);
+
+	it("should allow duplicated values in same key", () => {
+		const map = new MultiMap();
+		map.add(11, 11);
+		map.add(11, 22, 11);
+		expect(map.get(11)).toStrictEqual([11, 22, 11]);
+	});
+});
+
+describe("UniqueMultiMap", () => {
+	multiMapBaseTests(UniqueMultiMap as any);
+
+	it("should ignore duplicated values in same key", () => {
+		const map = new UniqueMultiMap();
+		map.add(11, 11);
+		map.add(11, 22, 11);
+
+		expect(map.count).toBe(2);
+		expect(map.get(11)).toStrictEqual(new Set([11, 22]));
 	});
 });
 

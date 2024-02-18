@@ -56,11 +56,12 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 	 * Adds new values to the array of the specified key.
 	 */
 	add(key: K, ...values: V[]) {
-		let list = super.get(key);
-		if (!list) {
-			super.set(key, list = []);
+		const list = super.get(key);
+		if (list) {
+			list.push(...values);
+		} else {
+			super.set(key, [...values]);
 		}
-		list.push(...values);
 	}
 
 	/**
@@ -73,7 +74,7 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 	}
 
 	/**
-	 * Remove the value from array of the specified key.
+	 * Remove the first occurrence value from array of the specified key.
 	 *
 	 * @returns true if a value in the Map existed and has been removed,
 	 * 			or false if the value or the key does not exist.
@@ -101,6 +102,56 @@ export class MultiMap<K, V> extends Map<K, V[]> {
 	hasItem(key: K, value: V) {
 		const list = super.get(key);
 		return list ? list.indexOf(value) !== -1 : false;
+	}
+}
+
+/**
+ * Like MultiMap, but the values collection type is Set.
+ */
+export class UniqueMultiMap<K, V> extends Map<K, Set<V>> {
+	get count() {
+		let returnValue = 0;
+		for (const [, v] of this) {
+			returnValue += v.size;
+		}
+		return returnValue;
+	}
+
+	* items() {
+		for (const list of super.values()) yield* list;
+	}
+
+	add(key: K, ...values: V[]) {
+		const list = super.get(key);
+		if (list) {
+			for (const v of values) {
+				list.add(v);
+			}
+		} else {
+			super.set(key, new Set<V>(values));
+		}
+	}
+
+	distribute(keys: Iterable<K>, ...values: V[]) {
+		for (const key of keys) {
+			this.add(key, ...values);
+		}
+	}
+
+	deleteItem(key: K, value: V) {
+		const list = super.get(key);
+		const removed = list?.delete(value);
+		if (!removed) {
+			return false;
+		}
+		if (list!.size > 0) {
+			return true;
+		}
+		return super.delete(key);
+	}
+
+	hasItem(key: K, value: V) {
+		return !!super.get(key)?.has(value);
 	}
 }
 
