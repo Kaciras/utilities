@@ -319,6 +319,25 @@ export function separateThousand(text: string, separator = ",") {
 	return text.replaceAll(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, separator);
 }
 
+/**
+ * Split command line string into arguments list and remove the quotes.
+ * This function does not work to invalid quotes, such as `a"""b`.
+ *
+ * @example
+ * splitCLI("node"); 				// ["node"]
+ * splitCLI("node --foo");			// ["node", "--foo"]
+ * splitCLI("");					// []
+ *
+ * splitCLI('"node --foo"');		// ["node --foo"]
+ * splitCLI('"node" "--foo"');		// ["node", "--foo"]
+ * splitCLI('"node --foo"');		// ["node --foo"]
+ * splitCLI('"node\\" \\"--foo"');	// ['node" "--foo']
+ */
+export function splitCLI(command: string) {
+	const matches = command.matchAll(/"(.+?)(?<!\\)"|(\S+)/g);
+	return Array.from(matches, ([, a, b]) => (a ?? b).replaceAll('\\"', '"'));
+}
+
 type Placeholders = Record<string, string | RegExp>;
 
 /**

@@ -7,6 +7,7 @@ import {
 	durationFmt,
 	ellipsis,
 	separateThousand,
+	splitCLI,
 } from "../src/format.ts";
 
 describe("formatDiv", () => {
@@ -286,6 +287,21 @@ describe("separateThousand", () => {
 	it("should support custom separator", () => {
 		expect(separateThousand("1000", "_")).toBe("1_000");
 	});
+});
+
+it.each([
+	["node --foo", ["node", "--foo"]],
+	["node\\ --foo", ["node\\", "--foo"]],
+	['"node" "--foo"', ["node", "--foo"]],
+	['"node --foo"', ["node --foo"]],
+	['"node\\" \\"--foo"', ['node" "--foo']],
+	["node \t--foo", ["node", "--foo"]],
+	["", []],
+	["node", ["node"]],
+	["node ", ["node"]],
+	[" node", ["node"]],
+])("should split command %#", (cmd, args) => {
+	expect(splitCLI(cmd)).toStrictEqual(args);
 });
 
 describe("compositor", () => {
