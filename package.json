@@ -24,7 +24,7 @@
 	},
 	"scripts": {
 		"lint": "eslint --fix .",
-		"test:types": "jest -c jest.config.tsd.js",
+		"test:types": "tstyche",
 		"test:unit": "jest",
 		"test:mutation": "stryker run",
 		"test:browser": "playwright test",
@@ -56,7 +56,7 @@
 		"jest-runner-tsd": "^6.0.0",
 		"mockttp": "^3.10.1",
 		"rollup": "^4.12.0",
-		"tsd-lite": "^0.9.0",
+		"tstyche": "^1.0.0",
 		"typescript": "^5.3.3",
 		"v8-to-istanbul": "^9.2.0"
 	}

@@ -1,11 +1,10 @@
-import { describe } from "@jest/globals";
-import { expectType } from "tsd-lite";
+import { expect, test } from "tstyche";
 import { noop } from "../../src/lang.ts";
 import { createClient, probeClient, Remote, ResponseMessage, SendFn, VoidRemote } from "../../src/rpc.ts";
 
 const sender = noop as () => ResponseMessage;
 
-describe("SendFn", () => {
+test("SendFn", () => {
 	const syncResp: SendFn = (_, __) => ({} as ResponseMessage);
 	const asyncResp: SendFn = async (_, __) => ({} as ResponseMessage);
 
@@ -15,39 +14,39 @@ describe("SendFn", () => {
 	noop(syncResp, asyncResp, syncVoid, asyncVoid);
 });
 
-describe("createClient", () => {
+test("createClient", () => {
 	const a = { foo: { bar: async () => {} } };
 	const clientA = createClient<typeof a>(sender);
-	expectType<() => Promise<void>>(clientA.foo.bar);
+	expect(clientA.foo.bar).type.toEqual<() => Promise<void>>();
 
 	const b = [0, 1, (_: 1) => "foo" as const] as const;
 	const clientB = createClient<typeof b>(sender);
-	expectType<(i: 1) => Promise<"foo">>(clientB[2]);
+	expect(clientB[2]).type.toEqual<(i: 1) => Promise<"foo">>();
 });
 
-describe("Emit mode sync", () => {
+test("Emit mode sync", () => {
 	const functions = { foo: () => "bar" };
 	const clientA = createClient<typeof functions>(noop);
 
-	expectType<Promise<void>>(clientA.foo());
+	expect(clientA.foo()).type.toEqual<Promise<void>>();
 });
 
-describe("Emit mode async", () => {
+test("Emit mode async", () => {
 	const functions = { foo: () => "bar" };
 	const clientA = createClient<typeof functions>(async () => {});
 
-	expectType<Promise<void>>(clientA.foo());
+	expect(clientA.foo()).type.toEqual<Promise<void>>();
 });
 
-describe("Two-way client type", () => {
+test("Two-way client type", () => {
 	const functions = { foo: () => "bar" };
 	const clientA = createClient<typeof functions>(sender);
 
-	expectType<Promise<string>>(clientA.foo());
+	expect(clientA.foo()).type.toEqual<Promise<string>>();
 });
 
-describe("probeClient", () => {
-	expectType<Remote<any>>(probeClient({}, {}));
-	expectType<Remote<any>>(probeClient({}));
-	expectType<VoidRemote<any>>(probeClient({}, false));
+test("probeClient", () => {
+	expect(probeClient({}, {})).type.toEqual<Remote<any>>();
+	expect(probeClient({})).type.toEqual<Remote<any>>();
+	expect(probeClient({}, false)).type.toEqual<VoidRemote<any>>();
 });

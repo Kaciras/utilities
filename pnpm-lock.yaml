@@ -80,9 +80,9 @@ devDependencies:
   rollup:
     specifier: ^4.12.0
     version: 4.12.0
-  tsd-lite:
-    specifier: ^0.9.0
-    version: 0.9.0(@tsd/typescript@5.3.3)
+  tstyche:
+    specifier: ^1.0.0
+    version: 1.0.0(typescript@5.3.3)
   typescript:
     specifier: ^5.3.3
     version: 5.3.3
@@ -5389,22 +5389,25 @@ packages:
       '@tsd/typescript': 5.3.3
     dev: true
 
-  /tsd-lite@0.9.0(@tsd/typescript@5.3.3):
-    resolution: {integrity: sha512-djuH9e7NJHCH20Jw9/KzH+2P7c6Cc2Lee0wOu4xavU5G3NTYIIdk5L0KCOS+18PWx3SyOA/dOICAAatT2bfLmQ==}
-    engines: {node: '>=16'}
-    deprecated: 'This package is deprecated. For details, see the deprecation notice: https://github.com/mrazauskas/tsd-lite/issues/364'
-    peerDependencies:
-      '@tsd/typescript': 4.x || 5.x
-    dependencies:
-      '@tsd/typescript': 5.3.3
-    dev: true
-
   /tslib@1.14.1:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
     dev: true
 
   /tslib@2.6.2:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
+    dev: true
+
+  /tstyche@1.0.0(typescript@5.3.3):
+    resolution: {integrity: sha512-iIpktIBuWL0M+KgCO8TIgo+QGS+mD24ll+wAYCFsd8IkA3Lai0ETqGSilHo1PC59+2lf71qJmWShFZwMMH4i1g==}
+    engines: {node: ^16.14 || 18.x || >=20.x}
+    hasBin: true
+    peerDependencies:
+      typescript: 4.x || 5.x
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      typescript: 5.3.3
     dev: true
 
   /tsutils@3.21.0(typescript@5.3.3):

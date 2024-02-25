@@ -1,25 +1,26 @@
 // noinspection JSVoidFunctionReturnValueUsed
 
-import { expectAssignable, expectType } from "tsd-lite";
-import { describe } from "@jest/globals";
+import { expect, test } from "tstyche";
 import { Awaitable, ItemOfIterable, noop } from "../../src/lang.ts";
 
-describe("Awaitable", () => {
-	expectAssignable<Awaitable<number>>(11);
-	expectAssignable<Awaitable<number>>(Promise.resolve(11));
+test("Awaitable", () => {
+	expect(11).type.toMatch<Awaitable<number>>();
+	expect(Promise.resolve(11)).type.toMatch<Awaitable<number>>();
+
+	expect<void>().type.toMatch<Awaitable<void>>();
+	expect<Promise<void>>().type.toMatch<Awaitable<void>>();
 });
 
-describe("noop should accept arguments", () => {
-	expectType<void>(noop());
-	expectType<void>(noop(11, 22, 33));
+test("noop should accept arguments", () => {
+	expect(noop()).type.toEqual<void>();
+	expect(noop(11, 22, 33)).type.toEqual<void>();
 });
 
-describe("ItemOfIterable", () => {
+test("ItemOfIterable", () => {
 	function* generate() { yield 11 as const; }
 
 	const apply = <T>(v: T) => v as ItemOfIterable<T>;
-	expectType<11>(apply(generate()));
-
-	expectType<11>(22 as ItemOfIterable<Set<11>>);
-	expectType<11>(22 as ItemOfIterable<Array<11>>);
+	expect(apply(generate())).type.toEqual<11>();
+	expect<ItemOfIterable<Set<11>>>().type.toEqual<11>();
+	expect<ItemOfIterable<Array<11>>>().type.toEqual<11>();
 });
