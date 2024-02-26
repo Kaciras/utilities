@@ -164,7 +164,7 @@ test.describe("syncScroll", () => {
 			document.getElementById("A")!.scroll({ top: 150 });
 		});
 
-		await page.waitForTimeout(10);
+		await page.waitForTimeout(20);
 		expect(await page.evaluate(getScrollTops)).toStrictEqual([150, 300, 450]);
 	});
 
