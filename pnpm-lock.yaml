@@ -35,9 +35,6 @@ devDependencies:
   '@swc/jest':
     specifier: ^0.2.36
     version: 0.2.36(@swc/core@1.4.2)
-  '@tsd/typescript':
-    specifier: ^5.3.3
-    version: 5.3.3
   '@types/istanbul-lib-coverage':
     specifier: ^2.0.6
     version: 2.0.6
@@ -71,9 +68,6 @@ devDependencies:
   jest:
     specifier: ^29.7.0
     version: 29.7.0(@types/node@20.11.20)
-  jest-runner-tsd:
-    specifier: ^6.0.0
-    version: 6.0.0(@tsd/typescript@5.3.3)
   mockttp:
     specifier: ^3.10.1
     version: 3.10.1
@@ -1541,11 +1535,6 @@ packages:
     resolution: {integrity: sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==}
     dev: true
 
-  /@tsd/typescript@5.3.3:
-    resolution: {integrity: sha512-CQlfzol0ldaU+ftWuG52vH29uRoKboLinLy84wS8TQOu+m+tWoaUfk4svL4ij2V8M5284KymJBlHUusKj6k34w==}
-    engines: {node: '>=14.17'}
-    dev: true
-
   /@types/babel__core@7.20.5:
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
     dependencies:
@@ -2398,23 +2387,6 @@ packages:
     dependencies:
       object-assign: 4.1.1
       vary: 1.1.2
-    dev: true
-
-  /create-jest-runner@0.12.3:
-    resolution: {integrity: sha512-xrGcSrr86F2YdbrOoAZIowSYMYBpxrOrqHEvJqIpG0vsuMVcq3+OKSe7JJR1SWJFLGiMhHInPyR48+rW9ZHq9Q==}
-    hasBin: true
-    peerDependencies:
-      '@jest/test-result': ^28.0.0 || ^29.0.0
-      jest-runner: ^28.0.0 || ^29.0.0
-    peerDependenciesMeta:
-      '@jest/test-result':
-        optional: true
-      jest-runner:
-        optional: true
-    dependencies:
-      chalk: 4.1.2
-      jest-worker: 29.7.0
-      p-limit: 3.1.0
     dev: true
 
   /create-jest@29.7.0(@types/node@20.11.20):
@@ -3912,22 +3884,6 @@ packages:
       slash: 3.0.0
     dev: true
 
-  /jest-runner-tsd@6.0.0(@tsd/typescript@5.3.3):
-    resolution: {integrity: sha512-lSzRoVqc/AwahlKFamdwO/R63Vze/xpCnab+FsNni8zmxyBt3e3py51mFE2UQBh2gSvEYwudOSHgX+xtmLynKw==}
-    engines: {node: '>=16'}
-    peerDependencies:
-      '@tsd/typescript': 4.x || 5.x
-    dependencies:
-      '@babel/code-frame': 7.23.5
-      '@tsd/typescript': 5.3.3
-      chalk: 4.1.2
-      create-jest-runner: 0.12.3
-      tsd-lite: 0.8.2(@tsd/typescript@5.3.3)
-    transitivePeerDependencies:
-      - '@jest/test-result'
-      - jest-runner
-    dev: true
-
   /jest-runner@29.7.0:
     resolution: {integrity: sha512-fsc4N6cPCAahybGBfTRcq5wFR6fpLznMg47sY5aDpsoejOcVYFb07AHuSnR0liMcPTgBsA3ZJL6kFOjPdoNipQ==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
@@ -5378,15 +5334,6 @@ packages:
       typescript: '>=4.2.0'
     dependencies:
       typescript: 5.3.3
-    dev: true
-
-  /tsd-lite@0.8.2(@tsd/typescript@5.3.3):
-    resolution: {integrity: sha512-A1bzKLlQoWf6NkavfxYqOkbRL/B/kYsBDGUNyXqXm193mAbiXoIJxOjd84CIQ/B2dtxcy8dHat+6V//zxpGBmA==}
-    engines: {node: '>=16'}
-    peerDependencies:
-      '@tsd/typescript': 4.x || 5.x
-    dependencies:
-      '@tsd/typescript': 5.3.3
     dev: true
 
   /tslib@1.14.1:

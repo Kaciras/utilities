@@ -4,11 +4,10 @@ import { expect, test } from "tstyche";
 import { Awaitable, ItemOfIterable, noop } from "../../src/lang.ts";
 
 test("Awaitable", () => {
-	expect(11).type.toMatch<Awaitable<number>>();
-	expect(Promise.resolve(11)).type.toMatch<Awaitable<number>>();
+	expect<Awaitable<number>>().type.toEqual<number | PromiseLike<number>>();
 
-	expect<void>().type.toMatch<Awaitable<void>>();
-	expect<Promise<void>>().type.toMatch<Awaitable<void>>();
+	expect<Awaitable<number>>().type.toBeAssignable(11);
+	expect<Awaitable<number>>().type.toBeAssignable(Promise.resolve(11));
 });
 
 test("noop should accept arguments", () => {
