@@ -67,6 +67,26 @@ export function splitCLI(command: string) {
 	return Array.from(matches, ([, a, b]) => (a ?? b).replaceAll('\\"', '"'));
 }
 
+/**
+ * Combine command line arguments to string, with necessary quotes and special chars escaped.
+ *
+ * @example
+ * buildCLI("node", "--foo");		// 'node --foo'
+ * buildCLI("node", '--"foo"');		// 'node --\\"foo\\"'
+ * buildCLI("node --foo");			// '"node --foo"'
+ * buildCLI("node", "--foo=1 | 2");	// 'node "--foo=1 | 2"'
+ * buildCLI();						// ''
+ * buildCLI("");					// ''
+ */
+export function buildCLI(...args: string[]) {
+	return args.map(escapeCLIArg).join(" ");
+}
+
+function escapeCLIArg(argument: string) {
+	argument = argument.replaceAll('"', '\\"');
+	return /[\s|]/.test(argument) ? `"${argument}"` : argument;
+}
+
 type Placeholders = Record<string, string | RegExp>;
 
 /**

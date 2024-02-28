@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { compositor, ellipsis, separateThousand, splitCLI } from "../src/format.ts";
+import { buildCLI, compositor, ellipsis, separateThousand, splitCLI } from "../src/format.ts";
 
 describe("ellipsis", () => {
 	it("should throw error if position is invalid", () => {
@@ -60,12 +60,26 @@ it.each([
 	['node\\" \\"--foo', ['node"', '"--foo']],
 	['"node\\" \\"--foo"', ['node" "--foo']],
 	["node \t--foo", ["node", "--foo"]],
+	['node "-|-foo"', ["node", "-|-foo"]],
 	["", []],
 	["node", ["node"]],
 	["node ", ["node"]],
 	[" node", ["node"]],
-])("should split command %#", (cmd, args) => {
+])("should split command line string %#", (cmd, args) => {
 	expect(splitCLI(cmd)).toStrictEqual(args);
+});
+
+it.each([
+	[["node", "--foo"], "node --foo"],
+	[["node\\", "--foo"], "node\\ --foo"],
+	[["node", '--"foo"'], 'node --\\"foo\\"'],
+	[["node", "-|-foo"], 'node "-|-foo"'],
+	[["node --foo"], '"node --foo"'],
+	[[], ""],
+	[[""], ""],
+	[["node", ""], "node "],
+])("should build command line string %#", (args, cmd) => {
+	expect(buildCLI(...args)).toStrictEqual(cmd);
 });
 
 describe("compositor", () => {
