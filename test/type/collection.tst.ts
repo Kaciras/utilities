@@ -39,13 +39,6 @@ test("cartesianArray", () => {
 	expect(cartesianArray([])).type.toEqual<Iterable<never>>();
 	expect(cartesianArray([[]])).type.toEqual<Iterable<[never]>>();
 
-	expect(cartesianObject([
-		["foo", [1, 2]],
-		["bar", [new Array<string>(), "B"]],
-	])).type.toEqual<
-		Iterable<{ foo: 1 | 2; bar: string[] | "B" }>
-	>();
-
 	expect(cartesianArray([
 		[1, 2],
 		[new Array<string>(), "B"],

@@ -59,7 +59,7 @@ export function separateThousand(text: string, separator = ",") {
  *
  * splitCLI('"node --foo"');		// ["node --foo"]
  * splitCLI('"node" "--foo"');		// ["node", "--foo"]
- * splitCLI('"node --foo"');		// ["node --foo"]
+ * splitCLI('node\\" \\"--foo');	// ['node"', '"--foo']
  * splitCLI('"node\\" \\"--foo"');	// ['node" "--foo']
  */
 export function splitCLI(command: string) {

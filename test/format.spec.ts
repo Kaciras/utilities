@@ -57,6 +57,7 @@ it.each([
 	["node\\ --foo", ["node\\", "--foo"]],
 	['"node" "--foo"', ["node", "--foo"]],
 	['"node --foo"', ["node --foo"]],
+	['node\\" \\"--foo', ['node"', '"--foo']],
 	['"node\\" \\"--foo"', ['node" "--foo']],
 	["node \t--foo", ["node", "--foo"]],
 	["", []],
