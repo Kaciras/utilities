@@ -227,4 +227,9 @@ describe("UnitConvertor.homogeneous", () => {
 		const format = dataSizeSI.homogeneous([8964, 0]);
 		expect(format(1200)).toBe("1.20 KB");
 	});
+
+	it("should ignore undefined values", () => {
+		const format = dataSizeSI.homogeneous([undefined, 8964]);
+		expect(format(1200)).toBe("1.20 KB");
+	});
 });

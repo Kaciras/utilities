@@ -134,16 +134,17 @@ export class UnitConvertor<T extends readonly string[]> {
 	 * @param values The values used to calculate unit.
 	 * @param unit The unit of numbers in the values array, default is the minimum unit.
 	 */
-	homogeneous(values: Iterable<number>, unit?: T[number]) {
+	homogeneous(values: Iterable<number | undefined>, unit?: T[number]) {
 		const { fractions, units, separator } = this;
 		const x = this.getFraction(unit);
 		let min = Infinity;
 
 		for (let value of values) {
+			if (!value) {
+				continue; // 0 is equal in any unit, undefined is skipped.
+			}
 			value = Math.abs(value);
-			min = value === 0 // 0 is equal in any unit.
-				? min
-				: Math.min(min, this.suit(value * x));
+			min = Math.min(min, this.suit(value * x));
 		}
 		if (min === Infinity) {
 			min = 0; // All values are 0, use the minimum unit.
