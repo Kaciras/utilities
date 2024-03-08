@@ -19,7 +19,7 @@ const TIME_FRACTIONS	= [ 1,   1e3,  1e6,  1e9,  6e10, 36e11, 864e11];
 
 const groupRE = /[0-9.]+\s?([a-z]+)\s*/gi;
 
-export class UnitConvertor<T extends readonly string[]> {
+export class UnitConvertor<T extends readonly string[] = string[]> {
 
 	private readonly name: string;
 	private readonly separator: string;
