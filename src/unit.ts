@@ -19,10 +19,17 @@ const TIME_FRACTIONS	= [ 1,   1e3,  1e6,  1e9,  6e10, 36e11, 864e11];
 
 const groupRE = /[0-9.]+\s?([a-z]+)\s*/gi;
 
+export interface FixedUnitFormatter {
+	unit: string;
+	scale: number;
+	sep: string;
+	format: (value: number, precision?: number) => string;
+}
+
 export class UnitConvertor<T extends readonly string[] = string[]> {
 
 	private readonly name: string;
-	private readonly separator: string;
+	private readonly sep: string;
 
 	/**
 	 * Supported units of this convertor, from small to large.
@@ -37,7 +44,7 @@ export class UnitConvertor<T extends readonly string[] = string[]> {
 
 	constructor(name: string, units: T, fractions: number[], space = " ") {
 		this.name = name;
-		this.separator = space;
+		this.sep = space;
 		this.units = units;
 		this.fractions = fractions;
 	}
@@ -115,7 +122,7 @@ export class UnitConvertor<T extends readonly string[] = string[]> {
 		const i = this.suit(Math.abs(v));
 		v /= fractions[i];
 
-		return `${Number(v.toFixed(precision))}${this.separator}${units[i]}`;
+		return `${Number(v.toFixed(precision))}${this.sep}${units[i]}`;
 	}
 
 	/**
@@ -135,25 +142,31 @@ export class UnitConvertor<T extends readonly string[] = string[]> {
 	 * @param unit The unit of numbers in the values array, default is the minimum unit.
 	 */
 	homogeneous(values: Iterable<number | undefined>, unit?: T[number]) {
-		const { fractions, units, separator } = this;
-		const x = this.getFraction(unit);
+		const { fractions, units, sep } = this;
 		let min = Infinity;
 
-		for (let value of values) {
+		for (const value of values) {
 			if (!value) {
 				continue; // 0 is equal in any unit, undefined is skipped.
 			}
-			value = Math.abs(value);
-			min = Math.min(min, this.suit(value * x));
+			min = Math.min(min, Math.abs(value));
 		}
 		if (min === Infinity) {
-			min = 0; // All values are 0, use the minimum unit.
+			min = 0; // All values are 0 or undefined, use the minimum unit.
 		}
 
-		const scale = x / fractions[min];
-		const newUnit = units[min];
-		return (v: number, precision = 2) =>
-			(v * scale).toFixed(precision) + separator + newUnit;
+		const x = this.getFraction(unit);
+		const i = this.suit(min * x);
+
+		const scale = x / fractions[i];
+		const u = units[i];
+
+		return <FixedUnitFormatter>{
+			scale,
+			unit: u,
+			sep,
+			format: (v, p = 2) => (v * scale).toFixed(p) + sep + u,
+		};
 	}
 
 	/**

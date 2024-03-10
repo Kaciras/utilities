@@ -196,40 +196,29 @@ describe("UnitConvertor.getFraction", () => {
 
 describe("UnitConvertor.homogeneous", () => {
 	it("should works", () => {
-		const format = dataSizeSI.homogeneous([1200, 1e13]);
-		expect(format(0)).toBe("0.00 KB");
-		expect(format(1200)).toBe("1.20 KB");
+		const fuf = dataSizeSI.homogeneous([1200, 1e13]);
+		expect(fuf.sep).toBe(" ");
+		expect(fuf.unit).toBe("KB");
+		expect(fuf.scale).toBe(1e-3);
+		expect(fuf.format(0)).toBe("0.00 KB");
+		expect(fuf.format(1200)).toBe("1.20 KB");
 	});
 
-	it("should support specific unit", () => {
-		const format = dataSizeSI.homogeneous([1200, 1e13], "MB");
-		expect(format(1200)).toBe("1.20 GB");
+	it.each([
+		[[8964, 0], undefined, "1.20 KB"],
+		[[undefined, 8964], undefined, "1.20 KB"],
+		[[], undefined, "1200.00 B"],
+		[[1500, 1e13], "MB", "1.20 GB"],
+		[[-1500, 1e13], "MB", "1.20 GB"],
+	])("should works %#", (values, iu, expected) => {
+		const fmt = dataSizeSI.homogeneous(values, iu as any);
+		expect(fmt.format(1200)).toBe(expected);
+		expect(fmt.format(-1200)).toBe("-" + expected);
 	});
 
 	it("should support specific precision", () => {
-		const format = dataSizeSI.homogeneous([1200, 1e13], "MB");
+		const { format } = dataSizeSI.homogeneous([1200, 1e13], "MB");
 		expect(format(1200, 0)).toBe("1 GB");
 		expect(format(1200, 3)).toBe("1.200 GB");
-	});
-
-	it("should support negative values", () => {
-		const format = dataSizeSI.homogeneous([-1200, 1e13]);
-		expect(format(1200)).toBe("1.20 KB");
-		expect(format(-1200)).toBe("-1.20 KB");
-	});
-
-	it("should support empty values", () => {
-		const format = dataSizeSI.homogeneous([]);
-		expect(format(1200)).toBe("1200.00 B");
-	});
-
-	it("should support zero values", () => {
-		const format = dataSizeSI.homogeneous([8964, 0]);
-		expect(format(1200)).toBe("1.20 KB");
-	});
-
-	it("should ignore undefined values", () => {
-		const format = dataSizeSI.homogeneous([undefined, 8964]);
-		expect(format(1200)).toBe("1.20 KB");
 	});
 });
