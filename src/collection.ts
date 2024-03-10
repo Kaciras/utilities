@@ -6,7 +6,7 @@ import { ItemOfIterable } from "./lang.ts";
  * NOTE: Code after the first yield in Generator will not be executed.
  */
 export function firstItem<T>(iterable: Iterable<T>) {
-	// noinspection LoopStatementThatDoesntLoopJS
+	// noinspection LoopStatementThatDoesntLoopJS,UnnecessaryLocalVariableJS
 	for (const item of iterable) return item;
 }
 

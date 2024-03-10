@@ -66,7 +66,11 @@ export function splitCLI(command: string) {
 }
 
 /**
- * Combine command line arguments to string, with necessary quotes and special chars escaped.
+ * Combine command line arguments into a string, with necessary quotes and special chars escaped.
+ *
+ * # Alternatives
+ * You can wrap each argument with quote: `args.map(JSON.stringify).join(" ")`,
+ * which is equivalent with this function for start processes, but more verbose.
  *
  * @example
  * buildCLI("node", "--foo");		// 'node --foo'

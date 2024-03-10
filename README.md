@@ -15,6 +15,7 @@ Goals:
 * Write with latest ECMAScript.
 * Tree-shakeable.
 * No duplicated with FP libraries (lodash, underscore, etc.)
+* Type-first, We don't check for parameters that don't match the type.
 
 ## Install
 

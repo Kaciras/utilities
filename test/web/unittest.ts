@@ -67,7 +67,7 @@ function compile(path: string): TransformedOutput {
 	 */
 	const [imports] = parseImports(code, path);
 	for (const { n, ss, se } of imports) {
-		if (n!.charCodeAt(0) !== 46) {
+		if (n!.charCodeAt(0) !== 46 /* . */) {
 			const c = `/${"*".repeat(se - ss - 2)}/`;
 			code = code.slice(0, ss) + c + code.slice(se);
 		}
