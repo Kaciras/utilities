@@ -1,5 +1,5 @@
 import { dirname, resolve } from "path";
-import { readFileSync } from "fs";
+import { readFileSync, rmSync } from "fs";
 import ts from "typescript";
 import { rollup } from "rollup";
 import swc from "@swc/core";
@@ -82,6 +82,7 @@ async function bundle(input, typeOfWindow) {
 	console.info(`Generated bundle: lib/${chunk.fileName}`);
 }
 
+rmSync("lib", { recursive: true, force: true });
 generateTypeDeclaration(["src/node.ts", "src/browser.ts"]);
 await bundle("src/node.ts", "'undefined'");
 await bundle("src/browser.ts", "'object'");
