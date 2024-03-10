@@ -19,17 +19,15 @@ export function ellipsis(value: string, length: number, position: EllipsisPos = 
 	}
 	let n = length - 1;
 
-	switch (position.charCodeAt(0)) {
-		case 101: /* e */
+	switch (position) {
+		case "end":
 			return value.slice(0, n) + "…";
-		case 98:  /* b */
+		case "begin":
 			return "…" + value.slice(-n);
-		case 109: /* m */
+		case "mid":
 			n = Math.ceil(n / 2);
 			return `${value.slice(0, n)}…${value.slice(-length + n + 1)}`;
 	}
-
-	throw new TypeError(`Invalid position: ${position}. supported (start|mid|end)`);
 }
 
 /**

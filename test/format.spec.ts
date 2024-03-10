@@ -1,35 +1,25 @@
 import { describe, expect, it } from "@jest/globals";
 import { buildCLI, compositor, ellipsis, separateThousand, splitCLI } from "../src/format.ts";
 
-describe("ellipsis", () => {
-	it("should throw error if position is invalid", () => {
-		// @ts-expect-error
-		expect(() => ellipsis("0123456789", 2, "foobar"))
-			.toThrow(new TypeError("Invalid position: foobar. supported (start|mid|end)"));
-	});
+it.each([
+	["0123456789", 10, "begin", "0123456789"],
 
-	it("should trim whitespaces", () => {
-		expect(ellipsis(" 0123 4\t\t", 5)).toBe("01… 4");
-	});
+	["0123456789", 8964, "begin", "0123456789"],
+	["0123456789", 3, "begin", "…89"],
+	["0123456789", 4, "begin", "…789"],
 
-	it.each([
-		["0123456789", 10, "begin", "0123456789"],
+	["0123456789", 8964, "mid", "0123456789"],
+	["0123456789", 3, "mid", "0…9"],
+	["0123456789", 4, "mid", "01…9"],
+	["0123456789", 5, "mid", "01…89"],
 
-		["0123456789", 8964, "begin", "0123456789"],
-		["0123456789", 3, "begin", "…89"],
-		["0123456789", 4, "begin", "…789"],
+	["0123456789", 8964, "end", "0123456789"],
+	["0123456789", 3, "end", "01…"],
+	["0123456789", 4, "end", "012…"],
 
-		["0123456789", 8964, "mid", "0123456789"],
-		["0123456789", 3, "mid", "0…9"],
-		["0123456789", 4, "mid", "01…9"],
-		["0123456789", 5, "mid", "01…89"],
-
-		["0123456789", 8964, "end", "0123456789"],
-		["0123456789", 3, "end", "01…"],
-		["0123456789", 4, "end", "012…"],
-	])("should works", (value, length, position, expected) => {
-		expect(ellipsis(value, length, position as any)).toBe(expected);
-	});
+	[" 0123 4\t\t", 5, "mid", "01… 4"],
+])("ellipsis %#", (value, length, position, expected) => {
+	expect(ellipsis(value, length, position as any)).toBe(expected);
 });
 
 describe("separateThousand", () => {
