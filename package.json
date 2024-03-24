@@ -41,8 +41,8 @@
 		"@types/istanbul-lib-coverage": "^2.0.6",
 		"@types/istanbul-lib-report": "^3.0.3",
 		"@types/istanbul-reports": "^3.0.4",
-		"@types/node": "^20.11.28",
-		"es-module-lexer": "^1.4.1",
+		"@types/node": "^20.11.30",
+		"es-module-lexer": "^1.4.2",
 		"eslint": "^8.57.0",
 		"is-builtin-module": "^3.2.1",
 		"istanbul-lib-coverage": "^3.2.2",
@@ -52,7 +52,7 @@
 		"mockttp": "^3.10.1",
 		"rollup": "^4.13.0",
 		"tstyche": "^1.1.0",
-		"typescript": "^5.4.2",
+		"typescript": "^5.4.3",
 		"v8-to-istanbul": "^9.2.0"
 	}
 }
