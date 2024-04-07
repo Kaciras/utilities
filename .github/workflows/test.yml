@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: latest
 
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v3
         with:
           version: 8
           run_install: true
@@ -28,6 +28,6 @@ jobs:
 
       - run: pnpm run test:browser
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           files: coverage/lcov.info,playwright-report/lcov.info
