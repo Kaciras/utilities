@@ -26,7 +26,7 @@ export interface FixedUnitFormatter {
 	format: (value: number, precision?: number) => string;
 }
 
-export class UnitConvertor<T extends readonly string[] = string[]> {
+export class UnitConvertor<T extends readonly string[] = readonly string[]> {
 
 	private readonly name: string;
 	private readonly sep: string;
@@ -247,7 +247,7 @@ export class UnitConvertor<T extends readonly string[] = string[]> {
 		switch (value.charCodeAt(0)) {
 			case 45: /* - */
 				result = -result;
-			// eslint-disable-next-line no-fallthrough
+			// noinspection FallThroughInSwitchStatementJS
 			case 43: /* + */
 				seen += 1;
 		}
