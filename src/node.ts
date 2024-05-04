@@ -1,3 +1,4 @@
+import { pathToFileURL } from "url";
 import process from "process";
 
 export * from "./collection.ts";
@@ -45,4 +46,30 @@ export function onExit(listener: (signal: Signals) => unknown) {
 	}
 
 	return () => exitSignals.forEach(s => process.off(s, handle));
+}
+
+/**
+ * Import the default export of a module uses file path from CWD.
+ *
+ * If the `module` argument is supplied, it will be treated as a required module,
+ * so non-existent files will throw an error. However, if `default_` is used,
+ * it will return undefined if the file is not found.
+ *
+ * @param module Path of the file to load.
+ * @param default_ Fallback path used if the module is undefined.
+ */
+export async function importCWD(module?: string, default_?: string) {
+	module ??= default_;
+	if (!module) {
+		return; // Undefined for both is allowed.
+	}
+	try {
+		const url = pathToFileURL(module).toString();
+		return (await import(url)).default;
+	} catch (e) {
+		// Why there are 2 different error codes?
+		if (module !== default_
+			|| (e.code !== "ERR_MODULE_NOT_FOUND"
+				&& e.code !== "MODULE_NOT_FOUND")) throw e;
+	}
 }
