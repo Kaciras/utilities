@@ -23,7 +23,7 @@ export function isPointerInside(event: MouseEvent, el?: Element) {
 }
 
 /**
- * Swap locations of nodeA and nodeB in the DOM.
+ * Swap locations of `nodeA` and `nodeB` in the DOM.
  *
  * @see https://stackoverflow.com/a/10717422/7065321
  */

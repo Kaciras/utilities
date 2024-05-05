@@ -82,7 +82,7 @@ async function bundle(input, typeOfWindow) {
 	console.info(`Generated bundle: lib/${chunk.fileName}`);
 }
 
-// Equals to `if __name__ == "__main__":` in Python.
+// Equivalent to `if __name__ == "__main__":` in Python.
 if (process.argv[1] === import.meta.filename) {
 	rmSync("lib", { recursive: true, force: true });
 	generateTypeDeclaration(["src/node.ts", "src/browser.ts"]);

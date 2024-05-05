@@ -19,7 +19,7 @@ export async function fetchFile(input: RequestInfo, init?: RequestInit) {
 	const lastModified = timeHeader ? new Date(timeHeader).getTime() : undefined;
 
 	// A dummy origin is needed to build URL object with a partial url.
-	const name = new URL(url, "a://b")
+	const name = new URL(url, "x://x")
 		.pathname
 		.split("/").at(-1) || "downloaded";
 
@@ -111,7 +111,7 @@ export class ResponseFacade implements Promise<Response> {
 	 *
 	 * Advantages over Response.json():
 	 * 1) Prefer generic `res.json<T>()` over casting `res.json() as T`.
-	 * 2) Using this method can reduce one then/await call.
+	 * 2) Using this method can eliminate a then/await call.
 	 */
 	json<T = any>(): Promise<T> {
 		return this.then(x => x.json());
@@ -121,7 +121,7 @@ export class ResponseFacade implements Promise<Response> {
 		return this.then(x => x.text());
 	}
 
-	get location(): Promise<string> {
+	get location() {
 		return this.then(x => x.headers.get("location")!);
 	}
 
@@ -188,6 +188,10 @@ export interface FetchClientOptions {
  * [ky](https://github.com/sindresorhus/ky)
  * [axios](https://github.com/axios/axios)
  * [wretch](https://github.com/elbywan/wretch)
+ *
+ * @example
+ * const client = new FetchClient({ baseURL: "https://example.com" });
+ * const html = await client.get("/foo?bar=baz").text();
  */
 export class FetchClient {
 

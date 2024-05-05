@@ -1,8 +1,8 @@
 import { readFileSync } from "fs";
+import { isBuiltin } from "module";
 import { parse as parseImports } from "es-module-lexer";
 import { expect, it } from "@jest/globals";
 import { Plugin, rollup } from "rollup";
-import isBuiltinModule from "is-builtin-module";
 import { noop } from "../../src/lang.ts";
 
 function importOnlyEntry(file: string): Plugin {
@@ -20,24 +20,14 @@ function importOnlyEntry(file: string): Plugin {
 	};
 }
 
-const resolveBuiltinModule: Plugin = {
-	name: "node-builtin",
-	resolveId(id: string) {
-		if (isBuiltinModule(id)) return {
-			id,
-			external: true,
-			moduleSideEffects: false,
-		};
-	},
-};
-
 it.each([
 	"./lib/browser.js",
 	"./lib/node.js",
 ])("should export all members as tree-shakable for %s", async file => {
 	const bundle = await rollup({
 		onwarn: noop,
-		plugins: [resolveBuiltinModule, importOnlyEntry(file)],
+		external: isBuiltin,
+		plugins: [importOnlyEntry(file)],
 	});
 	expect((await bundle.generate({})).output[0].code).toBe("\n");
 });

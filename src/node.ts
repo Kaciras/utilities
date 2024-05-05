@@ -52,7 +52,9 @@ export function onExit(listener: (signal: Signals) => unknown) {
  * Import the default export of a module uses file path from CWD.
  *
  * If the `module` argument is supplied, it will be treated as a required module,
- * so non-existent files will throw an error. However, if `default_` is used,
+ * so non-existent files will throw an error.
+ *
+ * if `module` is undefined then `default_` will be used, in this case
  * it will return undefined if the file is not found.
  *
  * If `module` === `default_`, it equivalent to `module` is undefined.
