@@ -25,6 +25,7 @@ it.each([
 	"./lib/node.js",
 ])("should export all members as tree-shakable for %s", async file => {
 	const bundle = await rollup({
+		treeshake: "smallest",
 		onwarn: noop,
 		external: isBuiltin,
 		plugins: [importOnlyEntry(file)],

@@ -66,6 +66,7 @@ const swcTransform = {
 async function bundle(input, typeOfWindow) {
 	const build = await rollup({
 		input,
+		treeshake: "smallest",
 		external: isBuiltin,
 		plugins: [
 			swcTransform,
