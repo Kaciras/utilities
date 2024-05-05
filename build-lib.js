@@ -1,10 +1,10 @@
 import { dirname, resolve } from "path";
 import { readFileSync, rmSync } from "fs";
+import { isBuiltin } from "module";
 import ts from "typescript";
 import { rollup } from "rollup";
 import swc from "@swc/core";
 import replace from "@rollup/plugin-replace";
-import isBuiltinModule from "is-builtin-module";
 
 /**
  * Generate type declaration files. This function does not throw any error
@@ -66,7 +66,7 @@ const swcTransform = {
 async function bundle(input, typeOfWindow) {
 	const build = await rollup({
 		input,
-		external: isBuiltinModule,
+		external: isBuiltin,
 		plugins: [
 			swcTransform,
 			replace({ "typeof window": typeOfWindow }),
@@ -82,7 +82,10 @@ async function bundle(input, typeOfWindow) {
 	console.info(`Generated bundle: lib/${chunk.fileName}`);
 }
 
-rmSync("lib", { recursive: true, force: true });
-generateTypeDeclaration(["src/node.ts", "src/browser.ts"]);
-await bundle("src/node.ts", "'undefined'");
-await bundle("src/browser.ts", "'object'");
+// Equals to `if __name__ == "__main__":` in Python.
+if (process.argv[1] === import.meta.filename) {
+	rmSync("lib", { recursive: true, force: true });
+	generateTypeDeclaration(["src/node.ts", "src/browser.ts"]);
+	await bundle("src/node.ts", "'undefined'");
+	await bundle("src/browser.ts", "'object'");
+}
