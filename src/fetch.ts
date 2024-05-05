@@ -117,6 +117,10 @@ export class ResponseFacade implements Promise<Response> {
 		return this.then(x => x.json());
 	}
 
+	text() {
+		return this.then(x => x.text());
+	}
+
 	get location(): Promise<string> {
 		return this.then(x => x.headers.get("location")!);
 	}

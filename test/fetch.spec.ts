@@ -216,11 +216,20 @@ describe("FetchClient", () => {
 		const client = new FetchClient();
 		const json = { foo: 11, bar: 22 };
 
-		await httpServer.forPatch("/")
-			.thenReply(200, JSON.stringify(json));
+		await httpServer.forPatch("/").thenReply(200, JSON.stringify(json));
 
-		const actual = await client.patch(httpServer.url).json();
-		expect(actual).toEqual(json);
+		const response = client.patch(httpServer.url);
+		expect(await response.json()).toEqual(json);
+	});
+
+	it("should return the text body", async () => {
+		const client = new FetchClient();
+		const text = "Hello World";
+
+		await httpServer.forPatch("/").thenReply(200, text);
+
+		const response = client.patch(httpServer.url);
+		expect(await response.text()).toEqual(text);
 	});
 
 	it("should support custom checker", async () => {
