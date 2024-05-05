@@ -79,4 +79,7 @@ describe("importCWD", () => {
 	it("should not require the default module exists", () => {
 		return expect(importCWD(undefined, "NON-EXISTS.js")).resolves.toBeUndefined();
 	});
+	it("should ignore the module parameter if it equals to default", () => {
+		return expect(importCWD("NON-EXISTS.js", "NON-EXISTS.js")).resolves.toBeUndefined();
+	});
 });

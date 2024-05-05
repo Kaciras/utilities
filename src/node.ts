@@ -55,6 +55,8 @@ export function onExit(listener: (signal: Signals) => unknown) {
  * so non-existent files will throw an error. However, if `default_` is used,
  * it will return undefined if the file is not found.
  *
+ * If `module` === `default_`, it equivalent to `module` is undefined.
+ *
  * @param module Path of the file to load.
  * @param default_ Fallback path used if the module is undefined.
  */
