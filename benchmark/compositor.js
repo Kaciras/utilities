@@ -24,13 +24,11 @@ export default defineSuite({
 			composite.put("appHtml", "HTML");
 			return composite.toString();
 		});
-		scene.bench("replace", () => {
-			return template
-				.replace("<!--ssr-metadata-->", "METADATA")
-				.replace(/(?<=<title>).*(?=<\/title>)/s, "The Title")
-				.replace(/(?=<\/head>)/s, "Ending of Head")
-				.replace(/(?<=<body.*?)(?=>)/s, "")
-				.replace(/(?<=<body.*?>).*(?=<\/body>)/s, "HTML");
-		});
+		scene.bench("replace", () => template
+			.replace("<!--ssr-metadata-->", "METADATA")
+			.replace(/(?<=<title>).*(?=<\/title>)/s, "The Title")
+			.replace(/(?=<\/head>)/s, "Ending of Head")
+			.replace(/(?<=<body.*?)(?=>)/s, "")
+			.replace(/(?<=<body.*?>).*(?=<\/body>)/s, "HTML"));
 	},
 });

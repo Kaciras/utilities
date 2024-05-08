@@ -16,6 +16,7 @@ const arrayDef = [
 ];
 
 function drain(generator) {
+	// noinspection StatementWithEmptyBodyJS
 	for (const _ of generator) ;
 }
 
