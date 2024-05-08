@@ -1,55 +1,36 @@
 import { readFileSync } from "fs";
-import { PassThrough, Readable } from "stream";
-import { Composite, compositor } from "../lib/node.js";
+import { defineSuite } from "esbench";
+import { compositor } from "../lib/node.js";
 
-const ITERATIONS = 10_000;
+const template = readFileSync("benchmark/index.html", "utf8");
 
-async function run(name, func) {
-	for (let i = 0; i < ITERATIONS; i++) await func(); // warm up
-
-	const start = performance.now();
-	for (let i = 0; i < ITERATIONS; i++) await func();
-	const dur = (performance.now() - start) / 10;
-
-	console.log(`${name}\t${dur.toFixed(3)} ns/op`);
-}
-
-Composite.prototype.toStream = function () {
-	return Readable.from(this.parts);
-};
-
-const newComposite = compositor(readFileSync("index.html", "utf8"), {
+const newComposite = compositor(template, {
 	metadata: "<!--ssr-metadata-->",
-	headTags: "<!--seo-head-tags-->",
 	title: /(?<=<title>).*(?=<\/title>)/s,
 	preloads: /(?=<\/head>)/s,
 	bodyAttrs: /(?<=<body.*?)(?=>)/s,
 	appHtml: /(?<=<body.*?>).*(?=<\/body>)/s,
 });
 
-async function readAll(stream) {
-	for await (const _ of stream);
-}
-
-await run("toString", () => {
-	const r = new PassThrough();
-	r.push(newComposite().toString());
-	r.end();
-	return readAll(r);
-});
-
-await run("Multi push", () => {
-	const r = new PassThrough();
-	const { parts } = newComposite();
-	for (const p of parts) {
-		r.push(p);
-	}
-	r.end();
-	return readAll(r);
-});
-
-await run("toStream", () => {
-	const r = new PassThrough();
-	newComposite().toStream().pipe(r);
-	return readAll(r);
+export default defineSuite({
+	baseline: { type: "Name", value: "replace" },
+	setup(scene) {
+		scene.bench("composite", () => {
+			const composite = newComposite();
+			composite.put("metadata", "METADATA");
+			composite.put("title", "The Title");
+			composite.put("preloads", "Ending of Head");
+			composite.put("bodyAttrs", "");
+			composite.put("appHtml", "HTML");
+			return composite.toString();
+		});
+		scene.bench("replace", () => {
+			return template
+				.replace("<!--ssr-metadata-->", "METADATA")
+				.replace(/(?<=<title>).*(?=<\/title>)/s, "The Title")
+				.replace(/(?=<\/head>)/s, "Ending of Head")
+				.replace(/(?<=<body.*?)(?=>)/s, "")
+				.replace(/(?<=<body.*?>).*(?=<\/body>)/s, "HTML");
+		});
+	},
 });
