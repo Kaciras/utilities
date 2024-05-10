@@ -14,12 +14,13 @@ export const alwaysFalse: (..._: unknown[]) => false = () => false;
 export const identity = <T>(v: T) => v;
 
 export const noop: (..._: unknown[]) => void = () => {};
+export const asyncNoop: (..._: unknown[]) => Promise<void> = async () => {};
 
 /**
  * In JavaScript, every async function is actually an AsyncFunction object.
  * https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction
  */
-export const AsyncFunction = async function () {}.constructor as FunctionConstructor;
+export const AsyncFunction = asyncNoop.constructor as FunctionConstructor;
 
 // https://stackoverflow.com/a/38642922/7065321
 // eslint-disable-next-line @typescript-eslint/ban-types

@@ -25,7 +25,7 @@ describe("AsyncFunction", () => {
 	it("should not a global object", () => {
 		expect("AsyncFunction" in globalThis).toBe(false);
 	});
-	it("should compile JS code", () => {
+	it("should be able to compile JS code", () => {
 		const promise = Promise.resolve(11);
 		const fn = new AsyncFunction("x", "return await x");
 		return expect(fn(promise)).resolves.toBe(11);
