@@ -1,5 +1,5 @@
 import { defineSuite } from "esbench";
-import { buildCLI } from "../lib/node.js";
+import { buildCLI } from "../src/node.ts";
 
 const args = ["/sbin/agetty", "-o", "-p", "--", "\\u", "--noclear", "-", "linux"];
 

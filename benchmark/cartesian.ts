@@ -1,5 +1,5 @@
 import { defineSuite } from "esbench";
-import { cartesianArray, cartesianObject } from "../lib/node.js";
+import { cartesianArray, cartesianObject } from "../src/node.ts";
 
 const objectDef = {
 	foo: [11, 22, 33, 44, 55],
@@ -15,9 +15,9 @@ const arrayDef = [
 	[1024, 2048, 4096, 8192],
 ];
 
-function drain(generator) {
+function drain(generator: Iterable<unknown>) {
 	// noinspection StatementWithEmptyBodyJS
-	for (const _ of generator) ;
+	for (const _ of generator) /* No-op */;
 }
 
 export default defineSuite(scene => {

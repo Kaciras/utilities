@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import { defineSuite } from "esbench";
-import { compositor } from "../lib/node.js";
+import { compositor } from "../src/node.ts";
 
 const template = readFileSync("benchmark/index.html", "utf8");
 

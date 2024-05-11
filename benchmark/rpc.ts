@@ -1,5 +1,5 @@
 import { defineSuite } from "esbench";
-import { RPC } from "../lib/node.js";
+import { RPC } from "../src/node.ts";
 
 const deep5 = { foo: { bar: [{ baz: [() => 114514] }] } };
 const deep1 = { foo: () => 114514 };
