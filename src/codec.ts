@@ -84,3 +84,35 @@ export function base64url(buffer: BufferSource | Buffer) {
 	const chars = Array.from(bytes, c => String.fromCodePoint(c));
 	return btoa(chars.join("")).replaceAll(/[+/=]/g, v => urlSafeMap[v]);
 }
+
+/**
+ * Apply a transform to the buffer, avoiding some of the pitfalls:
+ *
+ * - Many instances use `new Blob([buffer])` or `new Response(buffer)`, and they cause redundant data copying.
+ *   See benchmark/buffer-stream.ts for performance comparison.
+ *
+ * - The Promise returned by `tx.writable.getWriter().write(buffer)` may not be fulfilled
+ *   until `tx.readable` is read. But if you don't await for it, you'll miss the exception.
+ *
+ * @example
+ * // Compress & decompress with deflate-raw algorithm.
+ * const buffer = Buffer.from(...);
+ * const compress = new CompressionStream("deflate-raw");
+ * const decompress = new DecompressionStream("deflate-raw");
+ *
+ * const zipped = await transformBuffer(buffer, compress);
+ * const unzipped = await transformBuffer(zipped, decompress);
+ *
+ * @param buffer The binary data to be transformed.
+ * @param tx A transform stream should apply to the buffer.
+ */
+export async function transformBuffer(buffer: BufferSource, tx: GenericTransformStream) {
+	const stream = new ReadableStream({
+		start(controller) {
+			controller.enqueue(buffer);
+			controller.close();
+		},
+	});
+	const readable = stream.pipeThrough(tx);
+	return new Uint8Array(await new Response(readable).arrayBuffer());
+}

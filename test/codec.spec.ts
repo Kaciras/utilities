@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { base64url, escapeHTML, svgToUrl } from "../src/codec.ts";
+import { base64url, escapeHTML, svgToUrl, transformBuffer } from "../src/codec.ts";
 
 describe("escapeHTML", () => {
 	const cases = [
@@ -38,5 +38,25 @@ describe("base64url", () => {
 		const { buffer, byteOffset, length } = data;
 		const end = byteOffset + length;
 		expect(base64url(buffer.slice(byteOffset, end))).toBe(str);
+	});
+});
+
+describe("transformBuffer", () => {
+	const buffer = Buffer.from("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+
+	it("should works", async () => {
+		const compress = new CompressionStream("deflate-raw");
+		const decompress = new DecompressionStream("deflate-raw");
+
+		const zipped = await transformBuffer(buffer, compress);
+		expect(zipped).toHaveLength(6);
+
+		const unzipped = await transformBuffer(zipped, decompress);
+		expect(unzipped).toStrictEqual(new Uint8Array(buffer));
+	});
+
+	it("should throw error on fail", () => {
+		const tx = new DecompressionStream("deflate-raw");
+		return expect(transformBuffer(buffer, tx)).rejects.toThrow();
 	});
 });
