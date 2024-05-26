@@ -57,7 +57,7 @@ describe("onExit", () => {
 
 describe("importCWD", () => {
 	it("should do nothing if arguments are undefined", () => {
-		return expect(importCWD(undefined, undefined)).resolves.toBeUndefined();
+		return expect(importCWD(undefined)).resolves.toBeUndefined();
 	});
 	it("should import modules from CWD", () => {
 		return expect(importCWD("jest.config.js")).resolves.toHaveProperty("testMatch");
@@ -66,20 +66,21 @@ describe("importCWD", () => {
 		return expect(importCWD("NON-EXISTS.js")).rejects.toThrow();
 	});
 	it("should use module in favor of default", () => {
-		return expect(importCWD("jest.config.js", "eslint.config.js"))
+		return expect(importCWD("jest.config.js", ["eslint.config.js"]))
 			.resolves.toHaveProperty("testMatch");
 	});
 	it("should fallback to default", () => {
-		return expect(importCWD(undefined, "jest.config.js"))
+		return expect(importCWD(undefined, ["jest.config.js"]))
 			.resolves.toHaveProperty("testMatch");
 	});
 	it("should not use default if the module is specified", () => {
-		return expect(importCWD("NON-EXISTS.js", "jest.config.js")).rejects.toThrow();
+		return expect(importCWD("NON-EXISTS.js", ["jest.config.js"])).rejects.toThrow();
 	});
 	it("should not require the default module exists", () => {
-		return expect(importCWD(undefined, "NON-EXISTS.js")).resolves.toBeUndefined();
+		return expect(importCWD(undefined, ["NON-EXISTS.js"])).resolves.toBeUndefined();
 	});
-	it("should ignore the module parameter if it equals to default", () => {
-		return expect(importCWD("NON-EXISTS.js", "NON-EXISTS.js")).resolves.toBeUndefined();
+	it("should support multiple defaults", () => {
+		return expect(importCWD(undefined, ["NON-EXISTS.js", "jest.config.js"]))
+			.resolves.toHaveProperty("testMatch");
 	});
 });
