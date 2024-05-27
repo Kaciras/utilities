@@ -1,8 +1,12 @@
 {
 	"jsc": {
+		"target": "esnext",
 		"parser": {
 			"syntax": "typescript"
 		},
-		"target": "esnext"
+		"minify": {
+			"mangle": false,
+			"compress": false
+		}
 	}
 }
