@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import { Profiler } from "inspector";
-import { parse as parseImports } from "es-module-lexer";
+import * as importParser from "es-module-lexer";
 import swc from "@swc/core";
 import { expect, Request, Route, test as base } from "@playwright/test";
 import v8toIstanbul from "v8-to-istanbul";
@@ -11,7 +11,10 @@ import libCoverage from "istanbul-lib-coverage";
 export { expect };
 
 const swcrc = JSON.parse(readFileSync(".swcrc", "utf8")) as swc.Options;
+swcrc.swcrc = false;
 swcrc.sourceMaps = true;
+
+await importParser.init;
 
 const baseURL = "http://localhost/";
 
@@ -65,7 +68,7 @@ function compile(path: string): TransformedOutput {
 	 * Import statements are replaced with comments of the same length
 	 * to avoid affecting source map.
 	 */
-	const [imports] = parseImports(code, path);
+	const [imports] = importParser.parse(code, path);
 	for (const { n, ss, se } of imports) {
 		if (n!.charCodeAt(0) !== 46 /* . */) {
 			const c = `/${"*".repeat(se - ss - 2)}/`;

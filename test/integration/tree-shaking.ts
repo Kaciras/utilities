@@ -1,9 +1,12 @@
 import { readFileSync } from "fs";
 import { isBuiltin } from "module";
-import { parse as parseImports } from "es-module-lexer";
+import { join } from "path";
+import * as importParser from "es-module-lexer";
 import { expect, it } from "@jest/globals";
 import { Plugin, rollup } from "rollup";
 import { noop } from "../../src/lang.ts";
+
+await importParser.init;
 
 function importOnlyEntry(file: string): Plugin {
 	return {
@@ -34,5 +37,18 @@ it.each([
 });
 
 it("should have no import in browser build", () => {
-	expect(parseImports(readFileSync("./lib/browser.js", "utf8"))[0]).toHaveLength(0);
+	const pending = ["./browser.js"];
+	const visited = new Set<string>();
+
+	for (const specifier of pending) {
+		if (visited.has(specifier)) {
+			return;
+		}
+		visited.add(specifier);
+
+		expect(specifier).toMatch(/^\.\//);
+		const code = readFileSync(join("lib", specifier), "utf8");
+		const [imports] = importParser.parse(code);
+		pending.push(...imports.map(i => i.n!));
+	}
 });

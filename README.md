@@ -5,14 +5,14 @@
 [![Test](https://github.com/Kaciras/utilities/actions/workflows/test.yml/badge.svg)](https://github.com/Kaciras/utilities/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/Kaciras/utilities/branch/master/graph/badge.svg?token=LVN4Y86T39)](https://codecov.io/gh/Kaciras/utilities)
 
-A set of common JS functions for Node and browser.
+A set of common JS functions implemented with best practices.
 
 Goals:
 
 * Just work for most cases, not a general framework.
 * No dependencies.
 * High performance & less code.
-* Write with latest ECMAScript.
+* Targets the latest ECMAScript.
 * Tree-shakeable.
 * No duplicated with FP libraries (lodash, underscore, etc.)
 * Type-first, We don't check for parameters that don't match the type.

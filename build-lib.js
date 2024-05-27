@@ -13,7 +13,7 @@ import swc from "@swc/core";
  *
  * @see https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API
  */
-function generateTypeDeclaration(entries) {
+function generateTypeDeclaration(...entries) {
 	const { config } = ts.readConfigFile("tsconfig.json", ts.sys.readFile);
 	const { options } = ts.convertCompilerOptionsFromJson(config.compilerOptions, ".");
 
@@ -39,7 +39,6 @@ function generateTypeDeclaration(entries) {
 const swcrc = JSON.parse(readFileSync(".swcrc", "utf8"));
 swcrc.swcrc = false;
 
-
 const swcTransform = {
 	name: "swc-transform-sync",
 
@@ -58,12 +57,6 @@ const swcTransform = {
 	},
 };
 
-/*
- * Source files for both browser and Node may contain imports of Node module,
- * so tree-shaking is needed.
- *
- * Separating code that contains imports would make the filenames less clear.
- */
 async function bundle(...input) {
 	const build = await rollup({
 		input,
@@ -73,6 +66,7 @@ async function bundle(...input) {
 	});
 
 	await build.write({
+		minifyInternalExports: false,
 		dir: "lib",
 		chunkFileNames: "[name].js",
 	});
@@ -85,5 +79,5 @@ async function bundle(...input) {
 if (process.argv[1] === import.meta.filename) {
 	rmSync("lib", { recursive: true, force: true });
 	bundle("src/node.ts", "src/browser.ts");
-	generateTypeDeclaration(["src/node.ts", "src/browser.ts"]);
+	generateTypeDeclaration("src/node.ts", "src/browser.ts");
 }
