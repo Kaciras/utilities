@@ -4,7 +4,6 @@ import { isBuiltin } from "module";
 import ts from "typescript";
 import { rollup } from "rollup";
 import swc from "@swc/core";
-import replace from "@rollup/plugin-replace";
 
 /**
  * Generate type declaration files. This function does not throw any error
@@ -38,6 +37,8 @@ function generateTypeDeclaration(entries) {
 
 // Cannot use import-assertion because the filename has no extension.
 const swcrc = JSON.parse(readFileSync(".swcrc", "utf8"));
+swcrc.swcrc = false;
+
 
 const swcTransform = {
 	name: "swc-transform-sync",
@@ -63,30 +64,26 @@ const swcTransform = {
  *
  * Separating code that contains imports would make the filenames less clear.
  */
-async function bundle(input, typeOfWindow) {
+async function bundle(...input) {
 	const build = await rollup({
 		input,
 		treeshake: "smallest",
 		external: isBuiltin,
-		plugins: [
-			swcTransform,
-			replace({ "typeof window": typeOfWindow }),
-		],
+		plugins: [swcTransform],
 	});
 
-	const { output: [chunk] } = await build.write({
+	await build.write({
 		dir: "lib",
 		chunkFileNames: "[name].js",
 	});
 
 	await build.close();
-	console.info(`Generated bundle: lib/${chunk.fileName}`);
+	console.info(`Generated bundle of ${input.length} entries`);
 }
 
 // Equivalent to `if __name__ == "__main__":` in Python.
 if (process.argv[1] === import.meta.filename) {
 	rmSync("lib", { recursive: true, force: true });
+	bundle("src/node.ts", "src/browser.ts");
 	generateTypeDeclaration(["src/node.ts", "src/browser.ts"]);
-	await bundle("src/node.ts", "'undefined'");
-	await bundle("src/browser.ts", "'object'");
 }
