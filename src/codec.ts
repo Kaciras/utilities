@@ -4,6 +4,12 @@ const htmlEscapes: Record<string, string> = {
 	">": "&gt;",
 	'"': "&quot;",
 	"'": "&#39;",
+
+	"&amp;": "&",
+	"&lt;": "<",
+	"&gt;": ">",
+	"&quot;": '"',
+	"&#39;": "'",
 };
 
 /**
@@ -15,6 +21,10 @@ const htmlEscapes: Record<string, string> = {
  */
 export function escapeHTML(html: string) {
 	return html.replaceAll(/[&<>"']/g, v => htmlEscapes[v]);
+}
+
+export function unescapeHTML(html: string) {
+	return html.replaceAll(/&(?:amp|lt|gt|quot|#39);/g, v => htmlEscapes[v]);
 }
 
 const svgEscapes: Record<string, string> = {

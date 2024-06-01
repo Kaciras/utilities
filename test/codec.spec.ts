@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
-import { base64url, escapeHTML, svgToUrl, transformBuffer } from "../src/codec.ts";
+import { base64url, escapeHTML, svgToUrl, transformBuffer, unescapeHTML } from "../src/codec.ts";
 
-describe("escapeHTML", () => {
+describe("HTML escaping", () => {
 	const cases = [
 		['&foo <> bar "fizz" l\'a', "&amp;foo &lt;&gt; bar &quot;fizz&quot; l&#39;a"],
 		["</p><a onclick=", "&lt;/p&gt;&lt;a onclick="],
@@ -10,8 +10,12 @@ describe("escapeHTML", () => {
 		["alert&lpar;1&rpar;", "alert&amp;lpar;1&amp;rpar;"],
 	];
 
-	it.each(cases)("should escape chars %#", (input, escaped) => {
-		expect(escapeHTML(input)).toBe(escaped);
+	it.each(cases)("should escape chars %#", (html, escaped) => {
+		expect(escapeHTML(html)).toBe(escaped);
+	});
+
+	it.each(cases)("should unescape chars %#", (html, escaped) => {
+		expect(unescapeHTML(escaped)).toBe(html);
 	});
 });
 
