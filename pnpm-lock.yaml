@@ -51,8 +51,8 @@ importers:
         specifier: ^1.5.3
         version: 1.5.3
       esbench:
-        specifier: ^0.2.4
-        version: 0.2.4(@swc/core@1.5.24)(rollup@4.18.0)(typescript@5.4.5)
+        specifier: ^0.3.2
+        version: 0.3.2(@swc/core@1.5.24)(rollup@4.18.0)(typescript@5.4.5)
       eslint:
         specifier: ^9.4.0
         version: 9.4.0
@@ -518,8 +518,8 @@ packages:
     peerDependencies:
       eslint: '>=9'
 
-  '@kaciras/utilities@0.13.1':
-    resolution: {integrity: sha512-TByAq7P7R/0hWaAxfAiLCnYCiChRmCGH5hAGDYuLmfAmremrOKQHSqqK06fIRXUXHePvOQpQwz+uMfBFXjkLVA==}
+  '@kaciras/utilities@1.0.0':
+    resolution: {integrity: sha512-uyL9aZmApb8czJ0vBYdVSdWEpd/WqsIsrAzreU0wTQ6SDRHCSXxaqwyUIR7SkZeueeD3C0aIbcwn6r3R/TeqUg==}
 
   '@ljharb/through@2.3.13':
     resolution: {integrity: sha512-/gKJun8NNiWGZJkGzI/Ragc53cOdcLNdzjLaIa+GEjguQs0ulsurx8WN0jijdK9yPqDvziX995sMRLyLt1uZMQ==}
@@ -1312,8 +1312,8 @@ packages:
   es-module-lexer@1.5.3:
     resolution: {integrity: sha512-i1gCgmR9dCl6Vil6UKPI/trA69s08g/syhiDK9TG0Nf1RJjjFI+AzoWW7sPufzkgYAn861skuCwJa0pIIHYxvg==}
 
-  esbench@0.2.4:
-    resolution: {integrity: sha512-jCJaIxen0rfEzgjTFJgC8akafHM5md81yefkaHf3BhymVCYWNS7Tv1OhFdyrSl7+yRBHBND5ae2M5cKva+HR6w==}
+  esbench@0.3.2:
+    resolution: {integrity: sha512-7KTS+YMTtW+VtR10lhF2svm6g1QoUHg7pSiWWHK1CWz+Y/lzvwAVyEGZJ4L7oVKvYR8ODThrsO//H+0aFGs9mg==}
     hasBin: true
     peerDependencies:
       rollup: ^4.17.2
@@ -2308,10 +2308,6 @@ packages:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
 
-  picomatch@4.0.2:
-    resolution: {integrity: sha512-M7BAV6Rlcy5u+m6oPhAPFgJTzAioX/6B0DxyvDlo9l8+T3nLKbrczg2WLUyzd45L8RqfUMyGPzekbMvX2Ldkwg==}
-    engines: {node: '>=12'}
-
   pify@5.0.0:
     resolution: {integrity: sha512-eW/gHNMlxdSP6dmG6uJip6FXN0EQBwm2clYYd8Wul42Cwu/DK8HEftzsapcNdYe2MfLiIwZqsDk2RDEsTE79hA==}
     engines: {node: '>=10'}
@@ -2685,8 +2681,8 @@ packages:
     peerDependencies:
       typescript: '>=4.2.0'
 
-  ts-directly@1.0.2:
-    resolution: {integrity: sha512-E8vLiMn/fv8YpzbstJWgqWKWMDzKQd1zzyYE1WQ1JaZBQXffjVzyZjTNgGMadJMZTIqnqlmp5084Vr5jU3ipuQ==}
+  ts-directly@1.0.3:
+    resolution: {integrity: sha512-/23OikYHWPE+dXb0098Lha3Dk+iTZGrha6G3L9YvGnd2me8EYcDaBgvSoiBOGWT45aZU7fiE6T9aOvZ8CkkY8A==}
     engines: {node: '>=18.19'}
     peerDependencies:
       '@swc/core': ^1.5.5
@@ -3556,7 +3552,7 @@ snapshots:
     dependencies:
       eslint: 9.4.0
 
-  '@kaciras/utilities@0.13.1': {}
+  '@kaciras/utilities@1.0.0': {}
 
   '@ljharb/through@2.3.13':
     dependencies:
@@ -4363,17 +4359,17 @@ snapshots:
 
   es-module-lexer@1.5.3: {}
 
-  esbench@0.2.4(@swc/core@1.5.24)(rollup@4.18.0)(typescript@5.4.5):
+  esbench@0.3.2(@swc/core@1.5.24)(rollup@4.18.0)(typescript@5.4.5):
     dependencies:
-      '@kaciras/utilities': 0.13.1
+      '@kaciras/utilities': 1.0.0
       chalk: 5.3.0
+      es-module-lexer: 1.5.3
       fast-glob: 3.3.2
       markdown-table: 3.0.3
-      picomatch: 4.0.2
       serialize-error: 11.0.3
       simple-statistics: 7.8.3
       string-width: 7.1.0
-      ts-directly: 1.0.2(@swc/core@1.5.24)(typescript@5.4.5)
+      ts-directly: 1.0.3(@swc/core@1.5.24)(typescript@5.4.5)
       yargs: 17.7.2
     optionalDependencies:
       rollup: 4.18.0
@@ -5631,8 +5627,6 @@ snapshots:
 
   picomatch@2.3.1: {}
 
-  picomatch@4.0.2: {}
-
   pify@5.0.0: {}
 
   pirates@4.0.6: {}
@@ -6011,7 +6005,7 @@ snapshots:
     dependencies:
       typescript: 5.4.5
 
-  ts-directly@1.0.2(@swc/core@1.5.24)(typescript@5.4.5):
+  ts-directly@1.0.3(@swc/core@1.5.24)(typescript@5.4.5):
     dependencies:
       tsconfck: 3.1.0(typescript@5.4.5)
     optionalDependencies:

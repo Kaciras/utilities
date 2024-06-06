@@ -23,6 +23,12 @@ export function escapeHTML(html: string) {
 	return html.replaceAll(/[&<>"']/g, v => htmlEscapes[v]);
 }
 
+/**
+ * Reverse conversion of `escapeHTML`.
+ *
+ * Don't assign to `innerHTML` and retrieve by `textContent`,
+ * is takes match time to build a DOM tree.
+ */
 export function unescapeHTML(html: string) {
 	return html.replaceAll(/&(?:amp|lt|gt|quot|#39);/g, v => htmlEscapes[v]);
 }

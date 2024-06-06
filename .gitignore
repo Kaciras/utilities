@@ -3,6 +3,7 @@ node_modules
 /lib
 /coverage
 /.swc
+/reports
 *.log
 /debug.[jt]s
 

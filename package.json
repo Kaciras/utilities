@@ -42,7 +42,7 @@
 		"@types/istanbul-reports": "^3.0.4",
 		"@types/node": "^20.13.0",
 		"es-module-lexer": "^1.5.3",
-		"esbench": "^0.2.4",
+		"esbench": "^0.3.2",
 		"eslint": "^9.4.0",
 		"istanbul-lib-coverage": "^3.2.2",
 		"istanbul-lib-report": "^3.0.1",
