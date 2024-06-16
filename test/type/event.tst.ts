@@ -10,8 +10,8 @@ test("SingleEventEmitter", () => {
 	const e = new Sub();
 
 	e.addListener(function (arg) {
-		expect(arg).type.toEqual<11>();
-		expect(this).type.toEqual<Sub>();
+		expect(arg).type.toBe<11>();
+		expect(this).type.toBe<Sub>();
 	});
 
 	e.dispatchEvent(11);
@@ -26,8 +26,8 @@ test("MultiEventEmitter", () => {
 	const e = new MSub();
 
 	e.addListener("test", function (arg) {
-		expect(arg).type.toEqual<11>();
-		expect(this).type.toEqual<MSub>();
+		expect(arg).type.toBe<11>();
+		expect(this).type.toBe<MSub>();
 	});
 
 	e.dispatchEvent("test", 11);
@@ -63,5 +63,5 @@ test("message should compat session id", () => {
 test("pubSub2ReqRes - request", () => {
 	type ResponseMessage = { foo: 11; bar: string };
 	const { request } = pubSub2ReqRes<any, ResponseMessage>(noop);
-	expect(request({})).type.toEqual<Promise<ResponseMessage>>();
+	expect(request({})).type.toBe<Promise<ResponseMessage>>();
 });
