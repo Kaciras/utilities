@@ -30,9 +30,17 @@ export function saveFile(blob: Blob, name?: string) {
  *
  * @param accept Defines the file types the file input should accept.
  * @param multiple Allows the user to select more than one file.
+ * @param directory Should select directory instead of file?
  */
-export function selectFile(accept: string, multiple = false) {
+export function selectFile(
+	accept: string,
+	multiple = false,
+	directory = false,
+) {
 	const input = document.createElement("input");
+	if (directory) {
+		input.webkitdirectory = true;
+	}
 	input.type = "file";
 	input.accept = accept;
 	input.multiple = multiple;
