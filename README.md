@@ -34,7 +34,7 @@ The package has 2 entry points. Most functions work for both, but there are stil
 // Use in Node.
 import { /* ... */ } from "@kaciras/utilities/node";
 
-// Use in other environment.
+// Use in browser.
 import { /* ... */ } from "@kaciras/utilities/browser";
 ```
 
@@ -42,14 +42,20 @@ import { /* ... */ } from "@kaciras/utilities/browser";
 
 Build the project:
 
-```
+```shell
 pnpm build
 ```
 
 Run tests. Some tests are for generated bundles, you should build them first.
 
-```
+```shell
 pnpm run test:unit
 pnpm run test:browser
 pnpm run test:types
+```
+
+Run benchmark (file in the benchmark folder):
+
+```shell
+pnpm exec esbench --file <file.ts>
 ```
