@@ -28,10 +28,12 @@ describe("svgToUrl", () => {
 });
 
 describe("base64url", () => {
+	const textBytes = Buffer.from("长测试");
+
 	const data: Array<[Buffer, string]> = [
 		[Buffer.alloc(1), "AA"],
 		[Buffer.alloc(0), ""],
-		[Buffer.from("长测试"), "6ZW_5rWL6K-V"],
+		[textBytes, "6ZW_5rWL6K-V"],
 	];
 
 	it.each(data)("should convert the buffer %#", (data, str) => {
@@ -42,6 +44,16 @@ describe("base64url", () => {
 		const { buffer, byteOffset, length } = data;
 		const end = byteOffset + length;
 		expect(base64url(buffer.slice(byteOffset, end))).toBe(str);
+	});
+
+	it.each([
+		new Uint8Array([233, 149, 191, 230, 181, 139, 232, 175, 149]),
+		new Uint16Array([38377, 59071, 35765, 45032, 149]),
+		new Uint32Array([3871315433, 2951252917, 149]),
+		new DataView(textBytes.buffer, textBytes.byteOffset, textBytes.byteLength),
+	])("should accept ArrayBufferView %#", (data) => {
+		// Due to length rounding, there are at most 4 bytes of 0 at the end.
+		expect(base64url(data)).toMatch(/^6ZW_5rWL6K-VA{0,4}$/);
 	});
 });
 

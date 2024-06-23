@@ -79,6 +79,12 @@ const urlSafeMap: Record<string, string> = {
 	"+": "-",
 };
 
+function toUint8(buffer: BufferSource) {
+	return ArrayBuffer.isView(buffer)
+		? new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength)
+		: new Uint8Array(buffer);
+}
+
 /**
  * Create an Url-Safe Base64 encoded ASCII string from a binary data.
  *
@@ -86,18 +92,17 @@ const urlSafeMap: Record<string, string> = {
  */
 export function base64url(buffer: BufferSource | Buffer) {
 	if (typeof window === "undefined") {
-		// Call Buffer.from with another Buffer will copy data.
+		// Call `Buffer.from` with another Buffer will copy the data.
 		if (!Buffer.isBuffer(buffer)) {
-			buffer = Buffer.from(buffer as any);
+			buffer = Buffer.from(toUint8(buffer));
 		}
 		return buffer.toString("base64url");
 	}
 	/*
-	 * Don't use `String.fromCharCode(...new Uint8Array(buffer))`,
+	 * Don't use `String.fromCharCode(...toUint8(buffer))`,
 	 * It will cause stackoverflow if the buffer is larger than the stack.
 	 */
-	const bytes = new Uint8Array(buffer as any);
-	const chars = Array.from(bytes, c => String.fromCodePoint(c));
+	const chars = Array.from(toUint8(buffer), c => String.fromCodePoint(c));
 	return btoa(chars.join("")).replaceAll(/[+/=]/g, v => urlSafeMap[v]);
 }
 

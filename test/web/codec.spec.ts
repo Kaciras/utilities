@@ -22,11 +22,35 @@ test.describe("base64url", () => {
 		});
 	}
 
-	test("should support arbitrary length input", ({ page }) => {
+	test("should support input larger than the stack", ({ page }) => {
 		const result = page.evaluate(async () => {
 			const { base64url } = await import("/src/codec.ts");
 			return base64url(new Uint8Array(1048576 + 1));
 		});
 		return expect(result).resolves.toHaveLength(1398103);
+	});
+
+	test("should accept Uint8Array", async () => {
+		const { base64url } = await import("/src/codec.ts");
+		const data = new Uint8Array([233, 149, 191, 230, 181, 139, 232, 175, 149]);
+		expect(base64url(data)).toBe("6ZW_5rWL6K-V");
+	});
+
+	test("should accept Uint16Array", async () => {
+		const { base64url } = await import("/src/codec.ts");
+		const data = new Uint16Array([38377, 59071, 35765, 45032, 149]);
+		expect(base64url(data)).toBe("6ZW_5rWL6K-VAA");
+	});
+
+	test("should accept Uint32Array", async () => {
+		const { base64url } = await import("/src/codec.ts");
+		const data = new Uint32Array([3871315433, 2951252917, 149]);
+		expect(base64url(data)).toBe("6ZW_5rWL6K-VAAAA");
+	});
+
+	test("should accept DataView", async () => {
+		const { base64url } = await import("/src/codec.ts");
+		const data = new Uint8Array([233, 149, 191, 230, 181, 139, 232, 175, 149]);
+		expect(base64url(new DataView(data.buffer))).toBe("6ZW_5rWL6K-V");
 	});
 });
