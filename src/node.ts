@@ -73,7 +73,7 @@ export async function importCWD(module?: string, defaults?: string[]) {
 			const url = pathToFileURL(file).toString();
 			return (await import(url)).default;
 		} catch (e) {
-			// Why there are 2 different error codes?
+			//         CJS                                  ESM
 			if (e.code !== "ERR_MODULE_NOT_FOUND" && e.code !== "MODULE_NOT_FOUND") throw e;
 		}
 	}

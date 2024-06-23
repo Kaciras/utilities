@@ -365,5 +365,5 @@ export function probeClient<T = any>(sender: unknown, receiver = sender) {
 	}
 	const { request, receive } = pubSub2ReqRes(publish);
 	probeReceive(receiver, receive);
-	return createClient<T>(request) as unknown as Remote<T>;
+	return createClient<T>(request);
 }

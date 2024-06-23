@@ -50,7 +50,7 @@ export class SingleEventEmitter<A extends any[] = any[]> {
 			handler.apply(this, args);
 			this.removeListener(wrapper);
 		};
-		this.addListener(wrapper as Handler<this, A>);
+		this.addListener(wrapper);
 	}
 
 	dispatchEvent(...args: A) {
@@ -111,7 +111,7 @@ export class MultiEventEmitter<T extends EventMap = Default> {
 			handler.apply(this, args);
 			this.removeListener(name, wrapper);
 		};
-		this.addListener(name, wrapper as Handler<this, T[K]>);
+		this.addListener(name, wrapper);
 	}
 
 	dispatchEvent<K extends keyof T>(name: K, ...args: T[K]) {

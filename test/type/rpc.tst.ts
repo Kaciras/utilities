@@ -5,11 +5,11 @@ import { createClient, probeClient, Remote, ResponseMessage, SendFn, VoidRemote 
 const sender = noop as () => ResponseMessage;
 
 test("SendFn", () => {
-	const syncResp: SendFn = (_, __) => ({} as ResponseMessage);
-	const asyncResp: SendFn = async (_, __) => ({} as ResponseMessage);
+	const syncResp: SendFn = () => ({} as ResponseMessage);
+	const asyncResp: SendFn = async () => ({} as ResponseMessage);
 
-	const syncVoid: SendFn = (_, __) => {};
-	const asyncVoid: SendFn = async (_, __) => {};
+	const syncVoid: SendFn = () => {};
+	const asyncVoid: SendFn = async () => {};
 
 	noop(syncResp, asyncResp, syncVoid, asyncVoid);
 });
