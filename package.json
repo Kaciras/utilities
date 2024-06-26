@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras/utilities",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"license": "MIT",
 	"description": "A set of common JS functions for node and browser.",
 	"author": "Kaciras <Kaciras@outlook.com>",
@@ -20,7 +20,7 @@
 		"lib"
 	],
 	"scripts": {
-		"lint": "eslint --fix .",
+		"lint": "eslint --fix",
 		"test:types": "tstyche",
 		"test:unit": "jest",
 		"test:mutation": "stryker run",
