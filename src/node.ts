@@ -63,7 +63,7 @@ export function onExit(listener: (signal: Signals) => unknown) {
  * @param module Path of the file to load.
  * @param defaults Fallback paths used if the module is undefined.
  */
-export async function importCWD(module?: string, defaults?: string[]) {
+export async function importCWD(module: string | undefined, defaults?: string[]) {
 	if (module) {
 		const url = pathToFileURL(module).toString();
 		return (await import(url)).default;
