@@ -195,23 +195,34 @@ export type CartesianObjectCell<T> = T extends CPSrcObject ? CPCellObject<T> : C
  *     ["c", new Set([3, 4, 5])],
  * ]);
  */
-export function cartesianObject<const T extends CPObjectInput>(src: T) {
+export function* cartesianObject<const T extends CPObjectInput>(src: T) {
 	const entries = Array.isArray(src) ? src : Object.entries(src);
-	const temp = {} as Record<string, unknown>;
+	if (entries.length === 0) {
+		yield {} as unknown as CartesianObjectCell<T>;
+		return;
+	}
+	const iters = new Array<Iterator<unknown> | undefined>(entries.length);
+	const end = iters.length - 1;
+	const template: Record<string, unknown> = {};
 
-	function* recursive(index: number): Iterable<unknown> {
-		if (index === entries.length) {
-			yield { ...temp };
+	let index = 0;
+	while (index !== -1) {
+		const iterator = iters[index] ??= entries[index][1][Symbol.iterator]();
+
+		const { done, value } = iterator.next();
+		if (done) {
+			iters[index--] = undefined;
+			continue;
+		}
+
+		template[entries[index][0]] = value;
+
+		if (index !== end) {
+			index++;
 		} else {
-			const [key, values] = entries[index];
-			for (const value of values) {
-				temp[key] = value;
-				yield* recursive(index + 1);
-			}
+			yield { ...template } as unknown as CartesianObjectCell<T>;
 		}
 	}
-
-	return recursive(0) as Iterable<CartesianObjectCell<T>>;
 }
 
 export type CPArrayInput = ReadonlyArray<Iterable<unknown>>;
@@ -252,19 +263,31 @@ export type CartesianArrayCell<T extends CPArrayInput> =
  *     new Set([3, 4, 5]),
  * ]);
  */
-export function cartesianArray<const T extends CPArrayInput>(src: T) {
-	const temp = new Array<unknown>(src.length);
+export function* cartesianArray<const T extends CPArrayInput>(src: T) {
+	if (src.length === 0) {
+		yield [] as unknown as CartesianArrayCell<T>;
+		return;
+	}
+	const iters = new Array<Iterator<unknown> | undefined>(src.length);
+	const end = iters.length - 1;
+	const template = new Array<unknown>(src.length);
 
-	function* recursive(index: number): Iterable<unknown> {
-		if (index === src.length) {
-			yield [...temp];
+	let index = 0;
+	while (index !== -1) {
+		const iterator = iters[index] ??= src[index][Symbol.iterator]();
+
+		const { done, value } = iterator.next();
+		if (done) {
+			iters[index--] = undefined;
+			continue;
+		}
+
+		template[index] = value;
+
+		if (index !== end) {
+			index++;
 		} else {
-			for (const value of src[index]) {
-				temp[index] = value;
-				yield* recursive(index + 1);
-			}
+			yield [...template] as unknown as CartesianArrayCell<T>;
 		}
 	}
-
-	return recursive(0) as Iterable<CartesianArrayCell<T>>;
 }

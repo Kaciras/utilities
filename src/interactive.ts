@@ -51,3 +51,33 @@ export function selectFile(
 		input.onchange = () => resolve(input.files!);
 	});
 }
+
+type PointerMoveHandler = (e: PointerEvent, init: PointerEvent) => void;
+
+/**
+ *
+ *
+ * @param onMove
+ */
+export function dragHandler(onMove: PointerMoveHandler) {
+	return function (initEvent: PointerEvent) {
+		if (initEvent.button !== 0) {
+			return;
+		}
+		// Avoid dragging selected contents.
+		initEvent.preventDefault();
+
+		function handleMove(event: PointerEvent) {
+			onMove(event, initEvent);
+		}
+
+		function handleEnd(event: Event) {
+			event.preventDefault();
+			document.removeEventListener("pointerup", handleEnd);
+			document.removeEventListener("pointermove", handleMove);
+		}
+
+		document.addEventListener("pointerup", handleEnd);
+		document.addEventListener("pointermove", handleMove);
+	};
+}
