@@ -1,4 +1,5 @@
 import { noop } from "./lang.ts";
+import { firstItem } from "./collection.ts";
 
 type Dispose<T> = (value: T) => unknown;
 
@@ -141,11 +142,10 @@ export default class LRUCache<K, T> {
 			return;
 		}
 		// noinspection LoopStatementThatDoesntLoopJS
-		for (const [key, e] of this.map) {
-			this.map.delete(key);
-			this.dispose(e.value);
-			return clearTimeout(e.timer);
-		}
+		const [key, e] = firstItem(this.map)!;
+		this.map.delete(key);
+		this.dispose(e.value);
+		return clearTimeout(e.timer);
 	}
 
 	* [Symbol.iterator]() {
