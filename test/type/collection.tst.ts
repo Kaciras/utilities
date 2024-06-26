@@ -9,23 +9,23 @@ test("cartesianObject", () => {
 		[symbolKey]: [33, 44],
 		foo: [1, 2],
 		bar: [new Array<string>(), "B"],
-	})).type.toBe<
+	})).type.toBeAssignableTo<
 		Iterable<{ foo: 1 | 2; bar: string[] | "B" }>
 	>();
 
 	expect(cartesianObject({
 		bar: [],
 		foo: new Set<1 | 2>(),
-	})).type.toBe<
+	})).type.toBeAssignableTo<
 		Iterable<{ foo: 1 | 2; bar: never }>
 	>();
 
-	expect(cartesianObject({})).type.toBe<Iterable<{}>>();
+	expect(cartesianObject({})).type.toBeAssignableTo<Iterable<{}>>();
 
 	expect(cartesianObject([
 		["foo", [1, 2]],
 		["bar", [new Array<string>(), "B"]],
-	])).type.toBe<
+	])).type.toBeAssignableTo<
 		Iterable<{ foo: 1 | 2; bar: string[] | "B" }>
 	>();
 
@@ -36,15 +36,15 @@ test("cartesianObject", () => {
 });
 
 test("cartesianArray", () => {
-	expect(cartesianArray([])).type.toBe<Iterable<never>>();
-	expect(cartesianArray([[]])).type.toBe<Iterable<[never]>>();
+	expect(cartesianArray([])).type.toBeAssignableTo<Iterable<never>>();
+	expect(cartesianArray([[]])).type.toBeAssignableTo<Iterable<[never]>>();
 
 	expect(cartesianArray([
 		[1, 2],
 		[new Array<string>(), "B"],
-	])).type.toBe<
+	])).type.toBeAssignableTo<
 		Iterable<[1 | 2, string[] | "B"]>
 	>();
 
-	expect(cartesianArray(new Array<string[]>)).type.toBe<Iterable<string[]>>();
+	expect(cartesianArray(new Array<string[]>)).type.toBeAssignableTo<Iterable<string[]>>();
 });

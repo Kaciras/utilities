@@ -159,7 +159,7 @@ describe("cartesianObject", () => {
 			{ a: 1, b: 2, c: 4 },
 			{ a: 1, b: 2, c: 5 },
 		]);
-		expect(Array.from(params)).toEqual(expected);
+		expect(Array.from(params)).toStrictEqual(expected);
 	});
 
 	it("should isolate each product", () => {
@@ -187,7 +187,7 @@ describe("cartesianObject with entries", () => {
 			{ a: 1, b: 2, c: 4 },
 			{ a: 1, b: 2, c: 5 },
 		]);
-		expect(Array.from(params)).toEqual(expected);
+		expect(Array.from(params)).toStrictEqual(expected);
 	});
 });
 
@@ -203,7 +203,7 @@ describe("cartesianArray", () => {
 
 	it("should support empty array", () => {
 		const params = Array.from(cartesianArray([]));
-		expect(params).toEqual([[]]);
+		expect(params).toStrictEqual([[]]);
 	});
 
 	it("should works", () => {
@@ -211,7 +211,7 @@ describe("cartesianArray", () => {
 			[0, 1],
 			new Set([20, 30, 40]),
 		]);
-		expect(Array.from(iter)).toEqual([
+		expect(Array.from(iter)).toStrictEqual([
 			[0, 20], [0, 30], [0, 40],
 			[1, 20], [1, 30], [1, 40],
 		]);

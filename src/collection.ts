@@ -201,17 +201,17 @@ export function* cartesianObject<const T extends CPObjectInput>(src: T) {
 		yield {} as unknown as CartesianObjectCell<T>;
 		return;
 	}
-	const iters = new Array<Iterator<unknown> | undefined>(entries.length);
-	const end = iters.length - 1;
+	const state = new Array<Iterator<unknown> | undefined>(entries.length);
+	const end = state.length - 1;
 	const template: Record<string, unknown> = {};
 
 	let index = 0;
 	while (index !== -1) {
-		const iterator = iters[index] ??= entries[index][1][Symbol.iterator]();
+		const iterator = state[index] ??= entries[index][1][Symbol.iterator]();
 
 		const { done, value } = iterator.next();
 		if (done) {
-			iters[index--] = undefined;
+			state[index--] = undefined;
 			continue;
 		}
 
@@ -268,17 +268,17 @@ export function* cartesianArray<const T extends CPArrayInput>(src: T) {
 		yield [] as unknown as CartesianArrayCell<T>;
 		return;
 	}
-	const iters = new Array<Iterator<unknown> | undefined>(src.length);
-	const end = iters.length - 1;
+	const state = new Array<Iterator<unknown> | undefined>(src.length);
+	const end = state.length - 1;
 	const template = new Array<unknown>(src.length);
 
 	let index = 0;
 	while (index !== -1) {
-		const iterator = iters[index] ??= src[index][Symbol.iterator]();
+		const iterator = state[index] ??= src[index][Symbol.iterator]();
 
 		const { done, value } = iterator.next();
 		if (done) {
-			iters[index--] = undefined;
+			state[index--] = undefined;
 			continue;
 		}
 
