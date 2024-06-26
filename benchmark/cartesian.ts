@@ -1,21 +1,17 @@
 import { defineSuite } from "esbench";
 import { cartesianArray, cartesianObject } from "../src/node.ts";
 
-const objectDef = {
-	foo: [1.1, 2.2, 3.3, 4.4, 5.5],
-	bar: ["abcdefg", "hijklmn"],
-	baz: [true, false],
-	qux: [1024, 2048, 4096, 8192],
-	quux: [{}, [], null, undefined],
+const dataSets = {
+	largeProps: [
+		...Array.from({ length: 20 }, () => [33]),
+		...Array.from({ length: 20 }, () => [44, 55]),
+	],
+	largeValues: [
+		Array.from({ length: 100 }, () => 11),
+		Array.from({ length: 100 }, () => 22),
+	],
+	small: [[11, 22], [33, 44]],
 };
-
-const arrayDef = [
-	[1.1, 2.2, 3.3, 4.4, 5.5],
-	["abcdefg", "hijklmn"],
-	[true, false],
-	[1024, 2048, 4096, 8192],
-	[{}, [], null, undefined],
-];
 
 // @ts-ignore https://stackoverflow.com/a/43053803/7065321
 const f = (a: any[], b: any[]) => [].concat(...a.map(d => b.map(e => [].concat(d, e))));
@@ -27,10 +23,17 @@ function drain(generator: Iterable<unknown>) {
 	for (const _ of generator) /* No-op */;
 }
 
-export default defineSuite(scene => {
-	// @ts-expect-error It works, just not TS compliant.
-	scene.bench("SoF_7065321", () => SoF_7065321(...arrayDef));
+export default defineSuite({
+	params: {
+		input: Object.keys(dataSets) as [keyof typeof dataSets],
+	},
+	setup(scene) {
+		const src = dataSets[scene.params.input];
+		const oSrc = src.map((v, i) => [`Key_${i}`, v] as const);
 
-	scene.bench("array", () => drain(cartesianArray(arrayDef)));
-	scene.bench("object", () => drain(cartesianObject(objectDef)));
+		// @ts-expect-error It works, just not TS compliant.
+		// scene.bench("SoF_7065321", () => SoF_7065321(...src));
+		scene.bench("array", () => drain(cartesianArray(src)));
+		scene.bench("object", () => drain(cartesianObject(oSrc)));
+	},
 });
