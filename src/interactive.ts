@@ -55,9 +55,18 @@ export function selectFile(
 type PointerMoveHandler = (e: PointerEvent, init: PointerEvent) => void;
 
 /**
+ * A helper function for implementing drag and move feature.
  *
+ * @example
+ * const handler = dragHandler((event, base) => {
+ *     const dx = event.pageX - base.pageX;
+ *     const dy = event.pageY - base.pageY;
+ *     console.log(`Pointer Moved: (${dx}, ${dy})`);
+ * });
+ * element.addEventListener("pointerdown", handler);
  *
- * @param onMove
+ * @param onMove function to be triggered on pointer move.
+ * @return The "pointerdown" event listener to add to the element.
  */
 export function dragHandler(onMove: PointerMoveHandler) {
 	return function (initEvent: PointerEvent) {

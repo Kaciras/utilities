@@ -1,4 +1,5 @@
 import { text } from "stream/consumers";
+import { readFileSync } from "fs";
 import { expect, test } from "./unittest.js";
 
 test("saveFile", async ({ page }) => {
@@ -37,4 +38,27 @@ test("selectFile", async ({ page }) => {
 	});
 
 	expect(await selected).toStrictEqual({ name: "foo.png", data: "bar", type: "image/png" });
+});
+
+test("dragHandler", async ({ page }) => {
+	const messages: string[] = [];
+
+	await page.setContent(readFileSync("test/fixtures/dragmove.html", "utf8"));
+	page.on("console", msg => messages.push(msg.text()));
+
+	await page.evaluate(async () => {
+		const { dragHandler } = await import("/src/interactive.ts");
+		const handler = dragHandler((e, b) => {
+			console.log(`${b.pageY} - ${b.pageY} -> ${e.pageY} - ${e.pageY}`);
+		});
+		document.querySelector("main")!.addEventListener("pointerdown", handler);
+	});
+
+	await page.mouse.move(50, 50);
+	await page.mouse.down();
+	await page.mouse.move(200, 200);
+	await page.mouse.up();
+	await page.mouse.move(0, 0);
+
+	expect(messages).toStrictEqual(["50 - 50 -> 200 - 200"]);
 });
