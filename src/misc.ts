@@ -1,6 +1,7 @@
 /**
  * An AbortSignal that never aborts.
  */
+// @ts-expect-error `any()` is a static method, should not in there.
 export const NeverAbort: AbortSignal = {
 	aborted: false,
 	reason: undefined,
@@ -15,7 +16,7 @@ export const NeverAbort: AbortSignal = {
 let uniqueIdCounter = 0;
 
 /**
- * Generate a positive number, each call returns a different value.
+ * Generate a positive number, each call returns a increased value.
  *
  * This function is more efficient than `Math.random()`.
  */

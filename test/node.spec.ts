@@ -79,7 +79,7 @@ describe("importCWD", () => {
 	});
 
 	it("should forward error from module", () => {
-		return expect(importCWD("NON-EXISTS.js", ["test/fixtures/top-level-error.js"]))
+		return expect(importCWD(undefined, ["test/fixtures/top-level-error.js"]))
 			.rejects.toThrow("Test Top-Level Error");
 	});
 
