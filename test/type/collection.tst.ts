@@ -2,6 +2,8 @@
 import { expect, test } from "tstyche";
 import { cartesianArray, cartesianObject } from "../../src/collection.ts";
 
+type CPIterable<T> = Generator<T, void>;
+
 test("cartesianObject", () => {
 	const symbolKey = Symbol();
 
@@ -9,24 +11,24 @@ test("cartesianObject", () => {
 		[symbolKey]: [33, 44],
 		foo: [1, 2],
 		bar: [new Array<string>(), "B"],
-	})).type.toBeAssignableTo<
-		Iterable<{ foo: 1 | 2; bar: string[] | "B" }>
+	})).type.toBe<
+		CPIterable<{ foo: 1 | 2; bar: string[] | "B" }>
 	>();
 
 	expect(cartesianObject({
 		bar: [],
 		foo: new Set<1 | 2>(),
-	})).type.toBeAssignableTo<
-		Iterable<{ foo: 1 | 2; bar: never }>
+	})).type.toBe<
+		CPIterable<{ foo: 1 | 2; bar: never }>
 	>();
 
-	expect(cartesianObject({})).type.toBeAssignableTo<Iterable<{}>>();
+	expect(cartesianObject({})).type.toBe<CPIterable<{}>>();
 
 	expect(cartesianObject([
 		["foo", [1, 2]],
 		["bar", [new Array<string>(), "B"]],
-	])).type.toBeAssignableTo<
-		Iterable<{ foo: 1 | 2; bar: string[] | "B" }>
+	])).type.toBe<
+		CPIterable<{ foo: 1 | 2; bar: string[] | "B" }>
 	>();
 
 	expect(cartesianObject([1, 2, 3])).type.toRaiseError();
@@ -36,15 +38,22 @@ test("cartesianObject", () => {
 });
 
 test("cartesianArray", () => {
-	expect(cartesianArray([])).type.toBeAssignableTo<Iterable<never>>();
-	expect(cartesianArray([[]])).type.toBeAssignableTo<Iterable<[never]>>();
+	expect(cartesianArray([[]])).type.toBe<CPIterable<[never]>>();
+	expect(cartesianArray([])).type.toBe<CPIterable<never>>();
 
 	expect(cartesianArray([
-		[1, 2],
+		[11, 22],
 		[new Array<string>(), "B"],
-	])).type.toBeAssignableTo<
-		Iterable<[1 | 2, string[] | "B"]>
+	])).type.toBe<
+		CPIterable<[11 | 22, string[] | "B"]>
 	>();
 
-	expect(cartesianArray(new Array<string[]>)).type.toBeAssignableTo<Iterable<string[]>>();
+	expect(cartesianArray([
+		[11, 22],
+		new Set<string>(),
+	])).type.toBe<
+		CPIterable<[11 | 22, string]>
+	>();
+
+	expect(cartesianArray(new Array<string[]>)).type.toBe<CPIterable<string[]>>();
 });

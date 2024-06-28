@@ -162,12 +162,17 @@ export type CPSrcEntries = ReadonlyArray<readonly [string, Iterable<unknown>]>;
 type CPObjectInput = CPSrcObject | CPSrcEntries;
 
 type CPCellObject<T extends CPSrcObject> = {
-	-readonly [K in Exclude<keyof T, symbol>]: ItemOfIterable<T[K]>
+	-readonly [K in Exclude<keyof T, symbol>]: ItemOfIterable<T[K]>;
 }
 
-type CPCellEntries<T> = T extends CPSrcEntries ? { [K in T[number] as K[0]]: ItemOfIterable<K[1]> } : never;
+type CPCellEntries<T extends CPSrcEntries> = {
+	[K in T[number] as K[0]]: ItemOfIterable<K[1]>;
+};
 
-export type CartesianObjectCell<T> = T extends CPSrcObject ? CPCellObject<T> : CPCellEntries<T>;
+export type CartesianObjectCell<T> = T extends CPSrcObject
+	? CPCellObject<T>
+	: T extends CPSrcEntries
+		? CPCellEntries<T> : never;
 
 /**
  * Get the cartesian product generator of objects.
