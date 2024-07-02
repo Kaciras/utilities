@@ -11,6 +11,9 @@ export default [
 	{
 		rules: {
 			"kaciras/import-group-sort": "warn",
+
+			// The code is highly optimized and does not contain unexpected syntax.
+			"no-sequences": "off",
 		},
 	},
 	...jest.map(config => ({ ...config, files: ["test/**/*.ts"] })),

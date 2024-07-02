@@ -43,3 +43,18 @@ export function sleep(ms: number, signal = NeverAbort) {
 		signal.addEventListener("abort", () => reject(signal.reason));
 	});
 }
+
+/**
+ * If the specified key is not already associated with a value, attempts to
+ * compute its value using the given mapping function and enters it into the cache.
+ *
+ * The computed value cannot be undefined, which is used to indicate the entry absent.
+ *
+ * @param cache The map to cache the computed value.
+ * @param key key with which the specified value is to be associated
+ * @param compute the mapping function to compute a value
+ */
+export function getCached<K, V>(cache: Map<K, V>, key: K, compute: (key: K) => V) {
+	let value = cache.get(key);
+	return value === undefined && cache.set(key, value = compute(key)), value;
+}
