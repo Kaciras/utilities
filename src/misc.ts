@@ -25,6 +25,38 @@ export function uniqueId() {
 }
 
 /**
+ * Get the slice before the last occurrence of `sep`, if not found just return `str`.
+ * It is as an alternative to `basename` or `dirname` in the browser.
+ *
+ * This function is very simple, but common, and JS doesn't have a "split from last" function.
+ *
+ * @example
+ * pathPrefix("D:/path/file.txt", "."); // "D:/path/file"
+ * pathPrefix("D:/path/file.txt", "/"); // "D:/path"
+ * pathPrefix("file.txt", "/");			// "file.txt"
+ *
+ * @param str The path to evaluate.
+ * @param sep The separator to find.
+ */
+export function pathPrefix(str: string, sep: string) {
+	const i = str.lastIndexOf(sep);
+	return i === -1 ? str : str.slice(0, i);
+}
+
+/**
+ * Like `pathPrefix` but return the slice after last occurrence of the separator.
+ *
+ * @example
+ * pathSuffix("D:/path/file.txt", "."); // "txt"
+ * pathSuffix("D:/path/file.txt", "/"); // "file.txt"
+ * pathSuffix("file.txt", "/");			// "file.txt"
+ */
+export function pathSuffix(str: string, sep: string) {
+	const i = str.lastIndexOf(sep);
+	return i === -1 ? str : str.slice(i + 1);
+}
+
+/**
  * Get a Promise that will be fulfilled after specified time.
  * When canceled, the returned Promise will be rejected with an 'AbortError'.
  *

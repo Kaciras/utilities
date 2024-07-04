@@ -1,5 +1,5 @@
 import { describe, expect, it, jest } from "@jest/globals";
-import { getCached, NeverAbort, uniqueId } from "../src/misc.ts";
+import { getCached, NeverAbort, pathPrefix, pathSuffix, uniqueId } from "../src/misc.ts";
 
 describe("NeverAbort", () => {
 	it("should not abort", () => {
@@ -30,6 +30,21 @@ describe("uniqueId", () => {
 		expect(a).not.toBe(b);
 		expect(a).not.toBe(uniqueId());
 	});
+});
+
+const cases = [
+	["C:\\foo\\bar.txt", ".", "C:\\foo\\bar", "txt"],
+	["/foo/bar.txt", ".", "/foo/bar", "txt"],
+	["/foo/bar.txt", "/", "/foo", "bar.txt"],
+	["simple.txt", "/", "simple.txt", "simple.txt"],
+];
+
+it.each(cases)("should get the base path %#", (str, sep, expected) => {
+	expect(pathPrefix(str, sep)).toBe(expected);
+});
+
+it.each(cases)("should get the suffix %#", (str, sep, _,expected) => {
+	expect(pathSuffix(str, sep)).toBe(expected);
 });
 
 describe("getCached", () => {
