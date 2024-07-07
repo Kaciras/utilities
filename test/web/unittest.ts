@@ -66,7 +66,7 @@ function compile(path: string): TransformedOutput {
 	 * It safety because this project promises no dependencies.
 	 *
 	 * Import statements are replaced with comments of the same length
-	 * to avoid affecting source map.
+	 * to avoid modify the source map.
 	 */
 	const [imports] = importParser.parse(code, path);
 	for (const { n, ss, se } of imports) {

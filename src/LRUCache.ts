@@ -4,7 +4,6 @@ import { firstItem } from "./collection.ts";
 type Dispose<T> = (value: T) => unknown;
 
 export interface LRUCacheOptions<T> {
-
 	/**
 	 * The max time in millisecond to store items.
 	 *
@@ -32,8 +31,6 @@ interface CacheEntry<T> {
 
 /**
  * A cache object support Least-Recently-Used and Time-To-Live elimination.
- *
- * TODO: benchmark against https://github.com/dominictarr/hashlru
  *
  * # Alternatives
  * [lru-cache](https://github.com/isaacs/node-lru-cache)

@@ -4,8 +4,6 @@ import { expect, test } from "./unittest.js";
 const rects = readFileSync("test/fixtures/3-rects.html", "utf8")
 	.replaceAll("\n", ""); // Avoid text nodes of "\n"
 
-const scroll = readFileSync("test/fixtures/scroll.html", "utf8");
-
 test("isPointerInside", async ({ page }) => {
 	await page.setContent(rects);
 

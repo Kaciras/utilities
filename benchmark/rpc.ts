@@ -13,11 +13,11 @@ export default defineSuite({
 		if (scene.params.deep === 1) {
 			const client = RPC.createClient(msg => RPC.serve(deep1, msg));
 			scene.benchAsync("Direct", () => deep1.foo());
-			scene.benchAsync("RPC call", () => client.foo());
+			scene.benchAsync("RPC", () => client.foo());
 		} else {
 			const client = RPC.createClient(msg => RPC.serve(deep5, msg));
 			scene.benchAsync("Direct", () => deep5.foo.bar[0].baz[0]());
-			scene.benchAsync("RPC call", () => client.foo.bar[0].baz[0]());
+			scene.benchAsync("RPC", () => client.foo.bar[0].baz[0]());
 		}
 	},
 });

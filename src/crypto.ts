@@ -17,7 +17,6 @@ export function sha256(data: BufferOrString) {
 }
 
 interface AESOptions {
-
 	/**
 	 * AES key size, can be 128, 192, or 256.
 	 *
