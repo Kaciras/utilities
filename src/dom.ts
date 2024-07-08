@@ -28,6 +28,7 @@ export function isPointerInside(event: MouseEvent, el?: Element) {
  * @see https://stackoverflow.com/a/10717422/7065321
  */
 export function swapElements(nodeA: Element, nodeB: Element) {
+	// You can not move `document` element :)
 	const parentB = nodeB.parentNode!;
 	const nextB = nodeB.nextSibling;
 

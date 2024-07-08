@@ -80,6 +80,10 @@ export function dragHandler(onMove: PointerMoveHandler) {
 			onMove(event, initEvent);
 		}
 
+		/*
+		 * It's better to attach handlers to `document` over `window`, as the
+		 * user can use window events to ensure runs after the drag handler.
+		 */
 		function handleEnd(event: Event) {
 			event.preventDefault();
 			document.removeEventListener("pointerup", handleEnd);

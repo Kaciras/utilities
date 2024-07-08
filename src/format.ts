@@ -144,7 +144,7 @@ export function compositor<T extends Placeholders>(
 		positions.push({ name, startPos, endPos });
 	}
 
-	// Sort by start position so we can check for overlap.
+	// Sort by start position, so we can check for overlap.
 	positions.sort((a, b) => a.startPos - b.startPos);
 
 	let lastEnd = 0;

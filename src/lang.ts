@@ -22,10 +22,6 @@ export const asyncNoop: (..._: unknown[]) => Promise<void> = async () => {};
  */
 export const AsyncFunction = asyncNoop.constructor as FunctionConstructor;
 
-// https://stackoverflow.com/a/38642922/7065321
-// eslint-disable-next-line @typescript-eslint/ban-types
-type ClassOf<T> = Function & { prototype: T }
-
 /**
  * Call a function silently. returns undefined if any error occurs.
  */
@@ -42,6 +38,10 @@ export function silentCall<T>(fn: () => T) {
 export function silencePromise(value: any) {
 	if (typeof value?.then === "function") value.catch(noop);
 }
+
+// https://stackoverflow.com/a/38642922/7065321
+// eslint-disable-next-line @typescript-eslint/ban-types
+type ClassOf<T> = Function & { prototype: T }
 
 /**
  * Create a new instance with the `parent` as prototype and the `value` as child.
