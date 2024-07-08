@@ -19,7 +19,10 @@ const TIME_FRACTIONS	= [ 1,   1e3,  1e6,  1e9,  6e10, 36e11, 864e11];
 
 const groupRE = /[0-9.]+\s?([a-z]+)\s*/gi;
 
-export interface FixedUnitFormatter {
+/**
+ * Formatter to format values into string in the specific unit.
+ */
+export interface HomogeneousUC {
 	unit: string;
 	scale: number;
 	sep: string;
@@ -161,7 +164,7 @@ export class UnitConvertor<T extends readonly string[] = readonly string[]> {
 		const scale = x / fractions[i];
 		const u = units[i];
 
-		return <FixedUnitFormatter>{
+		return <HomogeneousUC>{
 			scale,
 			unit: u,
 			sep,
