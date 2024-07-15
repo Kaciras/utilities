@@ -11,6 +11,7 @@ export default [
 	{
 		rules: {
 			"kaciras/import-group-sort": "warn",
+			"kaciras/import-node-prefix": "error",
 
 			// The code is highly optimized and does not contain unexpected syntax.
 			"no-sequences": "off",

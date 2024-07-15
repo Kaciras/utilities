@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 import { expect, test } from "./unittest.js";
 
 const rects = readFileSync("test/fixtures/3-rects.html", "utf8")

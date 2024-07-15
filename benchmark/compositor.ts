@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 import { defineSuite } from "esbench";
 import { compositor } from "../src/node.ts";
 

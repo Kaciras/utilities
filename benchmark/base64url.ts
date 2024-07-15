@@ -1,4 +1,4 @@
-import { randomBytes } from "crypto";
+import { randomBytes } from "node:crypto";
 import { defineSuite } from "esbench";
 import { base64url } from "../src/codec.js";
 

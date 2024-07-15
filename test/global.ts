@@ -1,5 +1,5 @@
-import { uniqueId } from "../src/misc.ts";
 import { expect } from "@jest/globals";
+import { uniqueId } from "../src/misc.ts";
 
 class StubError extends Error {
 

@@ -11,7 +11,7 @@ export default {
 		"/coverage",
 		"/playwright-report",
 		"/lib",
-		"/test/integration"
+		"/test/integration",
 	],
 	tempDirName: "stryker-tmp",
 	coverageAnalysis: "perTest",

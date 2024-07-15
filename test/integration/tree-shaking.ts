@@ -1,6 +1,6 @@
-import { readFileSync } from "fs";
-import { isBuiltin } from "module";
-import { join } from "path";
+import { readFileSync } from "node:fs";
+import { isBuiltin } from "node:module";
+import { join } from "node:path";
 import * as importParser from "es-module-lexer";
 import { expect, it } from "@jest/globals";
 import { Plugin, rollup } from "rollup";

@@ -1,5 +1,5 @@
-import { readFileSync } from "fs";
-import { Profiler } from "inspector";
+import { readFileSync } from "node:fs";
+import { Profiler } from "node:inspector";
 import * as importParser from "es-module-lexer";
 import swc from "@swc/core";
 import { expect, Request, Route, test as base } from "@playwright/test";

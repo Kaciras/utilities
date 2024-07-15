@@ -1,6 +1,6 @@
-import consumers from "stream/consumers";
-import * as http from "http";
-import { EventEmitter } from "events";
+import consumers from "node:stream/consumers";
+import * as http from "node:http";
+import { EventEmitter } from "node:events";
 import { describe, expect, it, jest } from "@jest/globals";
 import { Stubs } from "./global.ts";
 import {

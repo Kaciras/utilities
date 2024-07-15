@@ -1,5 +1,5 @@
-import { text } from "stream/consumers";
-import { readFileSync } from "fs";
+import { text } from "node:stream/consumers";
+import { readFileSync } from "node:fs";
 import { expect, test } from "./unittest.js";
 
 test("saveFile", async ({ page }) => {

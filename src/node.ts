@@ -1,5 +1,5 @@
-import { pathToFileURL } from "url";
-import process from "process";
+import { pathToFileURL } from "node:url";
+import process from "node:process";
 
 export * from "./collection.ts";
 export * from "./codec.ts";
