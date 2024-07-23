@@ -25,8 +25,8 @@ export const AsyncFunction = asyncNoop.constructor as FunctionConstructor;
 /**
  * Call a function silently. returns undefined if any error occurs.
  */
-export function silentCall<T>(fn: () => T) {
-	try { return fn(); } catch { /* return undefined; */ }
+export function silentCall<T, A extends any[]>(fn: (...params: A) => T, ...args: A) {
+	try { return fn(...args); } catch { /* return undefined; */ }
 }
 
 /**

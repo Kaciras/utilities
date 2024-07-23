@@ -33,12 +33,16 @@ describe("AsyncFunction", () => {
 });
 
 describe("silence", () => {
-	const returnFn = () => 11;
+	const returnFn = (value = 0) => 11 + value;
 	const throwFn = () => { throw new Error(); };
 
-	it("should works", () => {
-		expect(silentCall(returnFn)).toBe(11);
+	it("should return undefined when error occurred", () => {
 		expect(silentCall(throwFn)).toBeUndefined();
+	});
+
+	it("should return the value", () => {
+		expect(silentCall(returnFn)).toBe(11);
+		expect(silentCall(returnFn, 22)).toBe(33);
 	});
 });
 
