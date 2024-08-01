@@ -1,5 +1,6 @@
-import { pathToFileURL } from "node:url";
 import process from "node:process";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { statSync } from "node:fs";
 
 export * from "./collection.ts";
 export * from "./codec.ts";
@@ -48,6 +49,10 @@ export function onExit(listener: (signal: Signals) => unknown) {
 	return () => exitSignals.forEach(s => process.off(s, handle));
 }
 
+function isFileSync(path: string) {
+	try { return statSync(fileURLToPath(path)).isFile(); } catch { return false; }
+}
+
 /**
  * Import the default export of a module uses file path from CWD.
  * The most common case is loading a configuration file.
@@ -69,12 +74,17 @@ export async function importCWD(module: string | undefined, defaults?: string[])
 		return (await import(url)).default;
 	}
 	for (const file of defaults ?? []) {
+		const { href } = pathToFileURL(file);
 		try {
-			const url = pathToFileURL(file).toString();
-			return (await import(url)).default;
+			return (await import(href)).default;
 		} catch (e) {
-			//         CJS                                  ESM
-			if (e.code !== "ERR_MODULE_NOT_FOUND" && e.code !== "MODULE_NOT_FOUND") throw e;
+			if (
+				e.code !== "ERR_MODULE_NOT_FOUND" &&	// ESM
+				e.code !== "MODULE_NOT_FOUND" ||		// CJS
+				isFileSync(import.meta.resolve(href))
+			) {
+				throw e; // Error inside the module should be thrown.
+			}
 		}
 	}
 }

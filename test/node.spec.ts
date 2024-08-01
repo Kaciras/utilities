@@ -87,12 +87,16 @@ describe("importCWD", () => {
 		return expect(importCWD("NON-EXISTS.js", ["jest.config.js"])).rejects.toThrow();
 	});
 
-	it("should not require the default module exists", () => {
-		return expect(importCWD(undefined, ["NON-EXISTS.js"])).resolves.toBeUndefined();
-	});
-
-	it("should support multiple defaults", () => {
-		return expect(importCWD(undefined, ["NON-EXISTS.js", "jest.config.js"]))
-			.resolves.toHaveProperty("testMatch");
-	});
+	/*
+	 * Jest does not support `import.meta.resolve` with file URL.
+	 * These cases are moved to node-temp.js
+	 */
+	// it("should not require the default module exists", () => {
+	// 	return expect(importCWD(undefined, ["NON-EXISTS.js"])).resolves.toBeUndefined();
+	// });
+	//
+	// it("should support multiple defaults", () => {
+	// 	return expect(importCWD(undefined, ["NON-EXISTS.js", "jest.config.js"]))
+	// 		.resolves.toHaveProperty("testMatch");
+	// });
 });
