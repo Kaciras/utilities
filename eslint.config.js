@@ -10,7 +10,7 @@ export default [
 	...typescript,
 	{
 		rules: {
-			"kaciras/import-group-sort": "warn",
+			"kaciras/import-specifier-order": "warn",
 			"kaciras/import-node-prefix": "error",
 
 			// The code is highly optimized and does not contain unexpected syntax.
