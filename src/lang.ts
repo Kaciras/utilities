@@ -40,7 +40,7 @@ export function silencePromise(value: any) {
 }
 
 // https://stackoverflow.com/a/38642922/7065321
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type ClassOf<T> = Function & { prototype: T }
 
 /**

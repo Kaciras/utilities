@@ -168,7 +168,7 @@ export function createServer(target: any, respond: Respond = noop) {
 type Promisify<T> = T extends Promise<unknown> ? T : Promise<T>;
 
 type RemoteProperty<T> =
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	T extends Function ? RemoteCallable<T>
 		: T extends object ? Remote<T> : T;
 
@@ -186,7 +186,7 @@ export type VoidRemote<T> = {
 }
 
 type VoidRemoteProperty<T> =
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	T extends Function ? VoidCallable<T>
 		: T extends object ? VoidRemote<T> : T;
 

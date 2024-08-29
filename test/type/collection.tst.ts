@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { expect, test } from "tstyche";
 import { cartesianArray, cartesianObject } from "../../src/collection.ts";
 
