@@ -1,12 +1,22 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
 import * as browser from "../src/node.ts";
-import { importCWD, noop, onExit } from "../src/node.ts";
+import { exposeGC, importCWD, noop, onExit } from "../src/node.ts";
 
 it("should export sub modules", () => {
 	expect("isPointerInside" in browser).toBe(false);
 	expect("saveFile" in browser).toBe(false);
 
 	expect(typeof browser.onExit).toBe("function");
+});
+
+// There shouldn't be any other place to modify the global.gc.
+it("should expose gc() without Node argument", () => {
+	expect(globalThis.gc).toBeUndefined();
+	exposeGC();
+	const currentGC = gc;
+	expect(typeof currentGC).toBe("function");
+	exposeGC();
+	expect(globalThis.gc).toBe(currentGC);
 });
 
 // TODO: we need integration tests with real signals.
