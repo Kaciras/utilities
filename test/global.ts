@@ -26,7 +26,6 @@ class StubError extends Error {
 }
 
 export const Stubs = Object.freeze({
-
 	/**
 	 * An error object can be used to exception test.
 	 *

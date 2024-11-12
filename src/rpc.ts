@@ -194,7 +194,6 @@ type VoidCallable<T> = T extends (...args: infer A) => any
 	? (...args: A) => Promise<void> : unknown;
 
 class RPCProxyHandler implements ProxyHandler<SendFn> {
-
 	/**
 	 * Keys for current property in reversed order.
 	 *

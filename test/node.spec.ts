@@ -10,11 +10,13 @@ it("should export sub modules", () => {
 });
 
 // There shouldn't be any other place to modify the global.gc.
-it("should expose gc() without Node argument", () => {
+it("should expose `gc()` without Node argument", () => {
 	expect(globalThis.gc).toBeUndefined();
+
 	exposeGC();
+	expect(typeof gc).toBe("function");
+
 	const currentGC = gc;
-	expect(typeof currentGC).toBe("function");
 	exposeGC();
 	expect(globalThis.gc).toBe(currentGC);
 });

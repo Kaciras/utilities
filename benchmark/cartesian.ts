@@ -1,6 +1,11 @@
 import { defineSuite } from "esbench";
 import { cartesianArray, cartesianObject } from "../src/node.ts";
 
+/*
+ * There is a comparison with other libraries:
+ * https://esbench.vercel.app/playground?demo=misc%2Fimport-http-module.js
+ */
+
 const dataSets = {
 	largeProps: [
 		...Array.from({ length: 20 }, () => [33]),

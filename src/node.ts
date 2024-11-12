@@ -51,20 +51,19 @@ export function onExit(listener: (signal: Signals) => unknown) {
 	return () => exitSignals.forEach(s => process.off(s, handle));
 }
 
-/*
+/**
  * Expose gc() function to global without any Node arguments requirement.
  * Note: --expose-gc cannot be passed through NODE_OPTIONS.
  *
- * Inspired by https://github.com/legraphista/expose-gc, The project
+ * Inspired by https://github.com/legraphista/expose-gc, which
  * missing undo for changed flags, so we implemented it ourselves.
  */
 export function exposeGC() {
-	if (global.gc) {
-		return;
+	if (!global.gc) {
+		setFlagsFromString("--expose_gc");
+		global.gc = runInNewContext("gc");
+		setFlagsFromString("--no-expose-gc");
 	}
-	setFlagsFromString("--expose_gc");
-	global.gc = runInNewContext("gc");
-	setFlagsFromString("--no-expose-gc");
 }
 
 function isFileSync(path: string) {

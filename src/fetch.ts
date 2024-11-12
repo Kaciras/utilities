@@ -157,7 +157,6 @@ const defaultRequest: RequestInit = {
 };
 
 export interface FetchClientOptions {
-
 	/**
 	 * `baseURL` will be prepended to `url` if present.
 	 */

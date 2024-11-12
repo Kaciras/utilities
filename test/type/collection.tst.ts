@@ -1,7 +1,7 @@
 import { expect, test } from "tstyche";
 import { cartesianArray, cartesianObject } from "../../src/collection.ts";
 
-type CPIterable<T> = Generator<T, void>;
+type CPIterable<T> = Generator<T, void, unknown>;
 
 test("cartesianObject", () => {
 	const symbolKey = Symbol();

@@ -109,7 +109,7 @@ export function base64url(buffer: BufferSource | Buffer) {
 /**
  * Apply a transform to the buffer, avoiding some of the pitfalls:
  *
- * - Many instances use `new Blob([buffer])` or `new Response(buffer)`, and they cause redundant data copying.
+ * - Many instances use `new Blob([buffer])` or `new Response(buffer)` cause data copying.
  *   See benchmark/buffer-stream.ts for performance comparison.
  *
  * - The Promise returned by `tx.writable.getWriter().write(buffer)` may not be fulfilled

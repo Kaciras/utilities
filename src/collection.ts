@@ -33,7 +33,6 @@ export function firstItem<T>(iterable: Iterable<T>) {
  * map.delete("A");			// true,  A no longer exists.
  */
 export class MultiMap<K, V> extends Map<K, V[]> {
-
 	/**
 	 * The number of values in this Map.
 	 */
