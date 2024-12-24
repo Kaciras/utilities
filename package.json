@@ -49,8 +49,8 @@
 		"istanbul-reports": "^3.1.7",
 		"jest": "^30.0.0-alpha.6",
 		"mockttp": "^3.15.5",
-		"rollup": "^4.28.1",
-		"tstyche": "^3.1.1",
+		"rollup": "^4.29.1",
+		"tstyche": "^3.2.0",
 		"typescript": "^5.7.2",
 		"v8-to-istanbul": "^9.3.0"
 	}
