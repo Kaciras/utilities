@@ -71,7 +71,7 @@ async function bundle(...input) {
 		chunkFileNames: "[name].js",
 	});
 
-	await build.close();
+	await build[Symbol.asyncDispose]();
 	console.info(`Generated bundle of ${input.length} entries`);
 }
 
