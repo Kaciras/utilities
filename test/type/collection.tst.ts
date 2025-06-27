@@ -30,10 +30,14 @@ test("cartesianObject", () => {
 		CPIterable<{ foo: 1 | 2; bar: string[] | "B" }>
 	>();
 
-	expect(cartesianObject([1, 2, 3])).type.toRaiseError();
-	expect(cartesianObject([["1", "2", "3"]])).type.toRaiseError();
-	expect(cartesianObject([[1, [2, 3]]])).type.toRaiseError();
-	expect(cartesianObject([["1"], ["2"], ["3"]])).type.toRaiseError();
+	// @ts-expect-error
+	cartesianObject([1, 2, 3]);
+	// @ts-expect-error
+	cartesianObject([["1", "2", "3"]]);
+	// @ts-expect-error
+	cartesianObject([[1, [2, 3]]]);
+	// @ts-expect-error
+	cartesianObject([["1"], ["2"], ["3"]]);
 });
 
 test("cartesianArray", () => {

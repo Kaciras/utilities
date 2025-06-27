@@ -18,4 +18,11 @@ export default [
 		},
 	},
 	...jest.map(config => ({ ...config, files: ["test/**/*.ts"] })),
+	{
+		files: ["test/**/*.tst.ts"],
+		rules: {
+			"@typescript-eslint/no-unused-vars": "off",
+			"@typescript-eslint/no-empty-object-type": "off",
+		},
+	},
 ];

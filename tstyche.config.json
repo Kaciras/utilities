@@ -1,3 +1,4 @@
 {
-	"checkSourceFiles": false
+	"checkSourceFiles": false,
+	"checkSuppressedErrors": true
 }

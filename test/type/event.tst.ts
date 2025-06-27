@@ -16,8 +16,10 @@ test("SingleEventEmitter", () => {
 
 	e.dispatchEvent(11);
 
-	expect(e.dispatchEvent()).type.toRaiseError();
-	expect(e.dispatchEvent("str")).type.toRaiseError();
+	// @ts-expect-error
+	e.dispatchEvent();
+	// @ts-expect-error
+	e.dispatchEvent("str");
 });
 
 test("MultiEventEmitter", () => {
@@ -31,13 +33,17 @@ test("MultiEventEmitter", () => {
 	});
 
 	e.dispatchEvent("test", 11);
-	expect(e.dispatchEvent("NOE", 123)).type.toRaiseError();
-	expect(e.dispatchEvent("test")).type.toRaiseError();
-	expect(e.dispatchEvent("test", "str")).type.toRaiseError();
+	// @ts-expect-error
+	e.dispatchEvent("NOE", 123);
+	// @ts-expect-error
+	e.dispatchEvent("test");
+	// @ts-expect-error
+	e.dispatchEvent("test", "str");
 
 	e.removeAllListeners("test");
 	e.removeAllListeners();
-	expect(e.removeAllListeners("NOE")).type.toRaiseError();
+	// @ts-expect-error
+	e.removeAllListeners("NOE");
 });
 
 test("message should be object", () => {
