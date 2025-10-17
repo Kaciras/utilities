@@ -75,8 +75,7 @@ async function bundle(...input) {
 	console.info(`Generated bundle of ${input.length} entries`);
 }
 
-// Equivalent to `if __name__ == "__main__":` in Python.
-if (process.argv[1] === import.meta.filename) {
+if (import.meta.main) {
 	rmSync("lib", { recursive: true, force: true });
 	bundle("src/node.ts", "src/browser.ts");
 	generateTypeDeclaration("src/node.ts", "src/browser.ts");
