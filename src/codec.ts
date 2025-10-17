@@ -102,8 +102,8 @@ export function base64url(buffer: BufferSource | Buffer) {
 	 * Don't use `String.fromCharCode(...toUint8(buffer))`,
 	 * It will cause stackoverflow if the buffer is larger than the stack.
 	 */
-	const chars = Array.from(toUint8(buffer), c => String.fromCodePoint(c));
-	return btoa(chars.join("")).replaceAll(/[+/=]/g, v => urlSafeMap[v]);
+	return toUint8(buffer as BufferSource)
+		.toBase64({ alphabet: "base64url", omitPadding: true });
 }
 
 /**
