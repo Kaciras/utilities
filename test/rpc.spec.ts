@@ -53,7 +53,7 @@ it("demo - HTTP", async () => {
 		hello: (name: string) => `Hello ${name}!`,
 	};
 
-	const server = http.createServer((req, res) => {
+	await using server = http.createServer((req, res) => {
 		consumers.json(req)
 			.then((msg: any) => serve(functions, msg))
 			.then(d => res.end(JSON.stringify(d[0])));
@@ -76,8 +76,6 @@ it("demo - HTTP", async () => {
 	});
 
 	expect(await client.hello("world")).toBe("Hello world!");
-
-	server.close();
 });
 
 it("should transfer object to server", async () => {
@@ -114,7 +112,7 @@ it("should transfer object to client", async () => {
 it("should have no conflict between request & response message", async () => {
 	const emitter = new EventEmitter();
 	const post = emitter.emit.bind(emitter, "message");
-	const hello = jest.fn(() => "world");
+	const hello = jest.fn((..._: unknown[]) => "world");
 
 	const client = createClient(post, callback => {
 		emitter.on("message", callback);
