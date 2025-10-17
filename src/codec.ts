@@ -59,10 +59,11 @@ export function svgToUrl(svg: string) {
 }
 
 /**
- * Convert the Blob to base64-encoded data url string。
+ * Convert the Blob to base64-encoded data url string.
  *
  * # Alternatives
- * If you don't need serialization, use `URL.createObjectURL` for better performance.
+ * - If you don't need serialization, use `URL.createObjectURL` for better performance.
+ * - Combine `blob:mime,base64;` with `blob.bytes`, but `bytes()` is not wildly available.
  */
 export function blobToBase64URL(blob: Blob) {
 	return new Promise<string>((resolve, reject) => {
@@ -72,12 +73,6 @@ export function blobToBase64URL(blob: Blob) {
 		reader.readAsDataURL(blob);
 	});
 }
-
-const urlSafeMap: Record<string, string> = {
-	"=": "",
-	"/": "_",
-	"+": "-",
-};
 
 function toUint8(buffer: BufferSource) {
 	return ArrayBuffer.isView(buffer)

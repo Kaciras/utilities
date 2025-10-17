@@ -110,7 +110,7 @@ async function reportCoverage() {
 
 export const test = base.extend({
 	page: async ({ page, browser }, use) => {
-		await page.route(`${baseURL}**/*`, loadIndexAndModule);
+		await page.route("**/*", loadIndexAndModule);
 		await page.goto(baseURL);
 
 		// Coverage APIs are only supported on Chromium-based browsers.
