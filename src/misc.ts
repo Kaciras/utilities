@@ -1,7 +1,6 @@
 /**
  * An AbortSignal that never aborts.
  */
-// @ts-expect-error `any()` is a static method, should not in there.
 export const NeverAbort: AbortSignal = {
 	aborted: false,
 	reason: undefined,

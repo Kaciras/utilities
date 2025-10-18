@@ -67,7 +67,7 @@ interface Default extends EventMap {
 
 type HandlerMap<T, A extends EventMap> = {
 	[K in keyof A]?: Array<Handler<T, A[K]>>;
-}
+};
 
 /**
  * Emit multiple type events and may have listeners for them.

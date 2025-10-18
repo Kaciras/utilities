@@ -162,7 +162,7 @@ type CPObjectInput = CPSrcObject | CPSrcEntries;
 
 type CPCellObject<T extends CPSrcObject> = {
 	-readonly [K in Exclude<keyof T, symbol>]: ItemOfIterable<T[K]>;
-}
+};
 
 type CPCellEntries<T extends CPSrcEntries> = {
 	[K in T[number] as K[0]]: ItemOfIterable<K[1]>;

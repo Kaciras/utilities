@@ -110,6 +110,7 @@ async function reportCoverage() {
 
 export const test = base.extend({
 	page: async ({ page, browser }, use) => {
+		// 从 Playwright 1.54-1.56 某版开始不能拦完整的 URL 了？
 		await page.route("**/*", loadIndexAndModule);
 		await page.goto(baseURL);
 

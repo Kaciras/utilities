@@ -41,7 +41,7 @@ export function silencePromise(value: any) {
 
 // https://stackoverflow.com/a/38642922/7065321
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-type ClassOf<T> = Function & { prototype: T }
+type ClassOf<T> = Function & { prototype: T };
 
 /**
  * Create a new instance with the `parent` as prototype and the `value` as child.

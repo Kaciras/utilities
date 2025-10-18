@@ -85,7 +85,7 @@ describe("SingleEventEmitter", () => {
 type EventTypes = {
 	foo: number[];
 	bar: number[];
-}
+};
 
 describe("MultiEventEmitter", () => {
 	const handler1 = jest.fn();
@@ -318,7 +318,7 @@ describe("pubSub2ReqRes", () => {
 		request({});
 
 		const { value } = txMap.values().next();
-		expect(value.timer.hasRef()).toBe(false);
+		expect(value!.timer!.hasRef()).toBe(false);
 	});
 
 	it("should support remove session from outside", withFakeTimer(async () => {

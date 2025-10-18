@@ -80,6 +80,8 @@ function toUint8(buffer: BufferSource) {
 		: new Uint8Array(buffer);
 }
 
+const base64UrlCOptions = { alphabet: "base64url", omitPadding: true };
+
 /**
  * Create an Url-Safe Base64 encoded ASCII string from a binary data.
  *
@@ -93,12 +95,7 @@ export function base64url(buffer: BufferSource | Buffer) {
 		}
 		return buffer.toString("base64url");
 	}
-	/*
-	 * Don't use `String.fromCharCode(...toUint8(buffer))`,
-	 * It will cause stackoverflow if the buffer is larger than the stack.
-	 */
-	return toUint8(buffer as BufferSource)
-		.toBase64({ alphabet: "base64url", omitPadding: true });
+	return toUint8(buffer as BufferSource).toBase64(base64UrlCOptions);
 }
 
 /**

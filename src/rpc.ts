@@ -183,7 +183,7 @@ type RemoteCallable<T> = T extends (...args: infer A) => infer R
 
 export type VoidRemote<T> = {
 	[P in keyof T]: VoidRemoteProperty<T[P]>;
-}
+};
 
 type VoidRemoteProperty<T> =
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
