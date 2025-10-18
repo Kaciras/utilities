@@ -1,6 +1,6 @@
 {
 	"name": "@kaciras/utilities",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"license": "Unlicense",
 	"description": "A set of commonly used JS functions implemented with best practices.",
 	"author": "Kaciras <Kaciras@outlook.com>",
