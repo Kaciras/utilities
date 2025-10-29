@@ -6,8 +6,8 @@ import { asyncNoop, Awaitable, ItemOfIterable, noop } from "../../src/lang.ts";
 test("Awaitable", () => {
 	expect<Awaitable<number>>().type.toBe<number | PromiseLike<number>>();
 
-	expect<Awaitable<number>>().type.toBeAssignableWith(11);
-	expect<Awaitable<number>>().type.toBeAssignableWith(Promise.resolve(11));
+	expect<Awaitable<number>>().type.toBeAssignableFrom(11);
+	expect<Awaitable<number>>().type.toBeAssignableFrom(Promise.resolve(11));
 });
 
 test("noop should accept arguments", () => {
