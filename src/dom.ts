@@ -50,14 +50,12 @@ export function swapElements(nodeA: Element, nodeB: Element) {
 
 /**
  * Gets the element's index among all children of its parent.
- * Throw an error if the element does not have a parent.
  *
  * @param el The DOM element.
- * @param from The array index at which to begin the search, default 0.
  * @return The first index of the element in the array; -1 if not found.
  */
-export function nthInChildren(el: Node, from?: number) {
-	return Array.prototype.indexOf.call(el.parentNode!.children, el, from);
+export function nthInChildren(el: Element) {
+	let i = 0; while ((el = el.previousElementSibling!)) i++; return i;
 }
 
 /**
@@ -110,9 +108,8 @@ export function dragSortContext(swap = false) {
 		if (swap) {
 			swapElements(dragging, currentTarget);
 		} else {
-			const i = nthInChildren(currentTarget);
-			const j = nthInChildren(dragging, i);
-			if (j === -1) {
+			const mask = dragging.compareDocumentPosition(currentTarget);
+			if (mask & Node.DOCUMENT_POSITION_FOLLOWING) {
 				currentTarget.after(dragging);
 			} else {
 				currentTarget.before(dragging);

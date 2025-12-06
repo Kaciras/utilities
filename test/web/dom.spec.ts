@@ -61,19 +61,11 @@ test.describe("nthInChildren", () => {
 		return expect(task).resolves.toBe(2);
 	});
 
-	test("begin index", async ({ page }) => {
-		const task = page.evaluate(async () => {
-			const { nthInChildren } = await import("/src/dom.ts");
-			return nthInChildren(document.getElementById("C")!, 2);
-		});
-		return expect(task).resolves.toBe(2);
-	});
-
 	test("fail on no parent", async ({ page }) => {
 		const task = page.evaluate(async () => {
-			return (await import("/src/dom.ts")).nthInChildren(document);
+			return (await import("/src/dom.ts")).nthInChildren(document.documentElement);
 		});
-		return expect(task).rejects.toThrow(/Cannot read properties/);
+		return expect(task).resolves.toBe(0);
 	});
 });
 
