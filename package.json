@@ -35,7 +35,7 @@
 		"@playwright/test": "^1.57.0",
 		"@stryker-mutator/core": "^9.4.0",
 		"@stryker-mutator/jest-runner": "^9.4.0",
-		"@swc/core": "1.15.7",
+		"@swc/core": "1.15.8",
 		"@swc/jest": "^0.2.39",
 		"@types/istanbul-lib-coverage": "^2.0.6",
 		"@types/istanbul-lib-report": "^3.0.3",
