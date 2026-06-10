@@ -80,7 +80,7 @@ function toUint8(buffer: BufferSource) {
 		: new Uint8Array(buffer);
 }
 
-const base64UrlCOptions = { alphabet: "base64url", omitPadding: true };
+const base64UrlCOptions = { alphabet: "base64url", omitPadding: true } as const;
 
 /**
  * Create an Url-Safe Base64 encoded ASCII string from a binary data.

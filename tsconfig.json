@@ -1,13 +1,15 @@
 {
 	"compilerOptions": {
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
 		"target": "ESNext",
+		"types": ["node"],
 		"lib": ["ESNext", "DOM"],
 		"outDir": "lib",
 		"emitDeclarationOnly": true,
-		"moduleResolution": "NodeNext",
 		"declaration": true,
 		"skipLibCheck": true,
 		"useUnknownInCatchVariables": false,
-		"allowImportingTsExtensions": true,
+		"allowImportingTsExtensions": true
 	}
 }
