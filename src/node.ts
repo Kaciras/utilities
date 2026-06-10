@@ -1,6 +1,5 @@
 import process from "node:process";
-import { fileURLToPath, pathToFileURL } from "node:url";
-import { statSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 import { runInNewContext } from "node:vm";
 import { setFlagsFromString } from "node:v8";
 
@@ -66,10 +65,6 @@ export function exposeGC() {
 	}
 }
 
-function isFileSync(path: string) {
-	try { return statSync(fileURLToPath(path)).isFile(); } catch { return false; }
-}
-
 /**
  * Import the default export of a module uses file path from CWD.
  * The most common case is loading a configuration file.
@@ -87,7 +82,7 @@ function isFileSync(path: string) {
  */
 export async function importCWD(module: string | undefined, defaults?: string[]) {
 	if (module) {
-		const url = pathToFileURL(module).toString();
+		const url = pathToFileURL(module).href;
 		return (await import(url)).default;
 	}
 	for (const file of defaults ?? []) {
@@ -98,7 +93,7 @@ export async function importCWD(module: string | undefined, defaults?: string[])
 			if (
 				e.code !== "ERR_MODULE_NOT_FOUND" &&	// ESM
 				e.code !== "MODULE_NOT_FOUND" ||		// CJS
-				isFileSync(import.meta.resolve(href))
+				pathToFileURL(e.moduleName).href !== href
 			) {
 				throw e; // Error inside the module should be thrown.
 			}
