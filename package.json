@@ -40,7 +40,7 @@
 		"@types/istanbul-lib-coverage": "^2.0.6",
 		"@types/istanbul-lib-report": "^3.0.3",
 		"@types/istanbul-reports": "^3.0.4",
-		"@types/node": "^26.1.0",
+		"@types/node": "^26.1.1",
 		"es-module-lexer": "^2.3.0",
 		"esbench": "^0.8.1",
 		"eslint": "^10.6.0",
@@ -51,7 +51,7 @@
 		"mockttp": "^4.4.2",
 		"rollup": "^4.62.2",
 		"tstyche": "^7.2.1",
-		"typescript": "^6.0.3",
+		"typescript": "^7.0.2",
 		"v8-to-istanbul": "^9.3.0"
 	}
 }
