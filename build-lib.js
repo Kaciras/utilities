@@ -1,7 +1,7 @@
 import { dirname, resolve } from "node:path";
 import { readFileSync, rmSync } from "node:fs";
 import { isBuiltin } from "node:module";
-import ts from "typescript";
+import ts from "@typescript/typescript6";
 import { rollup } from "rollup";
 import swc from "@swc/core";
 
